@@ -1,0 +1,183 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
+interface ServiceItem {
+  id: number;
+  name: string;
+  description?: string;
+  price?: number;
+  image?: string;
+  rating?: number;
+  reviews?: number;
+  category?: string;
+  featured?: boolean;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  count: number;
+}
+
+@Component({
+  selector: 'app-services',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './services.html',
+  styleUrls: ['./services.scss']
+})
+export class ServicesComponent implements OnInit {
+  services: ServiceItem[] = [];
+  filteredServices: ServiceItem[] = [];
+  searchQuery = '';
+  selectedCategory: string | null = null;
+  sortOrder = 'popular';
+
+  categories: Category[] = [
+    { id: 'cleaning', name: 'Cleaning', icon: '🧹', count: 234 },
+    { id: 'plumbing', name: 'Plumbing', icon: '🔧', count: 189 },
+    { id: 'electrical', name: 'Electrical', icon: '⚡', count: 156 },
+    { id: 'painting', name: 'Painting', icon: '🎨', count: 201 },
+    { id: 'landscaping', name: 'Landscaping', icon: '🌿', count: 178 },
+    { id: 'handyman', name: 'Handyman', icon: '🔨', count: 267 }
+  ];
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    this.loadServices();
+  }
+
+  loadServices(): void {
+    this.services = [
+      {
+        id: 1,
+        name: 'Home Cleaning',
+        description: 'Professional deep cleaning for homes and apartments. Eco-friendly products used.',
+        price: 120,
+        rating: 4.9,
+        reviews: 156,
+        category: 'cleaning',
+        image: 'assets/images/services.png',
+        featured: true
+      },
+      {
+        id: 2,
+        name: 'Plumbing Repair',
+        description: 'Expert leak fixes, pipe repairs and new installations. 24/7 emergency service available.',
+        price: 85,
+        rating: 4.8,
+        reviews: 203,
+        category: 'plumbing',
+        image: 'assets/images/services.png'
+      },
+      {
+        id: 3,
+        name: 'Electrical Installation',
+        description: 'Licensed electricians for wiring, fixtures, and panel upgrades. Fully insured.',
+        price: 150,
+        rating: 4.9,
+        reviews: 189,
+        category: 'electrical',
+        image: 'assets/images/services.png',
+        featured: true
+      },
+      {
+        id: 4,
+        name: 'Interior Painting',
+        description: 'Transform your space with professional interior painting. Premium paints and finishes.',
+        price: 200,
+        rating: 4.7,
+        reviews: 98,
+        category: 'painting',
+        image: 'assets/images/services.png'
+      },
+      {
+        id: 5,
+        name: 'Yard Landscaping',
+        description: 'Design and maintenance of outdoor spaces. Lawn care, planting, and hardscaping.',
+        price: 175,
+        rating: 4.8,
+        reviews: 124,
+        category: 'landscaping',
+        image: 'assets/images/services.png'
+      },
+      {
+        id: 6,
+        name: 'General Handyman',
+        description: 'Reliable handyman for repairs, maintenance, and small projects around your home.',
+        price: 65,
+        rating: 4.6,
+        reviews: 267,
+        category: 'handyman',
+        image: 'assets/images/services.png'
+      }
+    ];
+    this.applyFiltersAndSort();
+  }
+
+  filterByCategory(categoryId: string): void {
+    this.selectedCategory = this.selectedCategory === categoryId ? null : categoryId;
+    this.applyFiltersAndSort();
+  }
+
+  onSearch(): void {
+    this.applyFiltersAndSort();
+  }
+
+  sortBy(order: string): void {
+    this.sortOrder = order;
+    this.applyFiltersAndSort();
+  }
+
+  applyFiltersAndSort(): void {
+    let filtered = [...this.services];
+
+    // Apply category filter
+    if (this.selectedCategory) {
+      filtered = filtered.filter(s => s.category === this.selectedCategory);
+    }
+
+    // Apply search filter
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(s =>
+        s.name.toLowerCase().includes(query) ||
+        s.description?.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply sorting
+    switch (this.sortOrder) {
+      case 'popular':
+        filtered.sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
+        break;
+      case 'price-low':
+        filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
+        break;
+      case 'rating':
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+    }
+
+    this.filteredServices = filtered;
+  }
+
+  openService(s: ServiceItem): void {
+    this.router.navigate(['/services', s.id]);
+  }
+
+  bookService(s: ServiceItem): void {
+    this.router.navigate(['/services', s.id, 'book']);
+  }
+
+  navigateTo(path: string): void {
+    this.router.navigate([path]);
+  }
+}

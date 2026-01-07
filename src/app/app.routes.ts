@@ -1,3 +1,41 @@
 import { Routes } from '@angular/router';
+import { MainLayout } from './layout/main-layout/main-layout';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  {
+    path: '',
+    component: MainLayout,
+    children: [
+      {
+        path: '',
+        loadChildren: () => import('./features/home/home-module')
+          .then(m => m.HomeModule)
+      },
+      {
+        path: 'about',
+        loadChildren: () => import('./features/about/about-module')
+          .then(m => m.AboutModule)
+      },
+      {
+        path: 'services',
+        loadChildren: () => import('./features/services/services-module')
+          .then(m => m.ServicesModule)
+      },
+      {
+        path: 'contact',
+        loadChildren: () => import('./features/contact/contact-module')
+          .then(m => m.ContactModule)
+      },
+      {
+        path: 'profile',
+        loadChildren: () => import('./features/profile/profile-module')
+          .then(m => m.ProfileModule)
+      }
+    ]
+  },
+  {
+    path: 'auth',
+    loadChildren: () => import('./auth/auth-module')
+      .then(m => m.AuthModule)
+  }
+];

@@ -1,0 +1,45 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <h2>Login</h2>
+
+    <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          ngModel
+          required
+          placeholder="Enter your email"
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          ngModel
+          required
+          placeholder="Enter your password"
+        />
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" [disabled]="!loginForm.valid">Login</button>
+    </form>
+
+    <p class="register-link">
+      Don’t have an account?
+      <!-- <a routerLink="/auth/register">Register here</a> -->
+      <!-- <a routerLink="['/auth/register']">Register here</a> -->
+      <a routerLink="/auth/register" routerLinkActive="active">
+      <span>Register</span>
+    </a>
+    </p>
+  </div>
+</div>

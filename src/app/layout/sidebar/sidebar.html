@@ -1,0 +1,42 @@
+<mat-nav-list>
+  <a mat-list-item routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+    <mat-icon>home</mat-icon>
+    <span>Home</span>
+  </a>
+
+  <a mat-list-item routerLink="/services" routerLinkActive="active">
+    <mat-icon>work</mat-icon>
+    <span>Services</span>
+  </a>
+
+  <a mat-list-item routerLink="/about" routerLinkActive="active">
+    <mat-icon>info</mat-icon>
+    <span>About</span>
+  </a>
+
+  <a mat-list-item routerLink="/contact" routerLinkActive="active">
+    <mat-icon>contact_support</mat-icon>
+    <span>Contact</span>
+  </a>
+
+  <mat-divider></mat-divider>
+
+  <ng-container *ngIf="!auth.isAuthenticated()">
+    <a mat-list-item routerLink="/auth/login" routerLinkActive="active">
+      <mat-icon>login</mat-icon>
+      <span>Login</span>
+    </a>
+
+    <a mat-list-item routerLink="/auth/register" routerLinkActive="active">
+      <mat-icon>person_add</mat-icon>
+      <span>Register</span>
+    </a>
+  </ng-container>
+
+  <ng-container *ngIf="auth.isAuthenticated()">
+    <a mat-list-item routerLink="/profile" routerLinkActive="active">
+      <mat-icon>person</mat-icon>
+      <span>Profile</span>
+    </a>
+  </ng-container>
+</mat-nav-list>

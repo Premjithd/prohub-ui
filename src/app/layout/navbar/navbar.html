@@ -1,0 +1,34 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="onToggleSidenav()">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <span routerLink="/" class="brand">yProHub</span>
+  <span class="spacer"></span>
+
+  <!-- Navigation Links -->
+  <button mat-button routerLink="/about">About</button>
+  <button mat-button routerLink="/contact">Contact</button>
+
+  <ng-container *ngIf="!auth.isAuthenticated()">
+    <button mat-button routerLink="/auth/login">Login</button>
+    <!-- <button mat-raised-button color="accent" routerLink="/auth/register">Register</button> -->
+    <button mat-raised-button color="accent" class="custom-btn" [matMenuTriggerFor]="menu">Register</button>
+    <mat-menu #menu="matMenu" >
+      <button mat-menu-item routerLink="/auth/register/pro">As Pro</button>
+      <button mat-menu-item routerLink="/auth/register/user">As User</button>
+    </mat-menu>
+  </ng-container>
+
+  <ng-container *ngIf="auth.isAuthenticated()">
+    <p class="nav-paragraph">Welcome {{ auth.getName() }}</p>
+    <button mat-button routerLink="/profile">
+      <mat-icon>person</mat-icon>
+      Profile
+    </button>
+    <button mat-button (click)="onLogout()">
+      <mat-icon>exit_to_app</mat-icon>
+      Logout
+    </button>
+  </ng-container>
+</mat-toolbar>

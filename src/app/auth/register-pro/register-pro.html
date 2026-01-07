@@ -1,0 +1,83 @@
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <div class="logo-circle">🏢</div>
+      <div class="header-text">
+        <h2>Register as Professional</h2>
+        <p class="subtitle">Create your pro account to manage services, clients and bookings.</p>
+      </div>
+    </div>
+
+    <form #regForm="ngForm" (ngSubmit)="onSubmit(regForm)">
+      <div class="form-group">
+        <label for="BusinessName">Business Name</label>
+        <input
+          type="text"
+          id="BusinessName"
+          name="BusinessName"
+          class="form-control"
+          ngModel
+          required
+          placeholder="e.g. Alice & Co"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="Name">Full Name</label>
+        <input
+          type="text"
+          id="Name"
+          name="Name"
+          class="form-control"
+          ngModel
+          required
+          placeholder="Your full name"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="Email"
+          class="form-control"
+          ngModel
+          required
+          placeholder="name@company.com"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input
+          type="tel"
+          id="phone"
+          name="PhoneNumber"
+          class="form-control"
+          ngModel
+          required
+          placeholder="+1 555 555 5555"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="Password"
+          class="form-control"
+          ngModel
+          required
+          minlength="6"
+          placeholder="At least 6 characters"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="!regForm.valid">
+        Register
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+mat-sidenav-container {
+  flex: 1;
+}
+
+.main-content {
+  padding: 2rem 0;
+  min-height: calc(100vh - 64px - 64px); // Subtract header and footer heights
+}
+
+@media (max-width: 600px) {
+  .main-content {
+    padding: 1rem 0;
+    min-height: calc(100vh - 56px - 56px); // Adjust for smaller header/footer on mobile
+  }
+}

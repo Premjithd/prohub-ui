@@ -1,0 +1,102 @@
+<div class="register-container">
+  <div class="register-card">
+  <div class="register-header">
+    <div class="logo-circle">👤</div>
+    <div class="header-text">
+      <h2>User Registration</h2>
+      <p class="subtitle">Create an account to book services and manage your appointments.</p>
+    </div>
+  </div>
+
+  <form #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)">
+    <!-- First Name -->
+    <div class="form-group">
+      <label for="FirstName">First Name</label>
+      <input
+        type="text"
+        id="FirstName"
+        name="FirstName"
+        class="form-control"
+        ngModel
+        required
+      />
+    </div>
+
+    <!-- Last Name -->
+    <div class="form-group">
+      <label for="LastName">Last Name</label>
+      <input
+        type="text"
+        id="LastName"
+        name="LastName"
+        class="form-control"
+        ngModel
+        required
+      />
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input
+        type="email"
+        id="email"
+        name="Email"
+        class="form-control"
+        ngModel
+        required
+        email
+      />
+    </div>
+
+    <!-- Phone Number -->
+    <div class="form-group">
+      <label for="phone">Phone Number</label>
+      <input
+        type="tel"
+        id="phone"
+        name="PhoneNumber"
+        class="form-control"
+        ngModel
+        required
+        pattern="^[0-9]{10}$"
+        placeholder="Enter 10-digit phone number"
+      />
+      <small class="text-muted">Format: 10 digits (e.g., 9876543210)</small>
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="Password"
+        class="form-control"
+        ngModel
+        required
+        minlength="6"
+      />
+    </div>
+
+    <!-- Confirm Password -->
+    <!-- <div class="form-group">
+      <label for="confirmPassword">Confirm Password</label>
+      <input
+        type="password"
+        id="confirmPassword"
+        name="confirmPassword"
+        class="form-control"
+        ngModel
+        required
+        minlength="6"
+      />
+    </div> -->
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary" [disabled]="!registerForm.valid">
+      Register
+    </button>
+  </form>
+  </div>
+</div>

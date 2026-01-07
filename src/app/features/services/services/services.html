@@ -1,0 +1,108 @@
+<div class="services-wrapper">
+  <!-- Hero Section -->
+  <section class="services-hero">
+    <div class="hero-inner">
+      <h1>Professional Services Marketplace</h1>
+      <p class="lead">Find trusted, verified professionals for any service you need</p>
+      <div class="hero-actions">
+        <div class="search-container">
+          <input 
+            class="search" 
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="onSearch()"
+            placeholder="Search services, professionals, or skills..." 
+            aria-label="Search services" />
+          <button class="search-btn" (click)="onSearch()" aria-label="Search">
+            🔍
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Category Filter Section -->
+  <section class="filters-section">
+    <div class="section-container">
+      <div class="filter-header">
+        <h2>Browse by Category</h2>
+      </div>
+      <div class="category-grid">
+        <div class="category-card" *ngFor="let cat of categories" (click)="filterByCategory(cat.id)">
+          <div class="category-icon">{{ cat.icon }}</div>
+          <h3>{{ cat.name }}</h3>
+          <p>{{ cat.count }} professionals</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services List Section -->
+  <section class="services-list">
+    <div class="section-container">
+      <div class="list-header">
+        <h2>{{ selectedCategory ? selectedCategory + ' Services' : 'Featured Services' }}</h2>
+        <div class="list-actions">
+          <button class="filter-btn" (click)="sortBy('popular')" [class.active]="sortOrder === 'popular'">
+            ⭐ Popular
+          </button>
+          <button class="filter-btn" (click)="sortBy('price-low')" [class.active]="sortOrder === 'price-low'">
+            💰 Price: Low
+          </button>
+          <button class="filter-btn" (click)="sortBy('price-high')" [class.active]="sortOrder === 'price-high'">
+            💰 Price: High
+          </button>
+          <button class="filter-btn" (click)="sortBy('rating')" [class.active]="sortOrder === 'rating'">
+            ⭐ Top Rated
+          </button>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+        <article class="service-card" *ngFor="let s of filteredServices" [attr.data-id]="s.id">
+          <div class="card-badge" *ngIf="s.featured">Featured</div>
+          <div class="media">
+            <img [src]="s.image || 'assets/images/services.png'" [alt]="s.name + ' image'" />
+            <div class="image-overlay">
+              <button class="quick-view-btn" (click)="openService(s); $event.stopPropagation()">View Details</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <h3 class="service-title">{{ s.name }}</h3>
+              <div class="price" *ngIf="s.price">${{ s.price }}</div>
+            </div>
+            <p class="service-desc">{{ s.description || 'Professional service available' }}</p>
+
+            <div class="card-meta">
+              <div class="rating">
+                <span class="stars">⭐</span>
+                <span class="rating-value">{{ s.rating || '4.8' }}</span>
+                <small class="review-count">({{ s.reviews || 0 }} reviews)</small>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button class="btn-secondary" (click)="openService(s); $event.stopPropagation()">Learn More</button>
+              <button class="btn-primary" (click)="bookService(s); $event.stopPropagation()">Book Now</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="empty-state" *ngIf="!filteredServices || filteredServices.length === 0">
+        <div class="empty-icon">🔍</div>
+        <h3>No services found</h3>
+        <p>Try adjusting your filters or search terms</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="services-cta">
+    <div class="cta-content">
+      <h2>Can't find what you're looking for?</h2>
+      <p>Post a job and let professionals come to you</p>
+      <button class="cta-btn primary" (click)="navigateTo('/auth/register/user')">Post a Job</button>
+    </div>
+  </section>
+</div>

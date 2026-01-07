@@ -1,0 +1,18 @@
+mat-nav-list {
+  width: 250px;
+  padding-top: 1rem;
+}
+
+.mat-list-item {
+  &.active {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+
+mat-icon {
+  margin-right: 1rem;
+}
+
+mat-divider {
+  margin: 1rem 0;
+}

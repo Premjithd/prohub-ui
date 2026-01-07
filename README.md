@@ -1,59 +1,173 @@
-# ProhubUi
+# ProHubUI - Professional Services Marketplace Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.2.
+## Overview
+ProHubUI is the frontend application for a professional services marketplace, built with Angular 19. It provides a modern, responsive interface for connecting service professionals with users.
 
-## Development server
+## Features
+- User and Professional registration/authentication
+- Email and phone verification
+- Service browsing and management
+- Profile management
+- Responsive design with Material UI
+- Lazy-loaded modules for optimal performance
 
-To start a local development server, run:
+## Technology Stack
+- Angular 19 (v20.2.2)
+- Angular Material
+- TypeScript
+- SCSS
+- RxJS
 
+## Prerequisites
+- Node.js (v20 or higher)
+- npm (v11 or higher)
+- Angular CLI (v20.2.2)
+
+## Installation
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start the development server:
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+3. Open your browser and navigate to `http://localhost:4200`
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+## Project Structure
+```
+src/
+├── app/
+│   ├── auth/                  # Authentication features
+│   │   ├── login/
+│   │   ├── register/
+│   │   └── verify/
+│   ├── core/                  # Core functionality
+│   │   ├── models/
+│   │   └── services/
+│   ├── features/             # Main application features
+│   │   ├── about/
+│   │   ├── contact/
+│   │   ├── home/
+│   │   ├── profile/
+│   │   └── services/
+│   ├── layout/              # Layout components
+│   │   ├── footer/
+│   │   ├── main-layout/
+│   │   ├── navbar/
+│   │   └── sidebar/
+│   └── shared/              # Shared components and utilities
+│       └── components/
+├── assets/
+├── environments/
+└── styles/
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Available Scripts
+- `ng serve`: Start development server
+- `ng build`: Build the application
+- `ng test`: Run unit tests with Karma
+- `ng generate`: Generate Angular artifacts
+
+## API Integration
+The application connects to the ProHubAPI backend. Configure the API URL in:
+- Development: `src/environments/environment.ts`
+- Production: `src/environments/environment.prod.ts`
+
+## Features Documentation
+
+### Authentication
+- Login with email/password
+- Separate registration flows for users and professionals
+- Email and phone number verification
+- JWT token-based authentication
+- Protected routes with auth guards
+
+### Layout
+- Responsive navbar with dynamic menu items
+- Collapsible sidebar for mobile devices
+- Sticky footer
+- Material Design components and theming
+
+### Core Services
+- ApiService: Base HTTP service for API communication
+- AuthService: Handles authentication and token management
+- VerificationService: Manages email/phone verification
+- UserService: User profile management
+- ProService: Professional profile management
+
+### Shared Components
+- Button: Customized Material button component
+- Modal: Reusable dialog component
+- Loader: Loading spinner component
+
+## Development Guidelines
+
+### Code Style
+- Follow Angular style guide
+- Use TypeScript strict mode
+- Implement proper error handling
+- Write comprehensive documentation
+- Use meaningful variable and function names
+
+### Component Structure
+- Separate template, styles, and logic
+- Use standalone components where possible
+- Implement proper change detection
+- Follow single responsibility principle
+
+### State Management
+- Services for state management
+- RxJS for reactive programming
+- Local storage for persistent data
+
+### Error Handling
+- Implement proper error handling in services
+- Display user-friendly error messages
+- Log errors appropriately
+
+## Building for Production
 
 ```bash
-ng generate --help
+ng build --configuration production
 ```
 
-## Building
+This will create production-ready files in the `dist/prohub-ui` directory.
 
-To build the project run:
+## Environment Configuration
 
-```bash
-ng build
+Configure the following environment variables in `src/environments/environment.ts`:
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:5001/api'
+};
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+For production, update `environment.prod.ts`:
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
+```typescript
+export const environment = {
+  production: true,
+  apiUrl: 'https://api.prohub.com/api'
+};
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Future Enhancements
+- Real-time chat between users and professionals
+- Advanced search and filtering
+- Rating and review system
+- Payment integration
+- Service scheduling
 
 ## Additional Resources
+- [Angular Documentation](https://angular.dev)
+- [Angular Material](https://material.angular.io)
+- [RxJS Documentation](https://rxjs.dev)
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Support
+For support, please create an issue in the repository.
