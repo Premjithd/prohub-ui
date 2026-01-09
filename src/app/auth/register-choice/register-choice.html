@@ -1,0 +1,64 @@
+<div class="register-choice-wrapper">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Join ProHub</h1>
+      <p>Choose how you want to get started</p>
+    </div>
+  </section>
+
+  <!-- Registration Options -->
+  <section class="registration-options">
+    <div class="container">
+      <div class="options-grid">
+        <!-- Register as User -->
+        <div class="option-card user-card">
+          <div class="card-icon">👤</div>
+          <h2>Looking for a Professional?</h2>
+          <p class="card-subtitle">Register as a User</p>
+          <p class="card-description">
+            Find and hire verified professionals for your projects. Post jobs, compare bids, and manage your work all in one place.
+          </p>
+          <ul class="features-list">
+            <li>✓ Post unlimited jobs</li>
+            <li>✓ Get multiple quotes</li>
+            <li>✓ Secure payment system</li>
+            <li>✓ Direct messaging</li>
+            <li>✓ Project tracking</li>
+          </ul>
+          <button class="btn-primary" (click)="navigateTo('/auth/register/user')">
+            Register as User
+          </button>
+        </div>
+
+        <!-- Register as Professional -->
+        <div class="option-card pro-card">
+          <div class="card-icon">💼</div>
+          <h2>Ready to Work?</h2>
+          <p class="card-subtitle">Register as a Professional</p>
+          <p class="card-description">
+            Grow your business and reach thousands of potential clients. Showcase your skills, manage bids, and build your reputation.
+          </p>
+          <ul class="features-list">
+            <li>✓ Build your portfolio</li>
+            <li>✓ Receive job bids</li>
+            <li>✓ Secure payments</li>
+            <li>✓ Professional reviews</li>
+            <li>✓ Business analytics</li>
+          </ul>
+          <button class="btn-secondary" (click)="navigateTo('/auth/register/pro')">
+            Register as Professional
+          </button>
+        </div>
+      </div>
+
+      <!-- Info Section -->
+      <div class="info-section">
+        <h3>Already have an account?</h3>
+        <p>
+          <a href="javascript:void(0)" (click)="navigateTo('/auth/login')">Sign in here</a>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>

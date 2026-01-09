@@ -1,11 +1,40 @@
 mat-nav-list {
   width: 250px;
   padding-top: 1rem;
+  background: linear-gradient(180deg, #f5f7fa 0%, #eef2f8 100%);
+  min-height: 100vh;
+  box-shadow: inset -2px 0 10px rgba(102, 126, 234, 0.08);
 }
 
 .mat-list-item {
   &.active {
-    background-color: rgba(0, 0, 0, 0.04);
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.15) 0%, rgba(102, 126, 234, 0.05) 100%);
+    color: #667eea;
+    font-weight: 500;
+    border-left: 4px solid #667eea;
+    padding-left: calc(1rem - 4px) !important;
+  }
+
+  &:hover:not(.active) {
+    background-color: rgba(102, 126, 234, 0.08);
+    transition: all 0.3s ease;
+  }
+
+  &.sub-item {
+    font-size: 0.9rem;
+    padding-left: 1rem;
+    background-color: rgba(0, 0, 0, 0.02);
+
+    &:hover {
+      background-color: rgba(102, 126, 234, 0.08);
+    }
+
+    &.active {
+      background-color: rgba(102, 126, 234, 0.15);
+      color: #667eea;
+      border-left: 4px solid #667eea;
+      padding-left: calc(1rem - 4px) !important;
+    }
   }
 }
 

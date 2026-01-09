@@ -1,0 +1,259 @@
+<div class="post-job-wrapper">
+  <!-- Hero Section -->
+  <section class="post-job-hero">
+    <div class="hero-content">
+      <h1>Post Your Job</h1>
+      <p>Describe your project and connect with qualified professionals who can help</p>
+    </div>
+  </section>
+
+  <!-- Form Section -->
+  <section class="post-job-section">
+    <div class="section-container">
+      <div class="form-wrapper">
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="alert alert-success">
+          <span>{{ successMessage }}</span>
+          <button (click)="dismissMessage('success')" class="dismiss-btn">&times;</button>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-error">
+          <span>{{ errorMessage }}</span>
+          <button (click)="dismissMessage('error')" class="dismiss-btn">&times;</button>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="steps-indicator">
+          <div [class.active]="currentStep === 1" [class.completed]="currentStep > 1" class="step">
+            <span class="step-num">1</span>
+            <span class="step-label">Job Details</span>
+          </div>
+          <div class="step-line" [class.active]="currentStep > 1"></div>
+          <div [class.active]="currentStep === 2" [class.completed]="currentStep > 2" class="step">
+            <span class="step-num">2</span>
+            <span class="step-label">Budget & Timeline</span>
+          </div>
+          <div class="step-line" [class.active]="currentStep > 2"></div>
+          <div [class.active]="currentStep === 3" class="step">
+            <span class="step-num">3</span>
+            <span class="step-label">Review & Submit</span>
+          </div>
+        </div>
+
+        <form [formGroup]="jobForm" (ngSubmit)="onSubmit()">
+          <!-- Step 1: Job Details -->
+          <div *ngIf="currentStep === 1" class="form-step">
+            <h2>Tell us about your job</h2>
+
+            <!-- Job Title -->
+            <div class="form-group">
+              <label for="title">Job Title *</label>
+              <input
+                type="text"
+                id="title"
+                formControlName="title"
+                placeholder="e.g., Fix Kitchen Faucet Leak"
+                class="form-control"
+                [class.is-invalid]="submitted && f['title'].errors"
+              />
+              <small *ngIf="submitted && f['title'].errors" class="error-text">
+                <span *ngIf="f['title'].errors['required']">Job title is required</span>
+                <span *ngIf="f['title'].errors['minlength']">Job title must be at least 10 characters</span>
+              </small>
+            </div>
+
+            <!-- Service Category -->
+            <div class="form-group">
+              <label>Service Category *</label>
+              <div class="category-grid">
+                <button
+                  *ngFor="let category of serviceCategories"
+                  type="button"
+                  class="category-btn"
+                  [class.selected]="f['category'].value === category.id"
+                  (click)="selectCategory(category.id)"
+                >
+                  <span class="category-icon">{{ category.icon }}</span>
+                  <span class="category-name">{{ category.name }}</span>
+                </button>
+              </div>
+              <small *ngIf="submitted && f['category'].errors" class="error-text">
+                Please select a service category
+              </small>
+            </div>
+
+            <!-- Job Description -->
+            <div class="form-group">
+              <label for="description">Job Description *</label>
+              <textarea
+                id="description"
+                formControlName="description"
+                placeholder="Describe your job in detail. What needs to be done? Any specific requirements?"
+                class="form-control textarea"
+                rows="6"
+                [class.is-invalid]="submitted && f['description'].errors"
+              ></textarea>
+              <small *ngIf="submitted && f['description'].errors" class="error-text">
+                <span *ngIf="f['description'].errors['required']">Job description is required</span>
+                <span *ngIf="f['description'].errors['minlength']">Description must be at least 50 characters</span>
+              </small>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" disabled>Back</button>
+              <button type="button" class="btn btn-primary" (click)="nextStep()">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Budget & Timeline -->
+          <div *ngIf="currentStep === 2" class="form-step">
+            <h2>Budget and timeline</h2>
+
+            <!-- Location -->
+            <div class="form-group">
+              <label for="location">Location *</label>
+              <input
+                type="text"
+                id="location"
+                formControlName="location"
+                placeholder="e.g., New York, NY or Remote"
+                class="form-control"
+                [class.is-invalid]="submitted && f['location'].errors"
+              />
+              <small *ngIf="submitted && f['location'].errors" class="error-text">
+                Location is required
+              </small>
+            </div>
+
+            <!-- Budget -->
+            <div class="form-group">
+              <label>Your Budget *</label>
+              <div class="budget-options">
+                <button
+                  *ngFor="let range of budgetRanges"
+                  type="button"
+                  class="budget-btn"
+                  [class.selected]="f['budget'].value === range.value"
+                  (click)="selectBudget(range.value)"
+                >
+                  {{ range.label }}
+                </button>
+              </div>
+              <small *ngIf="submitted && f['budget'].errors" class="error-text">
+                Please select a budget range
+              </small>
+            </div>
+
+            <!-- Timeline -->
+            <div class="form-group">
+              <label>Timeline *</label>
+              <div class="timeline-options">
+                <button
+                  *ngFor="let option of timelineOptions"
+                  type="button"
+                  class="timeline-btn"
+                  [class.selected]="f['timeline'].value === option.value"
+                  (click)="selectTimeline(option.value)"
+                >
+                  {{ option.label }}
+                </button>
+              </div>
+              <small *ngIf="submitted && f['timeline'].errors" class="error-text">
+                Please select a timeline
+              </small>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="previousStep()">Back</button>
+              <button type="button" class="btn btn-primary" (click)="nextStep()">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Review & Submit -->
+          <div *ngIf="currentStep === 3" class="form-step">
+            <h2>Review your job posting</h2>
+
+            <div class="review-section">
+              <div class="review-item">
+                <h4>Job Title</h4>
+                <p>{{ f['title'].value }}</p>
+              </div>
+              <div class="review-item">
+                <h4>Category</h4>
+                <p>{{ getCategoryName(f['category'].value) }}</p>
+              </div>
+              <div class="review-item">
+                <h4>Description</h4>
+                <p>{{ f['description'].value }}</p>
+              </div>
+              <div class="review-item">
+                <h4>Location</h4>
+                <p>{{ f['location'].value }}</p>
+              </div>
+              <div class="review-item">
+                <h4>Budget</h4>
+                <p>{{ getBudgetLabel(f['budget'].value) }}</p>
+              </div>
+              <div class="review-item">
+                <h4>Timeline</h4>
+                <p>{{ getTimelineLabel(f['timeline'].value) }}</p>
+              </div>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="form-group checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  formControlName="agreeToTerms"
+                  [class.is-invalid]="submitted && f['agreeToTerms'].errors"
+                />
+                <span>I agree to ProHub's Terms of Service and understand that professionals will see this posting</span>
+              </label>
+              <small *ngIf="submitted && f['agreeToTerms'].errors" class="error-text">
+                You must agree to the terms
+              </small>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="previousStep()">Back</button>
+              <button type="submit" class="btn btn-success" [disabled]="submitted">
+                {{ submitted ? 'Posting...' : 'Post Your Job' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tips Section -->
+  <section class="tips-section">
+    <div class="section-container">
+      <h2>Tips for Getting Great Bids</h2>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon">📝</div>
+          <h3>Be Detailed</h3>
+          <p>The more details you provide about your job, the better professionals can understand your needs and submit accurate bids.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">💰</div>
+          <h3>Set Realistic Budget</h3>
+          <p>Set a budget that reflects the scope of work. This helps attract qualified professionals who can deliver quality work.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">⏰</div>
+          <h3>Realistic Timeline</h3>
+          <p>Give professionals enough time to complete your job properly. Rushing jobs may result in lower quality work.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">⭐</div>
+          <h3>Check Ratings</h3>
+          <p>Review the profiles and ratings of professionals who bid on your job before making your selection.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

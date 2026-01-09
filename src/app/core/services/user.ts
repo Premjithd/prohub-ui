@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, map } from 'rxjs';
 import { ApiService } from './api';
 import { LoginResponse, ApiResponse, GetUserResponse } from '../models/api.model';
 import { LoginRequest, GetUserRequest, User } from '../models/user.model';

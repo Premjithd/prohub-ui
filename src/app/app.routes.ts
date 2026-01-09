@@ -12,6 +12,11 @@ export const routes: Routes = [
           .then(m => m.HomeModule)
       },
       {
+        path: 'auth',
+        loadChildren: () => import('./auth/auth-module')
+          .then(m => m.AuthModule)
+      },
+      {
         path: 'about',
         loadChildren: () => import('./features/about/about-module')
           .then(m => m.AboutModule)
@@ -30,12 +35,17 @@ export const routes: Routes = [
         path: 'profile',
         loadChildren: () => import('./features/profile/profile-module')
           .then(m => m.ProfileModule)
+      },
+      {
+        path: 'faq',
+        loadChildren: () => import('./features/faq/faq-module')
+          .then(m => m.FAQModule)
+      },
+      {
+        path: 'post-job',
+        loadChildren: () => import('./features/post-job/post-job-module')
+          .then(m => m.PostJobModule)
       }
     ]
-  },
-  {
-    path: 'auth',
-    loadChildren: () => import('./auth/auth-module')
-      .then(m => m.AuthModule)
   }
 ];
