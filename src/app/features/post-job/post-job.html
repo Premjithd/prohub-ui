@@ -55,9 +55,9 @@
                 formControlName="title"
                 placeholder="e.g., Fix Kitchen Faucet Leak"
                 class="form-control"
-                [class.is-invalid]="submitted && f['title'].errors"
+                [class.is-invalid]="(submitted || f['title'].touched) && f['title'].errors"
               />
-              <small *ngIf="submitted && f['title'].errors" class="error-text">
+              <small *ngIf="(submitted || f['title'].touched) && f['title'].errors" class="error-text">
                 <span *ngIf="f['title'].errors['required']">Job title is required</span>
                 <span *ngIf="f['title'].errors['minlength']">Job title must be at least 10 characters</span>
               </small>
@@ -78,7 +78,7 @@
                   <span class="category-name">{{ category.name }}</span>
                 </button>
               </div>
-              <small *ngIf="submitted && f['category'].errors" class="error-text">
+              <small *ngIf="(submitted || f['category'].touched) && f['category'].errors" class="error-text">
                 Please select a service category
               </small>
             </div>
@@ -92,9 +92,9 @@
                 placeholder="Describe your job in detail. What needs to be done? Any specific requirements?"
                 class="form-control textarea"
                 rows="6"
-                [class.is-invalid]="submitted && f['description'].errors"
+                [class.is-invalid]="(submitted || f['description'].touched) && f['description'].errors"
               ></textarea>
-              <small *ngIf="submitted && f['description'].errors" class="error-text">
+              <small *ngIf="(submitted || f['description'].touched) && f['description'].errors" class="error-text">
                 <span *ngIf="f['description'].errors['required']">Job description is required</span>
                 <span *ngIf="f['description'].errors['minlength']">Description must be at least 50 characters</span>
               </small>
@@ -119,9 +119,9 @@
                 formControlName="location"
                 placeholder="e.g., New York, NY or Remote"
                 class="form-control"
-                [class.is-invalid]="submitted && f['location'].errors"
+                [class.is-invalid]="(submitted || f['location'].touched) && f['location'].errors"
               />
-              <small *ngIf="submitted && f['location'].errors" class="error-text">
+              <small *ngIf="(submitted || f['location'].touched) && f['location'].errors" class="error-text">
                 Location is required
               </small>
             </div>
@@ -140,7 +140,7 @@
                   {{ range.label }}
                 </button>
               </div>
-              <small *ngIf="submitted && f['budget'].errors" class="error-text">
+              <small *ngIf="(submitted || f['budget'].touched) && f['budget'].errors" class="error-text">
                 Please select a budget range
               </small>
             </div>
@@ -159,7 +159,7 @@
                   {{ option.label }}
                 </button>
               </div>
-              <small *ngIf="submitted && f['timeline'].errors" class="error-text">
+              <small *ngIf="(submitted || f['timeline'].touched) && f['timeline'].errors" class="error-text">
                 Please select a timeline
               </small>
             </div>
@@ -203,16 +203,15 @@
 
             <!-- Terms & Conditions -->
             <div class="form-group checkbox-group">
-              <label>
+              <label class="terms-label" [class.invalid]="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors">
                 <input
                   type="checkbox"
                   formControlName="agreeToTerms"
-                  [class.is-invalid]="submitted && f['agreeToTerms'].errors"
                 />
-                <span>I agree to ProHub's Terms of Service and understand that professionals will see this posting</span>
+                <span class="checkbox-text">I agree to ProHub's <a href="#" target="_blank">Terms of Service</a> and understand that professionals will see this posting</span>
               </label>
-              <small *ngIf="submitted && f['agreeToTerms'].errors" class="error-text">
-                You must agree to the terms
+              <small *ngIf="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors" class="error-text">
+                ✓ You must agree to the terms and conditions to post a job
               </small>
             </div>
 

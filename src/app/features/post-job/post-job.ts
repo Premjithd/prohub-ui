@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import { JobService } from '../../services/job.service';
 
 interface ServiceCategory {
   id: string;
@@ -59,7 +60,7 @@ export class PostJobComponent implements OnInit {
     { value: 'both', label: 'Both (Local & Remote)', description: 'Either location works' }
   ];
 
-  constructor(private fb: FormBuilder, private router: Router) {}
+  constructor(private fb: FormBuilder, private router: Router, private jobService: JobService) {}
 
   ngOnInit(): void {
     this.initializeForm();
@@ -99,9 +100,53 @@ export class PostJobComponent implements OnInit {
   }
 
   nextStep(): void {
+    // Mark all fields in current step as touched to show validation errors
+    this.markStepFieldsAsTouched(this.currentStep);
+    
     if (this.isStepValid(this.currentStep)) {
       this.currentStep++;
+    } else {
+      console.warn('Step validation failed', {
+        step: this.currentStep,
+        formStatus: this.jobForm.status,
+        errors: this.getStepErrors(this.currentStep)
+      });
     }
+  }
+
+  private markStepFieldsAsTouched(step: number): void {
+    if (step === 1) {
+      this.f['title'].markAsTouched();
+      this.f['category'].markAsTouched();
+      this.f['description'].markAsTouched();
+    } else if (step === 2) {
+      this.f['location'].markAsTouched();
+      this.f['budget'].markAsTouched();
+      this.f['timeline'].markAsTouched();
+    } else if (step === 3) {
+      this.f['agreeToTerms'].markAsTouched();
+    }
+  }
+
+  private getStepErrors(step: number): any {
+    if (step === 1) {
+      return {
+        title: this.f['title'].errors,
+        category: this.f['category'].errors,
+        description: this.f['description'].errors
+      };
+    } else if (step === 2) {
+      return {
+        location: this.f['location'].errors,
+        budget: this.f['budget'].errors,
+        timeline: this.f['timeline'].errors
+      };
+    } else if (step === 3) {
+      return {
+        agreeToTerms: this.f['agreeToTerms'].errors
+      };
+    }
+    return {};
   }
 
   previousStep(): void {
@@ -123,27 +168,62 @@ export class PostJobComponent implements OnInit {
   }
 
   onSubmit(): void {
-    this.submitted = true;
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (this.jobForm.invalid) {
-      this.errorMessage = 'Please fill in all required fields correctly.';
+    // Mark all fields as touched to show validation errors
+    this.markStepFieldsAsTouched(1);
+    this.markStepFieldsAsTouched(2);
+    this.markStepFieldsAsTouched(3);
+
+    // Explicitly check terms and conditions
+    if (!this.f['agreeToTerms'].value) {
+      this.errorMessage = 'You must agree to the Terms of Service to post a job.';
+      this.f['agreeToTerms'].markAsTouched();
+      this.submitted = false;
       return;
     }
 
-    // Simulate API call
-    console.log('Job Posted:', this.jobForm.value);
-    
-    this.successMessage = 'Your job has been posted successfully! Professionals will start bidding on your job.';
-    
-    // Reset form after 2 seconds and redirect
-    setTimeout(() => {
-      this.jobForm.reset();
+    if (this.jobForm.invalid) {
+      this.errorMessage = 'Please fill in all required fields correctly and agree to the terms.';
       this.submitted = false;
-      this.currentStep = 1;
-      this.router.navigate(['/jobs']);
-    }, 2000);
+      return;
+    }
+
+    // Set submitted to true only after all validations pass
+    this.submitted = true;
+
+    const jobData = {
+      title: this.jobForm.value.title,
+      category: this.jobForm.value.category,
+      description: this.jobForm.value.description,
+      location: this.jobForm.value.location,
+      budget: this.jobForm.value.budget,
+      timeline: this.jobForm.value.timeline,
+      attachments: this.jobForm.value.attachments || ''
+    };
+
+    console.log('Posting Job:', jobData);
+    
+    this.jobService.createJob(jobData).subscribe({
+      next: (response) => {
+        console.log('Job posted successfully:', response);
+        this.successMessage = 'Your job has been posted successfully! Professionals will start bidding on your job.';
+        
+        // Reset form after 2 seconds and redirect
+        setTimeout(() => {
+          this.jobForm.reset();
+          this.submitted = false;
+          this.currentStep = 1;
+          this.router.navigate(['/jobs']);
+        }, 2000);
+      },
+      error: (error) => {
+        console.error('Error posting job:', error);
+        this.errorMessage = error?.error?.message || 'Error posting job. Please try again.';
+        this.submitted = false;
+      }
+    });
   }
 
   dismissMessage(type: 'success' | 'error'): void {

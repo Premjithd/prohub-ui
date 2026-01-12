@@ -379,6 +379,30 @@
   margin-bottom: 24px;
 }
 
+.checkbox-group .terms-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #d1d5db;
+    background: #f3f4f6;
+  }
+
+  &.invalid {
+    border-color: #dc2626;
+    background: #fef2f2;
+  }
+}
+
 .checkbox-group label {
   display: flex;
   align-items: flex-start;
@@ -391,6 +415,25 @@
 .checkbox-group input[type="checkbox"] {
   margin-top: 4px;
   cursor: pointer;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  accent-color: #667eea;
+}
+
+.checkbox-group .checkbox-text {
+  flex: 1;
+  line-height: 1.5;
+
+  a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 .checkbox-group input[type="checkbox"].is-invalid {
