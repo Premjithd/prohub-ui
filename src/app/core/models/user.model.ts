@@ -22,6 +22,13 @@ export interface RegisterUserRequest {
     email: string;
     password: string;
     phoneNumber: string;
+    houseNameNumber?: string;
+    street1?: string;
+    street2?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipPostalCode?: string;
 }
 
 export interface GetUserRequest {

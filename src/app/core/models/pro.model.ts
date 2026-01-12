@@ -11,9 +11,16 @@ export interface Pro {
 }
 
 export interface RegisterProRequest {
-    ProName: string;
-    email: string;
-    password: string;
-    phoneNumber: string;
-    businessName: string;
+    Name: string;
+    Email: string;
+    Password: string;
+    PhoneNumber: string;
+    BusinessName: string;
+    houseNameNumber?: string;
+    street1?: string;
+    street2?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipPostalCode?: string;
 }

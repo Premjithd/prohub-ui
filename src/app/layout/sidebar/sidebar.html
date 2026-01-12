@@ -1,20 +1,20 @@
 <mat-nav-list>
-  <a mat-list-item routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+  <a mat-list-item routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="onMenuItemClick()">
     <mat-icon>home</mat-icon>
     <span>Home</span>
   </a>
 
-  <a mat-list-item routerLink="/services" routerLinkActive="active">
+  <a mat-list-item routerLink="/services" routerLinkActive="active" (click)="onMenuItemClick()">
     <mat-icon>work</mat-icon>
     <span>Services</span>
   </a>
 
-  <a mat-list-item routerLink="/about" routerLinkActive="active">
+  <a mat-list-item routerLink="/about" routerLinkActive="active" (click)="onMenuItemClick()">
     <mat-icon>info</mat-icon>
     <span>About</span>
   </a>
 
-  <a mat-list-item routerLink="/contact" routerLinkActive="active">
+  <a mat-list-item routerLink="/contact" routerLinkActive="active" (click)="onMenuItemClick()">
     <mat-icon>contact_support</mat-icon>
     <span>Contact</span>
   </a>
@@ -22,29 +22,29 @@
   <mat-divider></mat-divider>
 
   <ng-container *ngIf="!auth.isAuthenticated()">
-    <a mat-list-item routerLink="/auth/login" routerLinkActive="active">
+    <a mat-list-item routerLink="/auth/login" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>login</mat-icon>
       <span>Login</span>
     </a>
 
-    <a mat-list-item routerLink="/auth/register" routerLinkActive="active">
+    <a mat-list-item routerLink="/auth/register" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>person_add</mat-icon>
       <span>Register</span>
     </a>
   </ng-container>
 
   <ng-container *ngIf="auth.isAuthenticated()">
-    <a mat-list-item routerLink="/pending-jobs" routerLinkActive="active">
+    <a mat-list-item routerLink="/pending-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>assignment</mat-icon>
       <span>My Jobs</span>
     </a>
 
-    <a mat-list-item routerLink="/post-job" routerLinkActive="active">
+    <a mat-list-item routerLink="/post-job" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>add_circle</mat-icon>
       <span>Post Job</span>
     </a>
 
-    <a mat-list-item routerLink="/profile" routerLinkActive="active">
+    <a mat-list-item routerLink="/profile" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>person</mat-icon>
       <span>Profile</span>
     </a>

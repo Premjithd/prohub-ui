@@ -1,6 +1,6 @@
 <mat-sidenav-container>
   <mat-sidenav #sidenav mode="over">
-    <app-sidebar></app-sidebar>
+    <app-sidebar (menuItemClicked)="sidenav.close()"></app-sidebar>
   </mat-sidenav>
 
   <mat-sidenav-content>

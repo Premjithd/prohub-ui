@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Auth } from '../../core/services/auth';
 
 @Component({
@@ -10,7 +11,7 @@ import { Auth } from '../../core/services/auth';
 })
 export class RegisterUserComponent {
 
-  constructor(private auth: Auth) {}
+  constructor(private auth: Auth, private router: Router) {}
 
   onSubmit(form: any) {
     if (form.valid) {
@@ -18,6 +19,7 @@ export class RegisterUserComponent {
         next: (response) => {
           console.log('User registration successful:', response);
           alert('User registered successfully!');
+          this.router.navigate(['/']);
         },
         error: (error) => {
           console.error('User registration failed:', error);

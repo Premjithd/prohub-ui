@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatListModule } from '@angular/material/list';
@@ -18,5 +18,11 @@ import { Auth } from '../../core/services/auth';
   styleUrl: './sidebar.scss'
 })
 export class SidebarComponent {
+  @Output() menuItemClicked = new EventEmitter<void>();
+
   constructor(public auth: Auth) {}
+
+  onMenuItemClick() {
+    this.menuItemClicked.emit();
+  }
 }

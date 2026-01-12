@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Auth } from '../../core/services/auth';
 
@@ -13,7 +13,7 @@ import { Auth } from '../../core/services/auth';
 })
 export class RegisterProComponent {
 
-  constructor(private auth: Auth) {}
+  constructor(private auth: Auth, private router: Router) {}
 
   onSubmit(form: any) {
     if (form.valid) {
@@ -21,6 +21,7 @@ export class RegisterProComponent {
         next: (response) => {
           console.log('Pro registration successful:', response);
           alert('Pro registered successfully!');
+          this.router.navigate(['/']);
         },
         error: (error) => {
           console.error('Pro registration failed:', error);
@@ -29,4 +30,5 @@ export class RegisterProComponent {
       });
     }
   }
-}
+}  
+
