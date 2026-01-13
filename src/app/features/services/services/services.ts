@@ -1,7 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Auth } from '../../../core/services/auth';
+import { ServiceCategoryService } from '../../../core/services/service-category.service';
+import { ServiceCategory } from '../../../core/models/service-category.model';
 
 interface ServiceItem {
   id: number;
@@ -29,26 +34,60 @@ interface Category {
   templateUrl: './services.html',
   styleUrls: ['./services.scss']
 })
-export class ServicesComponent implements OnInit {
+export class ServicesComponent implements OnInit, OnDestroy {
   services: ServiceItem[] = [];
   filteredServices: ServiceItem[] = [];
   searchQuery = '';
   selectedCategory: string | null = null;
   sortOrder = 'popular';
 
-  categories: Category[] = [
-    { id: 'cleaning', name: 'Cleaning', icon: '🧹', count: 234 },
-    { id: 'plumbing', name: 'Plumbing', icon: '🔧', count: 189 },
-    { id: 'electrical', name: 'Electrical', icon: '⚡', count: 156 },
-    { id: 'painting', name: 'Painting', icon: '🎨', count: 201 },
-    { id: 'landscaping', name: 'Landscaping', icon: '🌿', count: 178 },
-    { id: 'handyman', name: 'Handyman', icon: '🔨', count: 267 }
-  ];
+  categories: ServiceCategory[] = [];
+  categoriesLoading = true;
+  private destroy$ = new Subject<void>();
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private auth: Auth,
+    private serviceCategoryService: ServiceCategoryService
+  ) {}
 
   ngOnInit(): void {
+    this.loadCategories();
     this.loadServices();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadCategories(): void {
+    this.categoriesLoading = true;
+    console.log('Starting to load categories...');
+    this.serviceCategoryService.getCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories: ServiceCategory[]) => {
+          console.log('✅ Categories loaded successfully:', categories);
+          this.categories = categories;
+          this.categoriesLoading = false;
+          console.log('Category count:', this.categories.length);
+        },
+        error: (error: any) => {
+          console.error('❌ Error fetching categories:', error);
+          console.error('Error details:', {
+            status: error?.status,
+            statusText: error?.statusText,
+            message: error?.message,
+            url: error?.url
+          });
+          this.categories = [];
+          this.categoriesLoading = false;
+        },
+        complete: () => {
+          console.log('Category subscription completed');
+        }
+      });
   }
 
   loadServices(): void {
@@ -119,8 +158,8 @@ export class ServicesComponent implements OnInit {
     this.applyFiltersAndSort();
   }
 
-  filterByCategory(categoryId: string): void {
-    this.selectedCategory = this.selectedCategory === categoryId ? null : categoryId;
+  filterByCategory(categoryName: string): void {
+    this.selectedCategory = this.selectedCategory === categoryName ? null : categoryName;
     this.applyFiltersAndSort();
   }
 
@@ -138,7 +177,8 @@ export class ServicesComponent implements OnInit {
 
     // Apply category filter
     if (this.selectedCategory) {
-      filtered = filtered.filter(s => s.category === this.selectedCategory);
+      const selectedCategoryLower = this.selectedCategory.toLowerCase();
+      filtered = filtered.filter(s => s.category?.toLowerCase() === selectedCategoryLower);
     }
 
     // Apply search filter
@@ -178,6 +218,17 @@ export class ServicesComponent implements OnInit {
   }
 
   navigateTo(path: string): void {
-    this.router.navigate([path]);
+    // If navigating to post a job, check authentication
+    if (path === '/auth/login') {
+      if (this.auth.isAuthenticated()) {
+        // If user is logged in, redirect to post-job page
+        this.router.navigate(['/post-job']);
+      } else {
+        // If user is not logged in, redirect to registration
+        this.router.navigate([path]);
+      }
+    } else {
+      this.router.navigate([path]);
+    }
   }
 }

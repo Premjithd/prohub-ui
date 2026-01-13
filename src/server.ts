@@ -4,6 +4,9 @@ import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
 import bootstrap from './main.server';
 
+// Allow self-signed certificates for development
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // The Express app is exported so that it can be used by serverless Functions.

@@ -27,10 +27,13 @@
         <h2>Browse by Category</h2>
       </div>
       <div class="category-grid">
-        <div class="category-card" *ngFor="let cat of categories" (click)="filterByCategory(cat.id)">
+        <div *ngIf="categoriesLoading" class="loading-placeholder">
+          <p>Loading categories...</p>
+        </div>
+        <div class="category-card" *ngFor="let cat of categories" (click)="filterByCategory(cat.name)">
           <div class="category-icon">{{ cat.icon }}</div>
           <h3>{{ cat.name }}</h3>
-          <p>{{ cat.count }} professionals</p>
+          <p>{{ cat.serviceCount }} professionals</p>
         </div>
       </div>
     </div>
@@ -102,7 +105,7 @@
     <div class="cta-content">
       <h2>Can't find what you're looking for?</h2>
       <p>Post a job and let professionals come to you</p>
-      <button class="cta-btn primary" (click)="navigateTo('/auth/register/user')">Post a Job</button>
+      <button class="cta-btn primary" (click)="navigateTo('/auth/login')">Post a Job</button>
     </div>
   </section>
 </div>
