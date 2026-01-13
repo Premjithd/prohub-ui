@@ -106,6 +106,10 @@
   background: #f8f9fb;
   border-radius: 10px;
   border-left: 4px solid #667eea;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
 }
 
 .info-label {
@@ -443,4 +447,13 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.address-section-title {
+  margin: 32px 0 24px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #667eea;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 12px;
 }

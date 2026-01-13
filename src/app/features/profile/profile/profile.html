@@ -1,6 +1,6 @@
 <div class="profile-page">
-  <!-- Profile Header Section -->
-  <div class="profile-header-section">
+  <!-- Profile Header Section - USER VIEW -->
+  <div class="profile-header-section" *ngIf="userType !== 'Pro'">
     <div class="profile-header">
       <div class="profile-avatar">
         <img src="assets/images/user-placeholder.png" alt="Profile Picture" class="profile-picture" />
@@ -52,6 +52,18 @@
             <span class="info-label">Member Since</span>
             <span class="info-value">{{ user.createdAt | date:'MMM d, yyyy' }}</span>
           </div>
+          <div class="info-item full-width" *ngIf="user.houseNameNumber || user.street1 || user.city">
+            <span class="info-label">Address</span>
+            <span class="info-value">
+              <span *ngIf="user.houseNameNumber">{{ user.houseNameNumber }}</span>
+              <span *ngIf="user.street1">, {{ user.street1 }}</span>
+              <span *ngIf="user.street2">, {{ user.street2 }}</span>
+              <span *ngIf="user.city">, {{ user.city }}</span>
+              <span *ngIf="user.state">, {{ user.state }}</span>
+              <span *ngIf="user.country">, {{ user.country }}</span>
+              <span *ngIf="user.zipPostalCode"> - {{ user.zipPostalCode }}</span>
+            </span>
+          </div>
         </div>
 
         <div class="action-buttons" *ngIf="!isEditing">
@@ -64,8 +76,83 @@
     </div>
   </div>
 
-  <!-- Edit Form Section -->
-  <div class="edit-form-section" *ngIf="isEditing">
+  <!-- Profile Header Section - PRO VIEW -->
+  <div class="profile-header-section" *ngIf="userType === 'Pro'">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        <img src="assets/images/user-placeholder.png" alt="Profile Picture" class="profile-picture" />
+        <div class="status-badge">Active</div>
+      </div>
+      
+      <div class="profile-details">
+        <ng-container *ngIf="auth.isAuthenticated()">
+          <h1>{{ pro.proName }}</h1>
+          <p class="subtitle">{{ pro.businessName }} - Member since {{ pro.createdAt | date:'MMM yyyy' }}</p>
+        </ng-container>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Professional Name</span>
+            <span class="info-value">{{ pro.proName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Business Name</span>
+            <span class="info-value">{{ pro.businessName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Email</span>
+            <div class="info-value-with-status">
+              <span class="info-value">{{ pro.email }}</span>
+              <span class="verification-badge" [ngClass]="pro.isEmailVerified ? 'verified' : 'unverified'">
+                <mat-icon class="badge-icon">{{ pro.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
+                {{ pro.isEmailVerified ? 'Verified' : 'Unverified' }}
+              </span>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Phone</span>
+            <div class="info-value-with-status">
+              <span class="info-value">{{ pro.phoneNumber || 'Not set' }}</span>
+              <span class="verification-badge" [ngClass]="pro.isPhoneVerified ? 'verified' : 'unverified'" *ngIf="pro.phoneNumber">
+                <mat-icon class="badge-icon">{{ pro.isPhoneVerified ? 'check_circle' : 'cancel' }}</mat-icon>
+                {{ pro.isPhoneVerified ? 'Verified' : 'Unverified' }}
+              </span>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-label">User Type</span>
+            <span class="info-value badge badge-pro">Professional</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Member Since</span>
+            <span class="info-value">{{ pro.createdAt | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="info-item full-width" *ngIf="pro.houseNameNumber || pro.street1 || pro.city">
+            <span class="info-label">Address</span>
+            <span class="info-value">
+              <span *ngIf="pro.houseNameNumber">{{ pro.houseNameNumber }}</span>
+              <span *ngIf="pro.street1">, {{ pro.street1 }}</span>
+              <span *ngIf="pro.street2">, {{ pro.street2 }}</span>
+              <span *ngIf="pro.city">, {{ pro.city }}</span>
+              <span *ngIf="pro.state">, {{ pro.state }}</span>
+              <span *ngIf="pro.country">, {{ pro.country }}</span>
+              <span *ngIf="pro.zipPostalCode"> - {{ pro.zipPostalCode }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="action-buttons" *ngIf="!isEditing">
+          <button class="btn btn-primary" (click)="toggleEdit()">
+            <mat-icon>edit</mat-icon>
+            Edit Profile
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Form Section - USER -->
+  <div class="edit-form-section" *ngIf="isEditing && userType !== 'Pro'">
     <div class="form-container">
       <h2 class="form-title">Update Your Information</h2>
       
@@ -135,6 +222,245 @@
             [(ngModel)]="user.phoneNumber"
             placeholder="Enter your phone number"
           />
+        </div>
+
+        <!-- Address Fields -->
+        <h3 class="address-section-title">Address Information</h3>
+        
+        <div class="form-group">
+          <label>House Name/Number</label>
+          <input
+            type="text"
+            name="houseNameNumber"
+            [(ngModel)]="user.houseNameNumber"
+            placeholder="e.g., 123 or Apartment 4B"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Street 1</label>
+            <input
+              type="text"
+              name="street1"
+              [(ngModel)]="user.street1"
+              placeholder="Enter street name"
+            />
+          </div>
+          <div class="form-group">
+            <label>Street 2</label>
+            <input
+              type="text"
+              name="street2"
+              [(ngModel)]="user.street2"
+              placeholder="Apartment, suite, etc."
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <input
+              type="text"
+              name="city"
+              [(ngModel)]="user.city"
+              placeholder="Enter city"
+            />
+          </div>
+          <div class="form-group">
+            <label>State/Province</label>
+            <input
+              type="text"
+              name="state"
+              [(ngModel)]="user.state"
+              placeholder="Enter state/province"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Country</label>
+            <input
+              type="text"
+              name="country"
+              [(ngModel)]="user.country"
+              placeholder="Enter country"
+            />
+          </div>
+          <div class="form-group">
+            <label>Zip/Postal Code</label>
+            <input
+              type="text"
+              name="zipPostalCode"
+              [(ngModel)]="user.zipPostalCode"
+              placeholder="Enter zip/postal code"
+            />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-success" [disabled]="!profileForm.valid">
+            <mat-icon>save</mat-icon>
+            Save Changes
+          </button>
+          <button type="button" class="btn btn-cancel" (click)="cancelEdit()">
+            <mat-icon>close</mat-icon>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Form Section - PRO -->
+  <div class="edit-form-section" *ngIf="isEditing && userType === 'Pro'">
+    <div class="form-container">
+      <h2 class="form-title">Update Your Professional Information</h2>
+      
+      <!-- Success Message -->
+      <div class="message-alert success-alert" *ngIf="successMessage">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ successMessage }}</span>
+      </div>
+
+      <!-- Error Message -->
+      <div class="message-alert error-alert" *ngIf="errorMessage">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+      
+      <form #profileForm="ngForm" (ngSubmit)="updateProfile(profileForm)">
+        <div class="form-group hide-id">
+          <label>Id</label>
+          <input
+            type="number"
+            name="id"
+            [(ngModel)]="pro.id"
+            required          
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Professional Name</label>
+            <input
+              type="text"
+              name="proName"
+              [(ngModel)]="pro.proName"
+              required
+              placeholder="Enter your professional name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Business Name</label>
+            <input
+              type="text"
+              name="businessName"
+              [(ngModel)]="pro.businessName"
+              required
+              placeholder="Enter your business name"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input
+            type="email"
+            name="email"
+            [(ngModel)]="pro.email"
+            required
+            placeholder="Enter your email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input
+            type="text"
+            name="phoneNumber"
+            [(ngModel)]="pro.phoneNumber"
+            placeholder="Enter your phone number"
+          />
+        </div>
+
+        <!-- Address Fields -->
+        <h3 class="address-section-title">Address Information</h3>
+        
+        <div class="form-group">
+          <label>House Name/Number</label>
+          <input
+            type="text"
+            name="houseNameNumber"
+            [(ngModel)]="pro.houseNameNumber"
+            placeholder="e.g., 123 or Apartment 4B"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Street 1</label>
+            <input
+              type="text"
+              name="street1"
+              [(ngModel)]="pro.street1"
+              placeholder="Enter street name"
+            />
+          </div>
+          <div class="form-group">
+            <label>Street 2</label>
+            <input
+              type="text"
+              name="street2"
+              [(ngModel)]="pro.street2"
+              placeholder="Apartment, suite, etc."
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <input
+              type="text"
+              name="city"
+              [(ngModel)]="pro.city"
+              placeholder="Enter city"
+            />
+          </div>
+          <div class="form-group">
+            <label>State/Province</label>
+            <input
+              type="text"
+              name="state"
+              [(ngModel)]="pro.state"
+              placeholder="Enter state/province"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Country</label>
+            <input
+              type="text"
+              name="country"
+              [(ngModel)]="pro.country"
+              placeholder="Enter country"
+            />
+          </div>
+          <div class="form-group">
+            <label>Zip/Postal Code</label>
+            <input
+              type="text"
+              name="zipPostalCode"
+              [(ngModel)]="pro.zipPostalCode"
+              placeholder="Enter zip/postal code"
+            />
+          </div>
         </div>
 
         <div class="form-actions">

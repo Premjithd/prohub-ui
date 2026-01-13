@@ -1,15 +1,14 @@
 /* About Page Styling */
 
 .about-wrapper {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
   color: #1f2937;
   background: #fff;
 }
 
 /* About Hero */
 .about-hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
   padding: 100px 20px;
   text-align: center;
 }
@@ -78,8 +77,8 @@
 }
 
 .stat-box {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
   padding: 30px 20px;
   border-radius: 12px;
   text-align: center;
@@ -308,7 +307,7 @@
 
 .cta-btn {
   padding: 12px 28px;
-  border: none;
+  border: 0;
   border-radius: 8px;
   font-weight: 600;
   font-size: 16px;
@@ -318,7 +317,7 @@
 }
 
 .cta-btn.primary {
-  background: white;
+  background: #fff;
   color: #667eea;
 
   &:hover {
@@ -329,8 +328,8 @@
 
 .cta-btn.secondary {
   background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: 1px solid white;
+  color: #fff;
+  border: 1px solid #fff;
 
   &:hover {
     background: rgba(255, 255, 255, 0.25);

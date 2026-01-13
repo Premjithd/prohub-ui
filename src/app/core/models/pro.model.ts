@@ -1,6 +1,6 @@
 export interface Pro {
     id: number;
-    ProName: string;
+    proName: string;
     email: string;
     phoneNumber: string;
     businessName: string;
@@ -8,6 +8,13 @@ export interface Pro {
     isPhoneVerified: boolean;
     createdAt: Date;
     updatedAt: Date;
+    houseNameNumber?: string;
+    street1?: string;
+    street2?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipPostalCode?: string;
 }
 
 export interface RegisterProRequest {

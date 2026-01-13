@@ -2,6 +2,29 @@
   <div class="login-card">
     <h2>Login</h2>
 
+    <!-- User Type Selection -->
+    <div class="user-type-selector">
+      <label>Login As:</label>
+      <div class="type-buttons">
+        <button
+          type="button"
+          class="type-btn"
+          [class.active]="userType === 'user'"
+          (click)="userType = 'user'"
+        >
+          Customer
+        </button>
+        <button
+          type="button"
+          class="type-btn"
+          [class.active]="userType === 'pro'"
+          (click)="userType = 'pro'"
+        >
+          Professional
+        </button>
+      </div>
+    </div>
+
     <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
       <!-- Email -->
       <div class="form-group">

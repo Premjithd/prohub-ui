@@ -76,17 +76,47 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Register link */
-.register-link {
-  margin-top: 15px;
-  font-size: 14px;
-  color: #555;
+/* User Type Selector */
+.user-type-selector {
+  margin-bottom: 25px;
 }
 
-.register-link a {
-  color: #667eea;
-  text-decoration: none;
+.user-type-selector label {
+  display: block;
+  margin-bottom: 10px;
   font-weight: bold;
+  color: #444;
+  font-size: 14px;
+}
+
+.type-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 10px 15px;
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #666;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.type-btn:hover {
+  background: #e8e8e8;
+  border-color: #bbb;
+}
+
+.type-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
 }
 
 .register-link a:hover {

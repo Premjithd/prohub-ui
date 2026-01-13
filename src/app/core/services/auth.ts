@@ -33,6 +33,19 @@ export class Auth {
     );
   }
 
+  loginPro(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.api.loginUser('auth/pro/login', credentials).pipe(
+      tap(response => {
+        if (response) {
+          this.storage.setItem(this.AUTH_TOKEN_KEY, response.token);
+          this.storage.setItem(this.USER_TYPE_KEY, response.role);
+          this.storage.setItem(this.USER_NAME_KEY, response.firstName);
+          this.storage.setItem(this.USER_ID_KEY, response?.id?.toString() || '');
+        }
+      })
+    );
+  }
+
   registerUser(userData: RegisterUserRequest): Observable<ApiResponse<void>> {
     return this.api.post<void>('auth/user/register', userData);
   }
