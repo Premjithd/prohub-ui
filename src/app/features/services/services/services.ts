@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -48,7 +48,8 @@ export class ServicesComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private auth: Auth,
-    private serviceCategoryService: ServiceCategoryService
+    private serviceCategoryService: ServiceCategoryService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -63,6 +64,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
 
   loadCategories(): void {
     this.categoriesLoading = true;
+    this.cdr.detectChanges();
     console.log('Starting to load categories...');
     this.serviceCategoryService.getCategories()
       .pipe(takeUntil(this.destroy$))
@@ -71,6 +73,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
           console.log('✅ Categories loaded successfully:', categories);
           this.categories = categories;
           this.categoriesLoading = false;
+          this.cdr.detectChanges();
           console.log('Category count:', this.categories.length);
         },
         error: (error: any) => {
@@ -83,6 +86,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
           });
           this.categories = [];
           this.categoriesLoading = false;
+          this.cdr.detectChanges();
         },
         complete: () => {
           console.log('Category subscription completed');

@@ -66,13 +66,16 @@
             <!-- Service Category -->
             <div class="form-group">
               <label>Service Category *</label>
-              <div class="category-grid">
+              <div *ngIf="categoriesLoading" class="loading-placeholder">
+                <p>Loading categories...</p>
+              </div>
+              <div *ngIf="!categoriesLoading" class="category-grid">
                 <button
                   *ngFor="let category of serviceCategories"
                   type="button"
                   class="category-btn"
                   [class.selected]="f['category'].value === category.id"
-                  (click)="selectCategory(category.id)"
+                  (click)="selectCategory(category.id!)"
                 >
                   <span class="category-icon">{{ category.icon }}</span>
                   <span class="category-name">{{ category.name }}</span>

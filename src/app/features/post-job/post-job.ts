@@ -1,13 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { JobService } from '../../services/job.service';
+import { ServiceCategoryService } from '../../core/services/service-category.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 
 interface ServiceCategory {
-  id: string;
+  id?: string | number;
   name: string;
-  icon: string;
+  icon?: string;
+  serviceCount?: number;
 }
 
 @Component({
@@ -17,27 +22,16 @@ interface ServiceCategory {
   templateUrl: './post-job.html',
   styleUrls: ['./post-job.scss']
 })
-export class PostJobComponent implements OnInit {
+export class PostJobComponent implements OnInit, OnDestroy {
   jobForm!: FormGroup;
   submitted = false;
   successMessage = '';
   errorMessage = '';
   currentStep = 1;
+  private destroy$ = new Subject<void>();
 
-  serviceCategories: ServiceCategory[] = [
-    { id: 'plumbing', name: 'Plumbing', icon: '🔧' },
-    { id: 'electrical', name: 'Electrical', icon: '⚡' },
-    { id: 'cleaning', name: 'Cleaning', icon: '🧹' },
-    { id: 'painting', name: 'Painting', icon: '🎨' },
-    { id: 'carpentry', name: 'Carpentry', icon: '🪵' },
-    { id: 'hvac', name: 'HVAC', icon: '❄️' },
-    { id: 'landscaping', name: 'Landscaping', icon: '🌱' },
-    { id: 'tutoring', name: 'Tutoring', icon: '📚' },
-    { id: 'it-support', name: 'IT Support', icon: '💻' },
-    { id: 'writing', name: 'Writing', icon: '✍️' },
-    { id: 'graphic-design', name: 'Graphic Design', icon: '🎭' },
-    { id: 'photography', name: 'Photography', icon: '📷' }
-  ];
+  serviceCategories: ServiceCategory[] = [];
+  categoriesLoading = true;
 
   budgetRanges = [
     { value: 'under-100', label: 'Under $100', icon: '$' },
@@ -60,10 +54,23 @@ export class PostJobComponent implements OnInit {
     { value: 'both', label: 'Both (Local & Remote)', description: 'Either location works' }
   ];
 
-  constructor(private fb: FormBuilder, private router: Router, private jobService: JobService) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private jobService: JobService,
+    private serviceCategoryService: ServiceCategoryService,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.initializeForm();
+    this.loadCategories();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   initializeForm(): void {
@@ -82,6 +89,32 @@ export class PostJobComponent implements OnInit {
       attachments: [''],
       agreeToTerms: [false, Validators.required]
     });
+  }
+
+  loadCategories(): void {
+    this.categoriesLoading = true;
+    this.cdr.detectChanges();
+    this.serviceCategoryService.getCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories) => {
+          console.log('✅ Categories loaded for post-job:', categories);
+          this.serviceCategories = categories.map(cat => ({
+            id: cat.id,
+            name: cat.name,
+            icon: cat.icon || '📋',
+            serviceCount: cat.serviceCount
+          }));
+          this.categoriesLoading = false;
+          this.cdr.detectChanges();
+          console.log('Categories display:', this.serviceCategories.length, 'items loaded');
+        },
+        error: (error) => {
+          console.error('❌ Error loading categories:', error);
+          this.categoriesLoading = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   get f() {
@@ -155,7 +188,7 @@ export class PostJobComponent implements OnInit {
     }
   }
 
-  selectCategory(categoryId: string): void {
+  selectCategory(categoryId: string | number): void {
     this.jobForm.patchValue({ category: categoryId });
   }
 
@@ -234,8 +267,10 @@ export class PostJobComponent implements OnInit {
     }
   }
 
-  getCategoryName(categoryId: string): string {
-    const category = this.serviceCategories.find(c => c.id === categoryId);
+  getCategoryName(categoryId: string | number): string {
+    const category = this.serviceCategories.find(c => 
+      c.id === categoryId || c.id?.toString() === categoryId?.toString()
+    );
     return category ? category.name : '';
   }
 
