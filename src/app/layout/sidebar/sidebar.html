@@ -34,12 +34,26 @@
   </ng-container>
 
   <ng-container *ngIf="auth.isAuthenticated()">
-    <a mat-list-item routerLink="/pending-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
+    <!-- Show "My Jobs" for regular users -->
+    <a *ngIf="!isProUser()" mat-list-item routerLink="/pending-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>assignment</mat-icon>
       <span>My Jobs</span>
     </a>
 
-    <a mat-list-item routerLink="/post-job" routerLinkActive="active" (click)="onMenuItemClick()">
+    <!-- Show "My Services" for Pro users -->
+    <a *ngIf="isProUser()" mat-list-item routerLink="/my-services" routerLinkActive="active" (click)="onMenuItemClick()">
+      <mat-icon>build</mat-icon>
+      <span>My Services</span>
+    </a>
+
+    <!-- Show "Add Service" link for Pro users -->
+    <a *ngIf="isProUser()" mat-list-item routerLink="/add-service" routerLinkActive="active" (click)="onMenuItemClick()">
+      <mat-icon>add_circle</mat-icon>
+      <span>Add Service</span>
+    </a>
+
+    <!-- Show "Post Job" link for regular users only -->
+    <a *ngIf="!isProUser()" mat-list-item routerLink="/post-job" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>add_circle</mat-icon>
       <span>Post Job</span>
     </a>

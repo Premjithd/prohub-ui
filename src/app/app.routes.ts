@@ -52,6 +52,16 @@ export const routes: Routes = [
           .then(m => m.PendingJobsModule)
       },
       {
+        path: 'my-services',
+        loadChildren: () => import('./features/my-services/my-services-module')
+          .then(m => m.MyServicesModule)
+      },
+      {
+        path: 'add-service',
+        loadChildren: () => import('./features/add-service/add-service-module')
+          .then(m => m.AddServiceModule)
+      },
+      {
         path: 'jobs',
         redirectTo: 'pending-jobs',
         pathMatch: 'full'

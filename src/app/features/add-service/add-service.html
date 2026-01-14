@@ -1,0 +1,139 @@
+<div class="add-service-wrapper">
+  <!-- Hero Section -->
+  <section class="add-service-hero">
+    <div class="hero-content">
+      <h1>Add a New Service</h1>
+      <p>List your professional services and start receiving client inquiries</p>
+    </div>
+  </section>
+
+  <!-- Form Section -->
+  <section class="add-service-section">
+    <div class="section-container">
+      <div class="form-wrapper">
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="alert alert-success">
+          <span>{{ successMessage }}</span>
+          <button (click)="dismissMessage('success')" class="dismiss-btn">&times;</button>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-error">
+          <span>{{ errorMessage }}</span>
+          <button (click)="dismissMessage('error')" class="dismiss-btn">&times;</button>
+        </div>
+
+        <form *ngIf="serviceForm" [formGroup]="serviceForm" (ngSubmit)="onSubmit()">
+          <!-- Service Name -->
+          <div class="form-group">
+            <label for="name">Service Name *</label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              placeholder="e.g., Plumbing Installation"
+              class="form-control"
+              [class.is-invalid]="(submitted || f['name'].touched) && f['name'].errors"
+            />
+            <small *ngIf="(submitted || f['name'].touched) && f['name'].errors" class="error-text">
+              <span *ngIf="f['name'].errors['required']">Service name is required</span>
+              <span *ngIf="f['name'].errors['minlength']">Service name must be at least 5 characters</span>
+              <span *ngIf="f['name'].errors['maxlength']">Service name must not exceed 100 characters</span>
+            </small>
+          </div>
+
+          <!-- Service Description -->
+          <div class="form-group">
+            <label for="description">Service Description *</label>
+            <textarea
+              id="description"
+              formControlName="description"
+              placeholder="Describe your service in detail. What services do you offer? What are your qualifications?"
+              class="form-control textarea"
+              rows="8"
+              [class.is-invalid]="(submitted || f['description'].touched) && f['description'].errors"
+            ></textarea>
+            <div class="char-count">
+              {{ serviceForm.get('description')?.value?.length || 0 }} / 2000 characters
+            </div>
+            <small *ngIf="(submitted || f['description'].touched) && f['description'].errors" class="error-text">
+              <span *ngIf="f['description'].errors['required']">Service description is required</span>
+              <span *ngIf="f['description'].errors['minlength']">Description must be at least 20 characters</span>
+              <span *ngIf="f['description'].errors['maxlength']">Description must not exceed 2000 characters</span>
+            </small>
+          </div>
+
+          <!-- Service Price -->
+          <div class="form-group">
+            <label for="price">Price (USD) *</label>
+            <div class="price-input-wrapper">
+              <span class="currency">$</span>
+              <input
+                type="number"
+                id="price"
+                formControlName="price"
+                placeholder="0.00"
+                class="form-control price-input"
+                step="0.01"
+                min="0.01"
+                [class.is-invalid]="(submitted || f['price'].touched) && f['price'].errors"
+              />
+            </div>
+            <small *ngIf="(submitted || f['price'].touched) && f['price'].errors" class="error-text">
+              <span *ngIf="f['price'].errors['required']">Price is required</span>
+              <span *ngIf="f['price'].errors['min']">Price must be greater than 0</span>
+              <span *ngIf="f['price'].errors['max']">Price must not exceed 999,999.99</span>
+            </small>
+          </div>
+
+          <!-- Terms & Conditions -->
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                formControlName="agreeToTerms"
+                [class.is-invalid]="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors"
+              />
+              <span>I agree to the Terms of Service and confirm that all information provided is accurate</span>
+            </label>
+            <small *ngIf="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors" class="error-text">
+              You must agree to the Terms of Service
+            </small>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="resetForm()"
+              [disabled]="submitted"
+            >
+              Clear Form
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="submitted"
+            >
+              <span *ngIf="!submitted">Add Service</span>
+              <span *ngIf="submitted">Adding Service...</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Form Tips -->
+        <div class="form-tips">
+          <h3>Tips for a Great Service Listing</h3>
+          <ul>
+            <li>Use a clear, descriptive service name that clients will easily understand</li>
+            <li>Provide detailed information about what's included in your service</li>
+            <li>Be specific about your experience and qualifications</li>
+            <li>Set a competitive price based on your market and expertise</li>
+            <li>Update your service regularly with new information or changes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -25,4 +25,8 @@ export class SidebarComponent {
   onMenuItemClick() {
     this.menuItemClicked.emit();
   }
+
+  isProUser(): boolean {
+    return this.auth.getUserType() === 'Pro';
+  }
 }

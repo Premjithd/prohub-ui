@@ -56,10 +56,12 @@ export class ProfileComponent implements OnInit {
     this.userService.getUser(userId).subscribe({
       next: (response) => {
         this.user = response;
+        console.log('User data loaded:', this.user);
         this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Error fetching user data', error);
+        console.error('Error fetching user data:', error);
+        this.errorMessage = 'Failed to load user profile information';
       }
     });
   }
@@ -67,11 +69,15 @@ export class ProfileComponent implements OnInit {
   loadPro(proId: number): void {
     this.proService.getPro(proId).subscribe({
       next: (response: any) => {
+        // Backend returns plain Pro object, not wrapped in ApiResponse
+        // The response could be the Pro object directly
         this.pro = response?.data || response;
+        console.log('Pro data loaded:', this.pro);
         this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Error fetching pro data', error);
+        console.error('Error fetching pro data:', error);
+        this.errorMessage = 'Failed to load professional profile information';
       }
     });
   }
