@@ -1,14 +1,14 @@
-<div class="add-service-wrapper">
+<div class="edit-service-wrapper">
   <!-- Hero Section -->
-  <section class="add-service-hero">
+  <section class="edit-service-hero">
     <div class="hero-content">
-      <h1>Add a New Service</h1>
-      <p>List your professional services and start receiving client inquiries</p>
+      <h1>Edit Service</h1>
+      <p>Update your professional service details</p>
     </div>
   </section>
 
   <!-- Form Section -->
-  <section class="add-service-section">
+  <section class="edit-service-section">
     <div class="section-container">
       <div class="form-wrapper">
         <!-- Success Message -->
@@ -23,7 +23,13 @@
           <button (click)="dismissMessage('error')" class="dismiss-btn">&times;</button>
         </div>
 
-        <form *ngIf="serviceForm" [formGroup]="serviceForm" (ngSubmit)="onSubmit()">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading-container">
+          <mat-spinner></mat-spinner>
+          <p>Loading service details...</p>
+        </div>
+
+        <form *ngIf="serviceForm && !loading" [formGroup]="serviceForm" (ngSubmit)="onSubmit()">
           <!-- Service Name -->
           <div class="form-group">
             <label for="name">Service Name *</label>
@@ -125,31 +131,29 @@
             <button
               type="button"
               class="btn btn-secondary"
-              (click)="resetForm()"
-              [disabled]="submitted"
+              routerLink="/my-services"
             >
-              Clear Form
+              Cancel
             </button>
             <button
               type="submit"
               class="btn btn-primary"
               [disabled]="submitted"
             >
-              <span *ngIf="!submitted">Add Service</span>
-              <span *ngIf="submitted">Adding Service...</span>
+              <span *ngIf="!submitted">Update Service</span>
+              <span *ngIf="submitted">Updating Service...</span>
             </button>
           </div>
         </form>
 
         <!-- Form Tips -->
-        <div class="form-tips">
-          <h3>Tips for a Great Service Listing</h3>
+        <div *ngIf="!loading" class="form-tips">
+          <h3>Tips for Updating Your Service</h3>
           <ul>
-            <li>Use a clear, descriptive service name that clients will easily understand</li>
-            <li>Provide detailed information about what's included in your service</li>
-            <li>Be specific about your experience and qualifications</li>
-            <li>Set a competitive price based on your market and expertise</li>
-            <li>Update your service regularly with new information or changes</li>
+            <li>Keep your service name clear and descriptive</li>
+            <li>Update your description if you've expanded your services</li>
+            <li>Adjust pricing based on market changes and your experience</li>
+            <li>Review and update regularly to maintain visibility</li>
           </ul>
         </div>
       </div>

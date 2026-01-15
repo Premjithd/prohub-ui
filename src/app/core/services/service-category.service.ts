@@ -21,6 +21,12 @@ export class ServiceCategoryService {
         console.log('Response type:', typeof response);
         console.log('Is array?', Array.isArray(response));
         
+        // Handle wrapped response format with $values property (from ReferenceHandler.Preserve)
+        if (response && response.$values && Array.isArray(response.$values)) {
+          console.log('✅ Response uses $values format with', response.$values.length, 'items');
+          return response.$values;
+        }
+        
         // Backend returns plain array directly
         if (Array.isArray(response)) {
           console.log('✅ Response is plain array with', response.length, 'items');

@@ -1,0 +1,94 @@
+<div class="available-jobs-wrapper">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Available Jobs</h1>
+        <p class="subtitle">Browse jobs posted by customers. Select a job to get more details.</p>
+      </div>
+      <!-- <button mat-raised-button color="primary" (click)="goHome()">
+        <mat-icon>home</mat-icon>
+        Back to Home
+      </button> -->
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <mat-icon>error</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading available jobs...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && jobs.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">assignment</mat-icon>
+    <h2>No Jobs Available</h2>
+    <p>There are currently no available jobs. Check back later or post a service to get discovered by customers.</p>
+    <button mat-raised-button color="primary" routerLink="/add-service">
+      <mat-icon>add</mat-icon>
+      Post a Service
+    </button>
+  </div>
+
+  <!-- Jobs List -->
+  <div *ngIf="!loading && jobs.length > 0" class="jobs-grid">
+    <div *ngFor="let job of jobs" class="job-card">
+      <!-- Job Header -->
+      <div class="job-header">
+        <div class="job-title-section">
+          <h2 class="job-title">{{ job.title }}</h2>
+          <div class="job-meta">
+            <span class="job-category">{{ job.category }}</span>
+          </div>
+        </div>
+        <div class="job-budget">
+          <span class="budget-label">Budget</span>
+          <span class="price">{{ formatPrice(job.budget) }}</span>
+        </div>
+      </div>
+
+      <!-- Job Content -->
+      <div class="job-content">
+        <!-- Description -->
+        <div class="job-section">
+          <h3>Description</h3>
+          <p class="description">{{ job.description }}</p>
+        </div>
+
+        <!-- Job Details -->
+        <div class="job-details">
+          <div class="detail-item">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ job.location }}</span>
+          </div>
+          <div class="detail-item">
+            <mat-icon>schedule</mat-icon>
+            <span>Timeline: {{ job.timeline }}</span>
+          </div>
+          <div class="detail-item">
+            <mat-icon>calendar_today</mat-icon>
+            <span>Posted: {{ job.createdAt | date: 'MMM dd, yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Job Actions -->
+      <div class="job-actions">
+        <button mat-raised-button color="primary" (click)="viewJobDetails(job.id)">
+          <mat-icon>visibility</mat-icon>
+          View Details
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Container -->
+  <div class="available-jobs-container">
+  </div>
+</div>

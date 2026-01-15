@@ -49,10 +49,15 @@
       <mat-card-header>
         <div class="service-header-content">
           <div class="service-title-section">
+            <!-- Category Badge -->
+            <div *ngIf="service.serviceCategory" class="category-badge">
+              <mat-icon *ngIf="service.serviceCategory.icon" class="category-icon">{{ service.serviceCategory.icon }}</mat-icon>
+              <span class="category-name">{{ service.serviceCategory.name }}</span>
+            </div>
             <h2 class="service-title">{{ service.name }}</h2>
           </div>
           <div class="service-price">
-            <mat-icon>attach_money</mat-icon>
+            <!-- <mat-icon>attach_money</mat-icon> -->
             <span class="price">{{ formatPrice(service.price) }}</span>
           </div>
         </div>

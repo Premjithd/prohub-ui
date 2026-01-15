@@ -1,0 +1,131 @@
+<div class="job-details-wrapper">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <button mat-button (click)="goBack()" mat-raised-button color="primary">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Jobs
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <mat-icon>error</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading job details...</p>
+  </div>
+
+  <!-- Job Details Content -->
+  <div *ngIf="!loading && job" class="job-details-container">
+    <div class="job-details-card">
+      <!-- Job Header -->
+      <div class="job-header">
+        <div class="job-title-section">
+          <h1 class="job-title">{{ job.title }}</h1>
+          <div class="job-meta">
+            <span class="job-category">{{ job.category }}</span>
+            <span class="job-status" [class.status-open]="job.status === 'Open'">
+              {{ job.status }}
+            </span>
+          </div>
+        </div>
+        <div class="job-budget">
+          <span class="budget-label">Budget</span>
+          <span class="price">{{ formatPrice(job.budget) }}</span>
+        </div>
+      </div>
+
+      <!-- Job Content -->
+      <div class="job-content">
+        <!-- Description Section -->
+        <section class="job-section">
+          <h2>Description</h2>
+          <p class="description">{{ job.description }}</p>
+        </section>
+
+        <!-- Job Details Grid -->
+        <section class="job-details-grid">
+          <div class="detail-box">
+            <div class="detail-header">
+              <mat-icon>location_on</mat-icon>
+              <h3>Location</h3>
+            </div>
+            <p class="detail-value">{{ job.location }}</p>
+          </div>
+
+          <div class="detail-box">
+            <div class="detail-header">
+              <mat-icon>schedule</mat-icon>
+              <h3>Timeline</h3>
+            </div>
+            <p class="detail-value">{{ job.timeline }}</p>
+          </div>
+
+          <div class="detail-box">
+            <div class="detail-header">
+              <mat-icon>calendar_today</mat-icon>
+              <h3>Posted Date</h3>
+            </div>
+            <p class="detail-value">{{ job.createdAt | date: 'MMM dd, yyyy HH:mm' }}</p>
+          </div>
+
+          <div class="detail-box">
+            <div class="detail-header">
+              <mat-icon>person</mat-icon>
+              <h3>Posted By</h3>
+            </div>
+            <p class="detail-value">{{ job.user?.name || 'User' }}</p>
+          </div>
+        </section>
+
+        <!-- Attachments Section (if available) -->
+        <section *ngIf="job.attachments" class="job-section">
+          <h2>Attachments</h2>
+          <div class="attachments">
+            <div class="attachment-item">
+              <mat-icon>attach_file</mat-icon>
+              <span>{{ job.attachments }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Status Information -->
+        <section class="job-section status-section">
+          <h2>Status Information</h2>
+          <div class="status-info">
+            <div class="info-item">
+              <span class="info-label">Current Status:</span>
+              <span class="info-value" [class.status-open]="job.status === 'Open'">{{ job.status }}</span>
+            </div>
+            <div *ngIf="job.assignedProId" class="info-item">
+              <span class="info-label">Assigned to:</span>
+              <span class="info-value">{{ job.assignedPro?.name || 'Professional' }}</span>
+            </div>
+            <div *ngIf="!job.assignedProId" class="info-item">
+              <span class="info-label">Assignment Status:</span>
+              <span class="info-value status-unassigned">Unassigned - Available for Pro Bid</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="job-actions">
+        <button mat-raised-button color="primary" class="full-width">
+          <mat-icon>handshake</mat-icon>
+          Interested in This Job
+        </button>
+        <button mat-button (click)="goBack()" class="full-width">
+          <mat-icon>arrow_back</mat-icon>
+          Back to Available Jobs
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,7 +36,8 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   constructor(
     private myServicesService: MyServicesService,
     public auth: Auth,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -135,8 +136,7 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   }
 
   editService(serviceId: number): void {
-    // TODO: Navigate to edit service page
-    console.log('Edit service:', serviceId);
+    this.router.navigate(['/edit-service', serviceId]);
   }
 
   formatPrice(price: number): string {

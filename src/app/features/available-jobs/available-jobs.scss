@@ -1,4 +1,4 @@
-.my-services-container {
+.available-jobs-wrapper {
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -55,12 +55,6 @@
     height: 1.25rem;
   }
 
-  &.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-  }
-
   &.alert-error {
     background-color: #f8d7da;
     color: #721c24;
@@ -113,7 +107,7 @@
   }
 }
 
-.services-grid {
+.jobs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 2rem;
@@ -123,100 +117,84 @@
   }
 }
 
-.service-card {
+.job-card {
   display: flex;
   flex-direction: column;
   height: 100%;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  background: white;
+  overflow: hidden;
 
   &:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     transform: translateY(-4px);
   }
-
-  mat-card-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  mat-card-content {
-    flex: 1;
-    padding: 1.5rem;
-  }
-
-  mat-card-actions {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #f0f0f0;
-    display: flex;
-    justify-content: space-between;
-  }
 }
 
-.service-header-content {
+.job-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
 }
 
-.service-title-section {
+.job-title-section {
   flex: 1;
 }
 
-.category-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  background-color: #e8f4f8;
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #0277bd;
-  width: fit-content;
-
-  .category-icon {
-    font-size: 1rem;
-    width: 1rem;
-    height: 1rem;
-  }
-
-  .category-name {
-    font-size: 0.85rem;
-  }
-}
-
-.service-title {
+.job-title {
   font-size: 1.5rem;
-  margin: 0;
+  margin: 0 0 0.5rem 0;
   color: #333;
   word-break: break-word;
 }
 
-.service-price {
+.job-meta {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #667eea;
+  margin-top: 0.5rem;
+
+  .job-category {
+    display: inline-block;
+    background-color: #e8f4f8;
+    color: #0277bd;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+}
+
+.job-budget {
+  text-align: right;
   white-space: nowrap;
 
-  mat-icon {
-    font-size: 1.3rem;
-    width: 1.3rem;
-    height: 1.3rem;
+  .budget-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #999;
+    margin-bottom: 0.25rem;
   }
 
   .price {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 600;
     color: #667eea;
   }
 }
 
-.service-section {
+.job-content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.job-section {
   margin-bottom: 1.5rem;
 
   h3 {
@@ -231,39 +209,57 @@
     color: #666;
     line-height: 1.6;
     word-break: break-word;
+    max-height: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
   }
 }
 
-.metadata {
+.job-details {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   padding-top: 1rem;
   border-top: 1px solid #f0f0f0;
 
-  .metadata-item {
+  .detail-item {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: #999;
+    color: #666;
     font-size: 0.9rem;
 
     mat-icon {
       font-size: 1rem;
       width: 1rem;
       height: 1rem;
+      color: #999;
     }
   }
 }
 
-button {
-  mat-icon {
-    margin-right: 0.5rem;
+.job-actions {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+
+  button {
+    flex: 1;
+
+    mat-icon {
+      margin-right: 0.5rem;
+    }
   }
 }
 
 @media (max-width: 600px) {
-  .my-services-container {
+  .available-jobs-wrapper {
     padding: 1rem;
   }
 
@@ -277,27 +273,22 @@ button {
     }
   }
 
-  .services-grid {
+  .jobs-grid {
     gap: 1rem;
   }
 
-  .service-card {
-    mat-card-header {
+  .job-card {
+    .job-header {
       padding: 1rem;
-    }
-
-    mat-card-content {
-      padding: 1rem;
-    }
-
-    mat-card-actions {
-      padding: 0.75rem 1rem;
       flex-direction: column;
-      gap: 0.5rem;
+    }
 
-      button {
-        width: 100%;
-      }
+    .job-content {
+      padding: 1rem;
+    }
+
+    .job-actions {
+      padding: 0.75rem 1rem;
     }
   }
 }

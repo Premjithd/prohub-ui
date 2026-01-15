@@ -2,12 +2,26 @@
   <!-- Hero -->
   <section class="hero">
     <div class="hero-container">
-      <div class="hero-left">
-        <h1>Connect with Trusted Local Professionals</h1>
-        <p>ProHub makes it easy to find, hire, and manage verified professionals for any service. Post a job, compare bids, and get it done.</p>
+      <div class="hero-left">        
+        <!-- Show different subtitle based on user type -->
+        <ng-container *ngIf="isProUser()">
+          <h1>Connect with Users Seeking Professional Help</h1>
+          <p>Showcase your skills and grow your professional business. List your services, receive inquiries from verified customers, and expand your client base.</p>
+        </ng-container>
+        <ng-container *ngIf="!isProUser()">
+          <h1>Connect with Trusted Local Professionals</h1>
+          <p>ProHub makes it easy to find, hire, and manage verified professionals for any service. Post a job, compare bids, and get it done.</p>
+        </ng-container>
         <div class="hero-cta">
-          <button class="cta-btn primary" (click)="navigateTo('/post-job')">Post a Job</button>
-          <button class="cta-btn secondary" (click)="navigateTo('/auth/register/pro')">Become a Pro</button>
+          <!-- Show "Post a Service" for Pro users, "Post a Job" for regular users -->
+          <ng-container *ngIf="isProUser()">
+            <button class="cta-btn primary" (click)="navigateTo('/add-service')">Post a Service</button>
+            <button class="cta-btn secondary" (click)="navigateTo('/available-jobs')">See Jobs</button>
+          </ng-container>
+          <ng-container *ngIf="!isProUser()">
+            <button class="cta-btn primary" (click)="navigateTo('/post-job')">Post a Job</button>
+            <button class="cta-btn secondary" (click)="navigateTo('/auth/register/pro')">Become a Pro</button>
+          </ng-container>
         </div>
       </div>
       <div class="hero-right">
@@ -29,7 +43,13 @@
         <div class="benefit-item">
           <span class="benefit-icon"></span>
           <h3>Fast & Simple</h3>
-          <p>Post a job and get quotes from qualified pros in minutes.</p>
+          <!-- Show different benefit text based on user type -->
+          <ng-container *ngIf="isProUser()">
+            <p>Post a service and start receiving inquiries from customers in minutes.</p>
+          </ng-container>
+          <ng-container *ngIf="!isProUser()">
+            <p>Post a job and get quotes from qualified pros in minutes.</p>
+          </ng-container>
         </div>
         <div class="benefit-item">
           <span class="benefit-icon"></span>
@@ -50,26 +70,52 @@
     <div class="section-container">
       <h2>How It Works</h2>
       <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <h3>Post Your Job</h3>
-          <p>Describe your project and set your budget in minutes.</p>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <h3>Get Quotes</h3>
-          <p>Receive bids from verified professionals nearby.</p>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <h3>Choose & Hire</h3>
-          <p>Review profiles, ratings, and choose your perfect pro.</p>
-        </div>
-        <div class="step">
-          <div class="step-num">4</div>
-          <h3>Pay & Review</h3>
-          <p>Secure payment after completion, then leave a review.</p>
-        </div>
+        <!-- For Pro Users -->
+        <ng-container *ngIf="isProUser()">
+          <div class="step">
+            <div class="step-num">1</div>
+            <h3>Post Your Service</h3>
+            <p>Describe your service and set your rates.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <h3>Get Inquiries</h3>
+            <p>Receive requests from verified customers in your area.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <h3>Connect & Negotiate</h3>
+            <p>Message customers and finalize project details.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <h3>Complete & Earn</h3>
+            <p>Complete the work and receive secure payment.</p>
+          </div>
+        </ng-container>
+        <!-- For Regular Users -->
+        <ng-container *ngIf="!isProUser()">
+          <div class="step">
+            <div class="step-num">1</div>
+            <h3>Post Your Job</h3>
+            <p>Describe your project and set your budget in minutes.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <h3>Get Quotes</h3>
+            <p>Receive bids from verified professionals nearby.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <h3>Choose & Hire</h3>
+            <p>Review profiles, ratings, and choose your perfect pro.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <h3>Pay & Review</h3>
+            <p>Secure payment after completion, then leave a review.</p>
+          </div>
+        </ng-container>
       </div>
     </div>
   </section>
@@ -79,7 +125,13 @@
     <div class="cta-content">
       <h2>Ready to Get Started?</h2>
       <p>Join thousands of customers and pros using ProHub to connect and grow.</p>
-      <button class="cta-btn large" (click)="navigateTo('/post-job')">Start Your First Job Today</button>
+      <!-- Show "Post a Service" for Pro users, "Post a Job" for regular users -->
+      <ng-container *ngIf="isProUser()">
+        <button class="cta-btn large" (click)="navigateTo('/add-service')">Post Your Service Today</button>
+      </ng-container>
+      <ng-container *ngIf="!isProUser()">
+        <button class="cta-btn large" (click)="navigateTo('/post-job')">Start Your First Job Today</button>
+      </ng-container>
     </div>
   </section>
 

@@ -62,6 +62,26 @@ export const routes: Routes = [
           .then(m => m.AddServiceModule)
       },
       {
+        path: 'edit-service/:id',
+        loadChildren: () => import('./features/edit-service/edit-service-module')
+          .then(m => m.EditServiceModule)
+      },
+      {
+        path: 'edit-job/:id',
+        loadChildren: () => import('./features/edit-job/edit-job-module')
+          .then(m => m.EditJobModule)
+      },
+      {
+        path: 'available-jobs',
+        loadComponent: () => import('./features/available-jobs/available-jobs')
+          .then(m => m.AvailableJobsComponent)
+      },
+      {
+        path: 'job-details',
+        loadComponent: () => import('./features/job-details/job-details')
+          .then(m => m.JobDetailsComponent)
+      },
+      {
         path: 'jobs',
         redirectTo: 'pending-jobs',
         pathMatch: 'full'

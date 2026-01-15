@@ -1,0 +1,216 @@
+<div class="edit-job-wrapper">
+  <!-- Hero Section -->
+  <section class="edit-job-hero">
+    <div class="hero-content">
+      <h1>Edit Job</h1>
+      <p>Update your job details and requirements</p>
+    </div>
+  </section>
+
+  <!-- Form Section -->
+  <section class="edit-job-section">
+    <div class="section-container">
+      <div class="form-wrapper">
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="alert alert-success">
+          <span>{{ successMessage }}</span>
+          <button (click)="dismissMessage('success')" class="dismiss-btn">&times;</button>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-error">
+          <span>{{ errorMessage }}</span>
+          <button (click)="dismissMessage('error')" class="dismiss-btn">&times;</button>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading-container">
+          <mat-spinner></mat-spinner>
+          <p>Loading job details...</p>
+        </div>
+
+        <form *ngIf="jobForm && !loading" [formGroup]="jobForm" (ngSubmit)="onSubmit()">
+          <!-- Job Title -->
+          <div class="form-group">
+            <label for="title">Job Title *</label>
+            <input
+              type="text"
+              id="title"
+              formControlName="title"
+              placeholder="e.g., Kitchen Remodel"
+              class="form-control"
+              [class.is-invalid]="(submitted || f['title'].touched) && f['title'].errors"
+            />
+            <small *ngIf="(submitted || f['title'].touched) && f['title'].errors" class="error-text">
+              <span *ngIf="f['title'].errors['required']">Job title is required</span>
+              <span *ngIf="f['title'].errors['minlength']">Job title must be at least 10 characters</span>
+              <span *ngIf="f['title'].errors['maxlength']">Job title must not exceed 200 characters</span>
+            </small>
+          </div>
+
+          <!-- Category Selection -->
+          <div class="form-group">
+            <label>Select Category *</label>
+            <div *ngIf="categoriesLoading" class="loading-text">
+              <mat-spinner [diameter]="30"></mat-spinner>
+              Loading categories...
+            </div>
+            <div *ngIf="!categoriesLoading" class="category-grid">
+              <div
+                *ngFor="let category of serviceCategories"
+                class="category-card"
+                [class.selected]="jobForm.get('category')?.value === category.id"
+                (click)="selectCategory(category.id)"
+              >
+                <div class="category-icon">{{ category.icon }}</div>
+                <div class="category-name">{{ category.name }}</div>
+              </div>
+            </div>
+            <small *ngIf="(submitted || f['category'].touched) && f['category'].errors" class="error-text">
+              <span *ngIf="f['category'].errors['required']">Please select a category</span>
+            </small>
+          </div>
+
+          <!-- Job Description -->
+          <div class="form-group">
+            <label for="description">Job Description *</label>
+            <textarea
+              id="description"
+              formControlName="description"
+              placeholder="Describe your job in detail. What needs to be done? Any specific requirements?"
+              class="form-control textarea"
+              rows="8"
+              [class.is-invalid]="(submitted || f['description'].touched) && f['description'].errors"
+            ></textarea>
+            <div class="char-count">
+              {{ jobForm.get('description')?.value?.length || 0 }} / 3000 characters
+            </div>
+            <small *ngIf="(submitted || f['description'].touched) && f['description'].errors" class="error-text">
+              <span *ngIf="f['description'].errors['required']">Job description is required</span>
+              <span *ngIf="f['description'].errors['minlength']">Description must be at least 50 characters</span>
+              <span *ngIf="f['description'].errors['maxlength']">Description must not exceed 3000 characters</span>
+            </small>
+          </div>
+
+          <!-- Location -->
+          <div class="form-group">
+            <label>Work Location *</label>
+            <div class="location-grid">
+              <div
+                *ngFor="let location of locationTypes"
+                class="location-card"
+                [class.selected]="jobForm.get('location')?.value === location.value"
+                (click)="jobForm.patchValue({ location: location.value })"
+              >
+                <div class="location-title">{{ location.label }}</div>
+                <div class="location-desc">{{ location.description }}</div>
+              </div>
+            </div>
+            <small *ngIf="(submitted || f['location'].touched) && f['location'].errors" class="error-text">
+              <span *ngIf="f['location'].errors['required']">Please select a location type</span>
+            </small>
+          </div>
+
+          <!-- Budget Selection -->
+          <div class="form-group">
+            <label>Budget *</label>
+            <div class="budget-grid">
+              <div
+                *ngFor="let budget of budgetRanges"
+                class="budget-card"
+                [class.selected]="jobForm.get('budget')?.value === budget.value"
+                (click)="selectBudget(budget.value)"
+              >
+                <div class="budget-icon">{{ budget.icon }}</div>
+                <div class="budget-label">{{ budget.label }}</div>
+              </div>
+            </div>
+            <small *ngIf="(submitted || f['budget'].touched) && f['budget'].errors" class="error-text">
+              <span *ngIf="f['budget'].errors['required']">Please select a budget range</span>
+            </small>
+          </div>
+
+          <!-- Timeline Selection -->
+          <div class="form-group">
+            <label>Timeline *</label>
+            <div class="timeline-grid">
+              <div
+                *ngFor="let timeline of timelineOptions"
+                class="timeline-card"
+                [class.selected]="jobForm.get('timeline')?.value === timeline.value"
+                (click)="selectTimeline(timeline.value)"
+              >
+                <div class="timeline-icon">{{ timeline.icon }}</div>
+                <div class="timeline-content">
+                  <div class="timeline-label">{{ timeline.label }}</div>
+                  <div class="timeline-desc">{{ timeline.description }}</div>
+                </div>
+              </div>
+            </div>
+            <small *ngIf="(submitted || f['timeline'].touched) && f['timeline'].errors" class="error-text">
+              <span *ngIf="f['timeline'].errors['required']">Please select a timeline</span>
+            </small>
+          </div>
+
+          <!-- Attachments -->
+          <div class="form-group">
+            <label for="attachments">Attachments (Optional)</label>
+            <input
+              type="text"
+              id="attachments"
+              formControlName="attachments"
+              placeholder="e.g., URL to images or documents"
+              class="form-control"
+            />
+            <small class="help-text">Add links to images, documents, or references that help describe your job</small>
+          </div>
+
+          <!-- Terms & Conditions -->
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                formControlName="agreeToTerms"
+                [class.is-invalid]="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors"
+              />
+              <span>I agree to the Terms of Service and confirm that all information provided is accurate</span>
+            </label>
+            <small *ngIf="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors" class="error-text">
+              You must agree to the Terms of Service
+            </small>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              routerLink="/pending-jobs"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="submitted"
+            >
+              <span *ngIf="!submitted">Update Job</span>
+              <span *ngIf="submitted">Updating Job...</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Form Tips -->
+        <div *ngIf="!loading" class="form-tips">
+          <h3>Tips for Editing Your Job</h3>
+          <ul>
+            <li>Be clear and specific about what needs to be done</li>
+            <li>Provide as much detail as possible to attract the right professionals</li>
+            <li>Set a realistic budget based on the scope of work</li>
+            <li>Give professionals adequate time to complete the work</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

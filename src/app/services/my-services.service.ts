@@ -4,6 +4,12 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
+export interface ServiceCategory {
+  id: number;
+  name: string;
+  icon: string;
+}
+
 export interface Service {
   id: number;
   name: string;
@@ -12,6 +18,8 @@ export interface Service {
   proId: number;
   createdAt: string;
   updatedAt: string;
+  serviceCategoryId?: number;
+  serviceCategory?: ServiceCategory;
 }
 
 @Injectable({
@@ -54,18 +62,23 @@ export class MyServicesService {
     );
   }
 
+  // Get a single service by ID
+  getService(id: number): Observable<Service> {
+    return this.http.get<Service>(`${this.apiUrl}/${id}`);
+  }
+
   // Delete a service
   deleteService(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   // Update a service
-  updateService(id: number, service: Service): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}`, service);
+  updateService(id: number, service: { name: string; description: string; price: number; proId: number; serviceCategoryId?: number | null }): Observable<Service> {
+    return this.http.put<Service>(`${this.apiUrl}/${id}`, service);
   }
 
   // Create a new service
-  createService(serviceData: { name: string; description: string; price: number; proId: number }): Observable<Service> {
+  createService(serviceData: { name: string; description: string; price: number; proId: number; serviceCategoryId: number }): Observable<Service> {
     return this.http.post<Service>(this.apiUrl, serviceData);
   }
 }

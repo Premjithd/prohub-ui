@@ -1,6 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { JobService, Job } from '../../services/job.service';
 import { Auth } from '../../core/services/auth';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-pending-jobs',
@@ -24,13 +26,14 @@ import { Auth } from '../../core/services/auth';
   templateUrl: './pending-jobs.html',
   styleUrl: './pending-jobs.scss'
 })
-export class PendingJobsComponent implements OnInit {
+export class PendingJobsComponent implements OnInit, OnDestroy {
   pendingJobs: Job[] = [];
   loading = true;
   errorMessage = '';
   successMessage = '';
+  private destroy$ = new Subject<void>();
 
-  constructor(private jobService: JobService, public auth: Auth, private cdr: ChangeDetectorRef) {}
+  constructor(private jobService: JobService, public auth: Auth, private cdr: ChangeDetectorRef, private router: Router) {}
 
   ngOnInit(): void {
     // Only load jobs if user is authenticated
@@ -42,13 +45,18 @@ export class PendingJobsComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadPendingJobs(): void {
     this.loading = true;
     this.errorMessage = '';
     console.log('Loading pending jobs for user...');
     console.log('Auth token:', this.auth.getToken());
     
-    this.jobService.getMyJobs().subscribe({
+    this.jobService.getMyJobs().pipe(takeUntil(this.destroy$)).subscribe({
       next: (jobs) => {
         console.log('Jobs loaded successfully:', jobs);
         // Filter jobs with status "Open" (pending)
@@ -85,7 +93,7 @@ export class PendingJobsComponent implements OnInit {
 
   deleteJob(jobId: number): void {
     if (confirm('Are you sure you want to delete this job?')) {
-      this.jobService.deleteJob(jobId).subscribe({
+      this.jobService.deleteJob(jobId).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
           this.successMessage = 'Job deleted successfully!';
           this.pendingJobs = this.pendingJobs.filter(job => job.id !== jobId);
@@ -105,8 +113,7 @@ export class PendingJobsComponent implements OnInit {
   }
 
   editJob(jobId: number): void {
-    // TODO: Navigate to edit job page
-    console.log('Edit job:', jobId);
+    this.router.navigate(['/edit-job', jobId]);
   }
 
   formatBudget(budget: string): string {

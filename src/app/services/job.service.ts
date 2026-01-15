@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { Observable } from 'rxjs';import { map } from 'rxjs/operators';import { environment } from '../../environments/environment';
 
 export interface Job {
   id: number;
@@ -17,6 +16,16 @@ export interface Job {
   assignedProId?: number;
   createdAt: string;
   updatedAt?: string;
+  user?: {
+    id: number;
+    name: string;
+    email?: string;
+  };
+  assignedPro?: {
+    id: number;
+    name: string;
+    email?: string;
+  };
 }
 
 export interface CreateJobRequest {
@@ -45,7 +54,24 @@ export class JobService {
 
   // Get all jobs posted by the current user
   getMyJobs(): Observable<Job[]> {
-    return this.http.get<Job[]>(`${this.apiUrl}/my-jobs`);
+    return this.http.get<any>(`${this.apiUrl}/my-jobs`).pipe(
+      map(response => {
+        // Handle wrapped response format with $values property (from ReferenceHandler.Preserve)
+        if (response && response.$values && Array.isArray(response.$values)) {
+          return response.$values;
+        }
+        // Handle direct array response
+        if (Array.isArray(response)) {
+          return response;
+        }
+        // Handle response.data wrapped format
+        if (response && response.data && Array.isArray(response.data)) {
+          return response.data;
+        }
+        // Return empty array if format not recognized
+        return [];
+      })
+    );
   }
 
   // Get a specific job by ID
@@ -59,8 +85,10 @@ export class JobService {
   }
 
   // Update an existing job
-  updateJob(id: number, jobData: Partial<CreateJobRequest>): Observable<Job> {
-    return this.http.put<Job>(`${this.apiUrl}/${id}`, jobData);
+  updateJob(id: number, jobData: any): Observable<Job> {
+    // Ensure id is included in the request body
+    const dataWithId = { ...jobData, id };
+    return this.http.put<Job>(`${this.apiUrl}/${id}`, dataWithId);
   }
 
   // Delete a job
@@ -71,5 +99,27 @@ export class JobService {
   // Get jobs by category
   getJobsByCategory(category: string): Observable<Job[]> {
     return this.http.get<Job[]>(`${this.apiUrl}/category/${category}`);
+  }
+
+  // Get all available jobs (not assigned to any pro)
+  getAvailableJobs(): Observable<Job[]> {
+    return this.http.get<any>(`${this.apiUrl}/available`).pipe(
+      map(response => {
+        // Handle wrapped response format with $values property (from ReferenceHandler.Preserve)
+        if (response && response.$values && Array.isArray(response.$values)) {
+          return response.$values;
+        }
+        // Handle direct array response
+        if (Array.isArray(response)) {
+          return response;
+        }
+        // Handle response.data wrapped format
+        if (response && response.data && Array.isArray(response.data)) {
+          return response.data;
+        }
+        // Return empty array if format not recognized
+        return [];
+      })
+    );
   }
 }
