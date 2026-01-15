@@ -15,6 +15,12 @@
     <span>{{ errorMessage }}</span>
   </div>
 
+  <!-- Success Message -->
+  <div *ngIf="bidSuccess" class="alert alert-success">
+    <mat-icon>check_circle</mat-icon>
+    <span>Successfully submitted your interest in this job!</span>
+  </div>
+
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <mat-spinner></mat-spinner>
@@ -80,7 +86,9 @@
               <mat-icon>person</mat-icon>
               <h3>Posted By</h3>
             </div>
-            <p class="detail-value">{{ job.user?.name || 'User' }}</p>
+            <p class="detail-value">
+              {{ job?.user?.firstName && job?.user?.lastName ? (job?.user?.firstName + ' ' + job?.user?.lastName) : (job?.user?.name || 'User') }}
+            </p>
           </div>
         </section>
 
@@ -105,11 +113,35 @@
             </div>
             <div *ngIf="job.assignedProId" class="info-item">
               <span class="info-label">Assigned to:</span>
-              <span class="info-value">{{ job.assignedPro?.name || 'Professional' }}</span>
+              <span class="info-value">
+                {{ job?.assignedPro?.firstName && job?.assignedPro?.lastName ? (job?.assignedPro?.firstName + ' ' + job?.assignedPro?.lastName) : (job?.assignedPro?.name || 'Professional') }}
+              </span>
             </div>
             <div *ngIf="!job.assignedProId" class="info-item">
               <span class="info-label">Assignment Status:</span>
               <span class="info-value status-unassigned">Unassigned - Available for Pro Bid</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Your Bid Status:</span>
+              <div *ngIf="!userHasBid" class="bid-status-container">
+                <span class="info-value">Not yet bid</span>
+              </div>
+              <div *ngIf="userHasBid" class="bid-status-container bid-submitted">
+                <div class="bid-status-header">
+                  <mat-icon>check_circle</mat-icon>
+                  <span class="bid-status-text">Bid Submitted</span>
+                </div>
+                <div class="bid-details">
+                  <div *ngIf="userBidAmount" class="bid-detail-item">
+                    <span class="bid-detail-label">Your Proposed Amount:</span>
+                    <span class="bid-detail-value amount">${{ userBidAmount | number: '1.2-2' }}</span>
+                  </div>
+                  <div *ngIf="userBidMessage" class="bid-detail-item">
+                    <span class="bid-detail-label">Your Message:</span>
+                    <p class="bid-detail-value message">{{ userBidMessage }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -117,9 +149,11 @@
 
       <!-- Action Buttons -->
       <div class="job-actions">
-        <button mat-raised-button color="primary" class="full-width">
-          <mat-icon>handshake</mat-icon>
-          Interested in This Job
+        <button mat-raised-button color="primary" class="full-width" (click)="submitBid()" [disabled]="submittingBid || userHasBid">
+          <mat-icon *ngIf="!submittingBid && !userHasBid">handshake</mat-icon>
+          <mat-icon *ngIf="userHasBid">check_circle</mat-icon>
+          <mat-spinner *ngIf="submittingBid" diameter="20" class="button-spinner"></mat-spinner>
+          {{ userHasBid ? 'Already Bid on This Job' : (submittingBid ? 'Submitting...' : 'Send a Bid') }}
         </button>
         <button mat-button (click)="goBack()" class="full-width">
           <mat-icon>arrow_back</mat-icon>

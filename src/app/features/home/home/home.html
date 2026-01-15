@@ -16,7 +16,7 @@
           <!-- Show "Post a Service" for Pro users, "Post a Job" for regular users -->
           <ng-container *ngIf="isProUser()">
             <button class="cta-btn primary" (click)="navigateTo('/add-service')">Post a Service</button>
-            <button class="cta-btn secondary" (click)="navigateTo('/available-jobs')">See Jobs</button>
+            <button class="cta-btn secondary" (click)="navigateTo('/available-jobs')">See Available Jobs</button>
           </ng-container>
           <ng-container *ngIf="!isProUser()">
             <button class="cta-btn primary" (click)="navigateTo('/post-job')">Post a Job</button>

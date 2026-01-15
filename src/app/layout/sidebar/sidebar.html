@@ -46,6 +46,12 @@
       <span>My Services</span>
     </a>
 
+    <!-- Show "Available Jobs" link for Pro users -->
+    <a *ngIf="isProUser()" mat-list-item routerLink="/available-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
+      <mat-icon>assignment</mat-icon>
+      <span>Available Jobs</span>
+    </a>
+
     <!-- Show "Add Service" link for Pro users -->
     <a *ngIf="isProUser()" mat-list-item routerLink="/add-service" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>add_circle</mat-icon>

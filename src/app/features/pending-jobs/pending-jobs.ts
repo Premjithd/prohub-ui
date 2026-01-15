@@ -6,7 +6,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
-import { JobService, Job } from '../../services/job.service';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { JobService, Job, JobBid } from '../../services/job.service';
 import { Auth } from '../../core/services/auth';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -21,13 +22,16 @@ import { takeUntil } from 'rxjs/operators';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatChipsModule
+    MatChipsModule,
+    MatExpansionModule
   ],
   templateUrl: './pending-jobs.html',
   styleUrl: './pending-jobs.scss'
 })
 export class PendingJobsComponent implements OnInit, OnDestroy {
   pendingJobs: Job[] = [];
+  jobBidsMap: Map<number, JobBid[]> = new Map();
+  loadingBidsMap: Map<number, boolean> = new Map();
   loading = true;
   errorMessage = '';
   successMessage = '';
@@ -145,6 +149,66 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
       case 'assigned':
         return 'warn';
       case 'completed':
+        return 'primary';
+      default:
+        return '';
+    }
+  }
+
+  loadBidsForJob(jobId: number): void {
+    // Prevent loading the same bids multiple times
+    if (this.jobBidsMap.has(jobId)) {
+      return;
+    }
+
+    this.loadingBidsMap.set(jobId, true);
+    this.jobService.getJobBids(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (bids) => {
+        console.log(`Bids loaded for job ${jobId}:`, bids);
+        this.jobBidsMap.set(jobId, bids);
+        this.loadingBidsMap.set(jobId, false);
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error(`Error loading bids for job ${jobId}:`, error);
+        this.jobBidsMap.set(jobId, []);
+        this.loadingBidsMap.set(jobId, false);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  getProName(bid: JobBid): string {
+    if (bid.pro?.firstName && bid.pro?.lastName) {
+      return `${bid.pro.firstName} ${bid.pro.lastName}`;
+    }
+    return bid.pro?.name || 'Professional';
+  }
+
+  getBidStatus(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'Pending Review';
+      case 'accepted':
+        return 'Accepted';
+      case 'rejected':
+        return 'Rejected';
+      case 'withdrawn':
+        return 'Withdrawn';
+      default:
+        return status;
+    }
+  }
+
+  getBidStatusColor(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'warn';
+      case 'accepted':
+        return 'accent';
+      case 'rejected':
+        return 'primary';
+      case 'withdrawn':
         return 'primary';
       default:
         return '';

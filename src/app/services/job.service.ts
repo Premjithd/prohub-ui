@@ -18,12 +18,16 @@ export interface Job {
   updatedAt?: string;
   user?: {
     id: number;
-    name: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
     email?: string;
   };
   assignedPro?: {
     id: number;
-    name: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
     email?: string;
   };
 }
@@ -36,6 +40,24 @@ export interface CreateJobRequest {
   budget: string;
   timeline: string;
   attachments?: string;
+}
+
+export interface JobBid {
+  id: number;
+  jobId: number;
+  proId: number;
+  bidMessage?: string;
+  bidAmount?: number;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
+  pro?: {
+    id: number;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    email?: string;
+  };
 }
 
 export interface ApiResponse<T> {
@@ -104,6 +126,33 @@ export class JobService {
   // Get all available jobs (not assigned to any pro)
   getAvailableJobs(): Observable<Job[]> {
     return this.http.get<any>(`${this.apiUrl}/available`).pipe(
+      map(response => {
+        // Handle wrapped response format with $values property (from ReferenceHandler.Preserve)
+        if (response && response.$values && Array.isArray(response.$values)) {
+          return response.$values;
+        }
+        // Handle direct array response
+        if (Array.isArray(response)) {
+          return response;
+        }
+        // Handle response.data wrapped format
+        if (response && response.data && Array.isArray(response.data)) {
+          return response.data;
+        }
+        // Return empty array if format not recognized
+        return [];
+      })
+    );
+  }
+
+  // Submit a bid for a job
+  submitJobBid(jobId: number, bidData: { bidMessage?: string; bidAmount?: number }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/bid`, bidData);
+  }
+
+  // Get bids for a specific job
+  getJobBids(jobId: number): Observable<JobBid[]> {
+    return this.http.get<any>(`${this.apiUrl}/${jobId}/bids`).pipe(
       map(response => {
         // Handle wrapped response format with $values property (from ReferenceHandler.Preserve)
         if (response && response.$values && Array.isArray(response.$values)) {
