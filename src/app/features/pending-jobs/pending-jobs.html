@@ -50,7 +50,7 @@
           </div>
           <div class="job-category">
             <mat-icon>layers</mat-icon>
-            <span>{{ job.category }}</span>
+            <span>{{ job.category?.name || 'Uncategorized' }}</span>
           </div>
         </div>
       </mat-card-header>
@@ -129,14 +129,25 @@
       </mat-card-actions>
 
       <!-- Bids Section -->
-      <mat-expansion-panel class="bids-panel" (opened)="loadBidsForJob(job.id)">
+      <mat-expansion-panel 
+        class="bids-panel"
+        #bidPanel
+        (afterExpand)="onBidsExpandedChange(job.id, true)"
+        (afterCollapse)="onBidsExpandedChange(job.id, false)">
         <mat-expansion-panel-header>
           <mat-panel-title>
             <mat-icon>how_to_vote</mat-icon>
-            Bids Received
+            See Your Bids
           </mat-panel-title>
           <mat-panel-description>
-            {{ jobBidsMap.get(job.id)?.length || 0 }} bid(s) received
+            <span *ngIf="job.isBid" class="bids-received-indicator">
+              <mat-icon>check_circle</mat-icon>
+              <span class="bid-status-text">Bids Received</span>
+            </span>
+            <span *ngIf="!job.isBid" class="no-bids-indicator">
+              <mat-icon>mail_outline</mat-icon>
+              <span class="bid-status-text">No Bids Yet</span>
+            </span>
           </mat-panel-description>
         </mat-expansion-panel-header>
 
@@ -157,10 +168,11 @@
           <div *ngFor="let bid of jobBidsMap.get(job.id)" class="bid-item">
               <div class="bid-header">
                 <div class="bid-pro-info">
-                  <h4 class="pro-name">{{ getProName(bid) }}</h4>
+                  <h4 class="pro-name">{{ bid.pro?.businessName }} </h4>
+                  <span class="label"> Representative:{{ bid.pro?.proName }}</span>
                   <mat-chip-set>
                     <mat-chip [color]="getBidStatusColor(bid.status)" selected>
-                      {{ getBidStatus(bid.status) }}
+                      Status:{{ getBidStatus(bid.status) }}
                     </mat-chip>
                   </mat-chip-set>
                 </div>
@@ -183,11 +195,11 @@
 
               <!-- Bid Actions -->
               <div class="bid-actions">
-                <button mat-button color="accent" *ngIf="bid.status === 'Pending'">
+                <button mat-button color="accent" *ngIf="bid.status === 'Pending'" (click)="acceptBid(job.id, bid)">
                   <mat-icon>check</mat-icon>
                   Accept
                 </button>
-                <button mat-button color="warn" *ngIf="bid.status === 'Pending'">
+                <button mat-button color="warn" *ngIf="bid.status === 'Pending'" (click)="rejectBid(job.id, bid)">
                   <mat-icon>close</mat-icon>
                   Reject
                 </button>

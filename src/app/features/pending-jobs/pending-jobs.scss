@@ -179,6 +179,19 @@
           height: 1rem;
         }
       }
+
+      /* Bid Status Chip Styling */
+      mat-chip {
+        &.no-bids {
+          background-color: rgba(255, 255, 255, 0.15) !important;
+          color: rgba(255, 255, 255, 0.8) !important;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+
+          mat-icon {
+            color: rgba(255, 255, 255, 0.8) !important;
+          }
+        }
+      }
     }
   }
 
@@ -487,5 +500,52 @@
 
   button {
     margin: 0;
+  }
+}
+
+/* Bids Received/No Bids Indicators */
+.bids-received-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 4px 12px;
+  background-color: #d4edda;
+  color: #155724;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 0.9rem;
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    color: #28a745;
+  }
+
+  .bid-status-text {
+    display: inline-block;
+  }
+}
+
+.no-bids-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 4px 12px;
+  background-color: #e7f3ff;
+  color: #0c5aa0;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 0.9rem;
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    color: #0c5aa0;
+  }
+
+  .bid-status-text {
+    display: inline-block;
   }
 }

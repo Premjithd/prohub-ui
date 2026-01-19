@@ -44,7 +44,7 @@
         <div class="job-title-section">
           <h2 class="job-title">{{ job.title }}</h2>
           <div class="job-meta">
-            <span class="job-category">{{ job.category }}</span>
+            <span class="job-category">{{ job.category?.name || 'Uncategorized' }}</span>
           </div>
         </div>
         <div class="job-budget">

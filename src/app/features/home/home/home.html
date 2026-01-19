@@ -13,14 +13,20 @@
           <p>ProHub makes it easy to find, hire, and manage verified professionals for any service. Post a job, compare bids, and get it done.</p>
         </ng-container>
         <div class="hero-cta">
-          <!-- Show "Post a Service" for Pro users, "Post a Job" for regular users -->
+          <!-- Show "Assigned Jobs" or "Post a Service" for Pro users, "Post a Job" for regular users -->
           <ng-container *ngIf="isProUser()">
-            <button class="cta-btn primary" (click)="navigateTo('/add-service')">Post a Service</button>
+            <button class="cta-btn primary" (click)="navigateTo('/my-jobs-pro')">Assigned Jobs</button>
             <button class="cta-btn secondary" (click)="navigateTo('/available-jobs')">See Available Jobs</button>
           </ng-container>
           <ng-container *ngIf="!isProUser()">
-            <button class="cta-btn primary" (click)="navigateTo('/post-job')">Post a Job</button>
-            <button class="cta-btn secondary" (click)="navigateTo('/auth/register/pro')">Become a Pro</button>
+            <ng-container *ngIf="auth.isAuthenticated()">
+              <button class="cta-btn primary" (click)="navigateTo('/pending-jobs')">My Pending Jobs</button>
+              <button class="cta-btn secondary" (click)="navigateTo('/post-job')">Post a New Job</button>
+            </ng-container>
+            <ng-container *ngIf="!auth.isAuthenticated()">
+              <button class="cta-btn primary" (click)="navigateTo('/post-job')">Post a Job</button>
+              <button class="cta-btn secondary" (click)="navigateTo('/auth/register/pro')">Become a Pro</button>
+            </ng-container>
           </ng-container>
         </div>
       </div>

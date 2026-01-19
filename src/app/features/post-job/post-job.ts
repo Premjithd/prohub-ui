@@ -228,7 +228,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
 
     const jobData = {
       title: this.jobForm.value.title,
-      category: this.jobForm.value.category,
+      categoryId: this.jobForm.value.category, // Send category ID
       description: this.jobForm.value.description,
       location: this.jobForm.value.location,
       budget: this.jobForm.value.budget,
@@ -238,9 +238,16 @@ export class PostJobComponent implements OnInit, OnDestroy {
 
     console.log('Posting Job:', jobData);
     
+    // Debug: Check if token exists
+    const token = localStorage.getItem('auth_token');
+    console.log('Auth token present:', !!token);
+    if (token) {
+      console.log('Token preview:', token.substring(0, 20) + '...');
+    }
+    
     this.jobService.createJob(jobData).subscribe({
       next: (response) => {
-        console.log('Job posted successfully:', response);
+        console.log('✅ Job posted successfully:', response);
         this.successMessage = 'Your job has been posted successfully! Professionals will start bidding on your job.';
         
         // Reset form after 2 seconds and redirect
@@ -252,8 +259,18 @@ export class PostJobComponent implements OnInit, OnDestroy {
         }, 2000);
       },
       error: (error) => {
-        console.error('Error posting job:', error);
-        this.errorMessage = error?.error?.message || 'Error posting job. Please try again.';
+        console.error('❌ Error posting job:', error);
+        console.error('Error status:', error?.status);
+        console.error('Error message:', error?.error?.message);
+        console.error('Full error:', JSON.stringify(error, null, 2));
+        
+        if (error?.status === 401) {
+          this.errorMessage = 'You must be logged in to post a job. Please login and try again.';
+        } else if (error?.status === 400) {
+          this.errorMessage = error?.error?.message || 'Invalid job data. Please check your inputs.';
+        } else {
+          this.errorMessage = error?.error?.message || 'Error posting job. Please try again.';
+        }
         this.submitted = false;
       }
     });

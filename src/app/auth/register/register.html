@@ -97,6 +97,35 @@
     <div class="address-section">
       <h3>Address <span class="required">*</span></h3>
       
+      <!-- Address Autocomplete -->
+      <div class="form-group">
+        <label for="addressAutocomplete">Search Address <span class="required">*</span></label>
+        <div class="autocomplete-container">
+          <input
+            #addressInput
+            type="text"
+            id="addressAutocomplete"
+            class="form-control"
+            placeholder="Start typing your address..."
+            (input)="onAddressInput($event, registerForm)"
+            (blur)="hideAddressList()"
+            autocomplete="off"
+          />
+          <div class="address-dropdown" *ngIf="showAddressList && addressPredictions.length > 0">
+            <div
+              *ngFor="let prediction of addressPredictions"
+              class="address-item"
+              (click)="onAddressSelected(prediction, registerForm)"
+            >
+              <div class="address-main">{{ prediction.mainText }}</div>
+              <div class="address-secondary">{{ prediction.secondaryText }}</div>
+            </div>
+          </div>
+          <div class="address-loading" *ngIf="addressLoading">Searching...</div>
+        </div>
+        <small class="text-muted">Start typing to search for your address</small>
+      </div>
+      
       <!-- House Name/Number -->
       <div class="form-group">
         <label for="houseNameNumber">House Name/Number <span class="required">*</span></label>

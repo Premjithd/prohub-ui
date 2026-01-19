@@ -117,3 +117,81 @@ button {
   margin-bottom: 15px;
   color: #444;
 }
+
+/* Address Autocomplete */
+.autocomplete-container {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-container .form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.autocomplete-container .form-control:focus {
+  border-color: #4facfe;
+  box-shadow: 0px 0px 5px rgba(79, 172, 254, 0.6);
+  outline: none;
+}
+
+.address-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.address-item {
+  padding: 12px 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.address-item:hover {
+  background: #f0f8ff;
+  color: #4facfe;
+}
+
+.address-item:last-child {
+  border-bottom: none;
+}
+
+.address-main {
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.address-secondary {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.address-loading {
+  padding: 12px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+}
+
+.text-muted {
+  font-size: 12px;
+  color: #999;
+  display: block;
+  margin-top: 4px;
+}

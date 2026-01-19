@@ -37,19 +37,25 @@
     <!-- Show "My Jobs" for regular users -->
     <a *ngIf="!isProUser()" mat-list-item routerLink="/pending-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>assignment</mat-icon>
-      <span>My Jobs</span>
+      <span>My Pending Jobs</span>
+    </a>
+    
+    <!-- Show "My Jobs" link for Pro users (assigned jobs) -->
+    <a *ngIf="isProUser()" mat-list-item routerLink="/my-jobs-pro" routerLinkActive="active" (click)="onMenuItemClick()">
+      <mat-icon>task_alt</mat-icon>
+      <span>Assigned Jobs</span>
+    </a>
+    
+    <!-- Show "Available Jobs" link for Pro users -->
+    <a *ngIf="isProUser()" mat-list-item routerLink="/available-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
+      <mat-icon>assignment</mat-icon>
+      <span>Available Jobs</span>
     </a>
 
     <!-- Show "My Services" for Pro users -->
     <a *ngIf="isProUser()" mat-list-item routerLink="/my-services" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>build</mat-icon>
       <span>My Services</span>
-    </a>
-
-    <!-- Show "Available Jobs" link for Pro users -->
-    <a *ngIf="isProUser()" mat-list-item routerLink="/available-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
-      <mat-icon>assignment</mat-icon>
-      <span>Available Jobs</span>
     </a>
 
     <!-- Show "Add Service" link for Pro users -->

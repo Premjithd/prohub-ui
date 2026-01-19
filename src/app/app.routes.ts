@@ -77,6 +77,11 @@ export const routes: Routes = [
           .then(m => m.AvailableJobsComponent)
       },
       {
+        path: 'my-jobs-pro',
+        loadComponent: () => import('./features/my-jobs-pro/my-jobs-pro')
+          .then(m => m.MyJobsProComponent)
+      },
+      {
         path: 'job-details',
         loadComponent: () => import('./features/job-details/job-details')
           .then(m => m.JobDetailsComponent)

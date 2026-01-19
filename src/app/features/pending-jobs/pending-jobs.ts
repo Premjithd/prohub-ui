@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatExpansionModule } from '@angular/material/expansion';
+import { MatExpansionModule, MatExpansionPanel } from '@angular/material/expansion';
 import { JobService, Job, JobBid } from '../../services/job.service';
 import { Auth } from '../../core/services/auth';
 import { Subject } from 'rxjs';
@@ -29,9 +29,12 @@ import { takeUntil } from 'rxjs/operators';
   styleUrl: './pending-jobs.scss'
 })
 export class PendingJobsComponent implements OnInit, OnDestroy {
+  @ViewChildren(MatExpansionPanel) expansionPanels?: QueryList<MatExpansionPanel>;
+  
   pendingJobs: Job[] = [];
   jobBidsMap: Map<number, JobBid[]> = new Map();
   loadingBidsMap: Map<number, boolean> = new Map();
+  openBidsJobId: number | null = null;
   loading = true;
   errorMessage = '';
   successMessage = '';
@@ -156,6 +159,9 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
   }
 
   loadBidsForJob(jobId: number): void {
+    // Set this job as the open one
+    this.openBidsJobId = jobId;
+
     // Prevent loading the same bids multiple times
     if (this.jobBidsMap.has(jobId)) {
       return;
@@ -178,12 +184,30 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
     });
   }
 
-  getProName(bid: JobBid): string {
-    if (bid.pro?.firstName && bid.pro?.lastName) {
-      return `${bid.pro.firstName} ${bid.pro.lastName}`;
+  onBidsExpandedChange(jobId: number, isExpanded: boolean): void {
+    if (isExpanded) {
+      // Close all other panels
+      if (this.expansionPanels) {
+        this.expansionPanels.forEach((panel, index) => {
+          // Close all panels except the current job's panel
+          if (index !== this.pendingJobs.findIndex(j => j.id === jobId)) {
+            panel.close();
+          }
+        });
+      }
+      this.openBidsJobId = jobId;
+      this.loadBidsForJob(jobId);
+    } else if (this.openBidsJobId === jobId) {
+      this.openBidsJobId = null;
     }
-    return bid.pro?.name || 'Professional';
   }
+
+  // getProName(bid: JobBid): string {
+  //   if (bid.pro?.proName) {
+  //     return bid.pro.proName;
+  //   }
+  //   return 'Professional';
+  // }
 
   getBidStatus(status: string): string {
     switch (status.toLowerCase()) {
@@ -212,6 +236,48 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
         return 'primary';
       default:
         return '';
+    }
+  }
+
+  acceptBid(jobId: number, bid: JobBid): void {
+    if (confirm(`Accept bid from ${bid.pro?.proName || 'Professional'} for $${bid.bidAmount || 'Not specified'}?`)) {
+      this.jobService.acceptBid(jobId, bid.id).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.successMessage = 'Bid accepted successfully!';
+          bid.status = 'Accepted';
+          this.cdr.markForCheck();
+          setTimeout(() => {
+            this.successMessage = '';
+            this.cdr.markForCheck();
+          }, 3000);
+        },
+        error: (error) => {
+          console.error('Error accepting bid:', error);
+          this.errorMessage = 'Failed to accept bid. Please try again.';
+          this.cdr.markForCheck();
+        }
+      });
+    }
+  }
+
+  rejectBid(jobId: number, bid: JobBid): void {
+    if (confirm(`Reject bid from ${bid.pro?.proName || 'Professional'}?`)) {
+      this.jobService.rejectBid(jobId, bid.id).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.successMessage = 'Bid rejected successfully!';
+          bid.status = 'Rejected';
+          this.cdr.markForCheck();
+          setTimeout(() => {
+            this.successMessage = '';
+            this.cdr.markForCheck();
+          }, 3000);
+        },
+        error: (error) => {
+          console.error('Error rejecting bid:', error);
+          this.errorMessage = 'Failed to reject bid. Please try again.';
+          this.cdr.markForCheck();
+        }
+      });
     }
   }
 }

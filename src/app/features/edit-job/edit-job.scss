@@ -49,6 +49,25 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+.current-value {
+  padding: 12px 16px;
+  background: #f0f4ff;
+  border-left: 4px solid #667eea;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #4f46e5;
+  
+  small {
+    display: block;
+    
+    strong {
+      font-weight: 600;
+      color: #4338ca;
+    }
+  }
+}
+
 .loading-container {
   display: flex;
   flex-direction: column;

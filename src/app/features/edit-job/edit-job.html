@@ -60,7 +60,7 @@
                 *ngFor="let category of serviceCategories"
                 class="category-card"
                 [class.selected]="jobForm.get('category')?.value === category.id"
-                (click)="selectCategory(category.id)"
+                (click)="selectCategory(category?.id)"
               >
                 <div class="category-icon">{{ category.icon }}</div>
                 <div class="category-name">{{ category.name }}</div>
@@ -95,17 +95,19 @@
           <!-- Location -->
           <div class="form-group">
             <label>Work Location *</label>
-            <div class="location-grid">
-              <div
-                *ngFor="let location of locationTypes"
-                class="location-card"
-                [class.selected]="jobForm.get('location')?.value === location.value"
-                (click)="jobForm.patchValue({ location: location.value })"
-              >
-                <div class="location-title">{{ location.label }}</div>
-                <div class="location-desc">{{ location.description }}</div>
-              </div>
+            
+            <!-- Display current location if loaded -->
+            <div *ngIf="jobForm && jobForm.get('location')?.value">
+                <input
+                type="text"
+                id="location"
+                formControlName="location"
+                placeholder="e.g., New Delhi, India"
+                class="form-control"
+                [class.is-invalid]="(submitted || f['location'].touched) && f['location'].errors"
+                />
             </div>
+
             <small *ngIf="(submitted || f['location'].touched) && f['location'].errors" class="error-text">
               <span *ngIf="f['location'].errors['required']">Please select a location type</span>
             </small>

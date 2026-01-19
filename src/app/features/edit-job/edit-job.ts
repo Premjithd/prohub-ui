@@ -128,13 +128,14 @@ export class EditJobComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (job) => {
-          console.log('Job loaded:', job);
+          console.log('✅ Job loaded:', job);
+          console.log('Job location from DB:', job.location);
           this.initializeForm(job);
           this.loading = false;
           this.cdr.markForCheck();
         },
         error: (error) => {
-          console.error('Error loading job:', error);
+          console.error('❌ Error loading job:', error);
           this.errorMessage = 'Failed to load job. Please try again.';
           this.loading = false;
           this.cdr.markForCheck();
@@ -145,7 +146,7 @@ export class EditJobComponent implements OnInit, OnDestroy {
   initializeForm(job: any): void {
     this.jobForm = this.fb.group({
       title: [job.title, [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
-      category: [job.category, Validators.required],
+      category: [job.categoryId, Validators.required],
       description: [job.description, [Validators.required, Validators.minLength(50), Validators.maxLength(3000)]],
       location: [job.location, Validators.required],
       budget: [job.budget, Validators.required],
@@ -189,7 +190,7 @@ export class EditJobComponent implements OnInit, OnDestroy {
     const jobData = {
       id: this.jobId,
       title: this.jobForm.value.title,
-      category: this.jobForm.value.category,
+      categoryId: this.jobForm.value.category,
       description: this.jobForm.value.description,
       location: this.jobForm.value.location,
       budget: this.jobForm.value.budget,
@@ -231,6 +232,22 @@ export class EditJobComponent implements OnInit, OnDestroy {
   selectTimeline(timelineValue: string): void {
     this.jobForm.patchValue({ timeline: timelineValue });
   }
+
+//   getLocationLabel(locationValue: string): string {
+//     const location = this.locationTypes.find(l => l.value === locationValue);
+//     return location ? location.label : 'Unknown Location';
+//   }
+
+//   getLocationDescription(locationValue: string): string {
+//     const location = this.locationTypes.find(l => l.value === locationValue);
+//     return location ? location.description : '';
+//   }
+
+//   selectLocation(locationValue: string): void {
+//     console.log('📍 Selecting location:', locationValue);
+//     this.jobForm.patchValue({ location: locationValue });
+//     this.cdr.markForCheck();
+//   }
 
   dismissMessage(type: 'success' | 'error'): void {
     if (type === 'success') {

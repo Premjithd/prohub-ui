@@ -6,13 +6,20 @@ export interface Job {
   id: number;
   userId: number;
   title: string;
-  category: string;
+  categoryId?: number;
+  category?: {
+    id: number;
+    name: string;
+    description?: string;
+    icon?: string;
+  };
   description: string;
   location: string;
   budget: string;
   timeline: string;
   attachments?: string;
   status: string;
+  isBid?: boolean;  // True if job has received at least one bid
   assignedProId?: number;
   createdAt: string;
   updatedAt?: string;
@@ -34,7 +41,7 @@ export interface Job {
 
 export interface CreateJobRequest {
   title: string;
-  category: string;
+  categoryId?: number;
   description: string;
   location: string;
   budget: string;
@@ -53,9 +60,9 @@ export interface JobBid {
   updatedAt?: string;
   pro?: {
     id: number;
-    firstName?: string;
-    lastName?: string;
-    name?: string;
+    proName?: string;
+    businessName?: string;
+    phoneNumber?: string;
     email?: string;
   };
 }
@@ -170,5 +177,42 @@ export class JobService {
         return [];
       })
     );
+  }
+
+  // Accept a bid
+  acceptBid(jobId: number, bidId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/bids/${bidId}/accept`, {});
+  }
+
+  // Reject a bid
+  rejectBid(jobId: number, bidId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/bids/${bidId}/reject`, {});
+  }
+
+  // Get jobs assigned to the current Pro
+  getAssignedJobs(): Observable<Job[]> {
+    return this.http.get<any>(`${this.apiUrl}/assigned`).pipe(
+      map(response => {
+        // Handle wrapped response format with $values property (from ReferenceHandler.Preserve)
+        if (response && response.$values && Array.isArray(response.$values)) {
+          return response.$values;
+        }
+        // Handle direct array response
+        if (Array.isArray(response)) {
+          return response;
+        }
+        // Handle response.data wrapped format
+        if (response && response.data && Array.isArray(response.data)) {
+          return response.data;
+        }
+        // Return empty array if format not recognized
+        return [];
+      })
+    );
+  }
+
+  // Mark a job as completed
+  markJobCompleted(jobId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${jobId}/complete`, {});
   }
 }

@@ -11,20 +11,20 @@ import { Auth } from '../../../core/services/auth';
   styleUrl: './home.scss'
 })
 export class HomeComponent {
-  constructor(private router: Router, private authService: Auth) {}
+  constructor(private router: Router, public auth: Auth) {}
 
   isProUser(): boolean {
-    return this.authService.getUserType() === 'Pro';
+    return this.auth.getUserType() === 'Pro';
   }
 
   isAuthenticated(): boolean {
-    return this.authService.isAuthenticated();
+    return this.auth.isAuthenticated();
   }
 
   navigateTo(path: string) {
     // For post-job path, check if user is logged in
     if (path === '/post-job') {
-      if (!this.authService.isAuthenticated()) {
+      if (!this.auth.isAuthenticated()) {
         // Redirect to login if not authenticated
         this.router.navigate(['/auth/login']);
       } else {
@@ -32,7 +32,7 @@ export class HomeComponent {
         this.router.navigate([path]);
       }
     } else if (path === '/add-service') {
-      if (!this.authService.isAuthenticated()) {
+      if (!this.auth.isAuthenticated()) {
         // Redirect to login if not authenticated
         this.router.navigate(['/auth/login']);
       } else {
