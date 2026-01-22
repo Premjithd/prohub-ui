@@ -2,6 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';import { map } from 'rxjs/operators';import { environment } from '../../environments/environment';
 
+export interface JobPhase {
+  id: string;
+  title: string;
+  description: string;
+  isCompleted: boolean;
+  completedAt?: string;
+}
+
 export interface Job {
   id: number;
   userId: number;
@@ -21,6 +29,7 @@ export interface Job {
   status: string;
   isBid?: boolean;  // True if job has received at least one bid
   assignedProId?: number;
+  jobPhases?: JobPhase[] | string;  // JSON array of phases or string
   createdAt: string;
   updatedAt?: string;
   user?: {
@@ -35,7 +44,9 @@ export interface Job {
     firstName?: string;
     lastName?: string;
     name?: string;
+    businessName?: string;
     email?: string;
+    phoneNumber?: string;
   };
 }
 
@@ -65,6 +76,18 @@ export interface JobBid {
     phoneNumber?: string;
     email?: string;
   };
+}
+
+export interface Message {
+  id: number;
+  jobId: number;
+  senderId: number;
+  recipientId: number;
+  senderType: string;  // "User" or "Pro"
+  content: string;
+  sentAt: string;
+  isRead: boolean;
+  readAt?: string;
 }
 
 export interface ApiResponse<T> {
@@ -214,5 +237,42 @@ export class JobService {
   // Mark a job as completed
   markJobCompleted(jobId: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/${jobId}/complete`, {});
+  }
+
+  // Update job phases
+  updateJobPhases(jobId: number, phases: JobPhase[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${jobId}/phases`, { jobPhases: phases });
+  }
+
+  // Toggle phase completion
+  togglePhaseCompletion(jobId: number, phaseId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/phases/${phaseId}/toggle`, {});
+  }
+
+  // Get messages for a job
+  getJobMessages(jobId: number): Observable<Message[]> {
+    return this.http.get<any>(`${this.apiUrl}/${jobId}/messages`).pipe(
+      map(response => {
+        // Handle wrapped response format
+        if (response && response.$values && Array.isArray(response.$values)) {
+          return response.$values;
+        }
+        // Handle direct array response
+        if (Array.isArray(response)) {
+          return response;
+        }
+        // Handle response.data wrapped format
+        if (response && response.data && Array.isArray(response.data)) {
+          return response.data;
+        }
+        // Return empty array if format not recognized
+        return [];
+      })
+    );
+  }
+
+  // Send a message
+  sendMessage(jobId: number, message: { content: string }): Observable<Message> {
+    return this.http.post<Message>(`${this.apiUrl}/${jobId}/messages`, message);
   }
 }

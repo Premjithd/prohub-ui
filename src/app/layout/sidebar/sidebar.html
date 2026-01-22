@@ -37,7 +37,7 @@
     <!-- Show "My Jobs" for regular users -->
     <a *ngIf="!isProUser()" mat-list-item routerLink="/pending-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>assignment</mat-icon>
-      <span>My Pending Jobs</span>
+      <span>My Jobs</span>
     </a>
     
     <!-- Show "My Jobs" link for Pro users (assigned jobs) -->

@@ -24,7 +24,7 @@
               <button class="cta-btn secondary" (click)="navigateTo('/post-job')">Post a New Job</button>
             </ng-container>
             <ng-container *ngIf="!auth.isAuthenticated()">
-              <button class="cta-btn primary" (click)="navigateTo('/post-job')">Post a Job</button>
+              <button class="cta-btn primary" (click)="navigateTo('/auth/register')">Join as User</button>
               <button class="cta-btn secondary" (click)="navigateTo('/auth/register/pro')">Become a Pro</button>
             </ng-container>
           </ng-container>

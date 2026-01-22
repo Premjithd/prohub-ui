@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,7 +8,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { JobService, Job } from '../../services/job.service';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { JobService, Job, JobPhase } from '../../services/job.service';
 import { Auth } from '../../core/services/auth';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -17,22 +22,30 @@ import { takeUntil } from 'rxjs/operators';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
     MatChipsModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatCheckboxModule,
+    MatProgressBarModule,
+    MatTooltipModule,
+    MatButtonToggleModule
   ],
   templateUrl: './my-jobs-pro.html',
   styleUrl: './my-jobs-pro.scss'
 })
 export class MyJobsProComponent implements OnInit, OnDestroy {
   assignedJobs: Job[] = [];
+  filteredJobs: Job[] = [];
   loading = true;
   errorMessage = '';
   successMessage = '';
+  selectedStatus: string = 'All';
+  availableStatuses = ['All', 'In Progress', 'Pending Review', 'On Hold', 'Completed'];
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -60,12 +73,11 @@ export class MyJobsProComponent implements OnInit, OnDestroy {
   loadAssignedJobs(): void {
     this.loading = true;
     this.errorMessage = '';
-    console.log('Loading assigned jobs for Pro...');
     
     this.jobService.getAssignedJobs().pipe(takeUntil(this.destroy$)).subscribe({
       next: (jobs) => {
-        console.log('Assigned jobs loaded successfully:', jobs);
         this.assignedJobs = jobs;
+        this.applyStatusFilter();
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -96,7 +108,7 @@ export class MyJobsProComponent implements OnInit, OnDestroy {
   }
 
   viewJobDetails(jobId: number): void {
-    this.router.navigate(['/job-details', jobId]);
+    this.router.navigate(['/my-jobs-pro', jobId]);
   }
 
   formatBudget(budget: string): string {
@@ -155,5 +167,59 @@ export class MyJobsProComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  // Get phase progress percentage
+  getPhaseProgress(job: Job): number {
+    const phases = this.getJobPhases(job);
+    if (phases.length === 0) return 0;
+    const completed = phases.filter(p => p.isCompleted).length;
+    return Math.round((completed / phases.length) * 100);
+  }
+
+  // Parse phases from job
+  getJobPhases(job: Job): JobPhase[] {
+    if (!job.jobPhases) {
+      return [];
+    }
+    
+    // If it's already an array, return it
+    if (Array.isArray(job.jobPhases)) {
+      return job.jobPhases;
+    }
+    
+    // If it's a string, parse it
+    if (typeof job.jobPhases === 'string') {
+      try {
+        const parsed = JSON.parse(job.jobPhases);
+        // Map PascalCase to camelCase
+        return (Array.isArray(parsed) ? parsed : []).map((phase: any) => ({
+          id: phase.id || phase.Id || '',
+          title: phase.title || phase.Title || '',
+          description: phase.description || phase.Description || '',
+          isCompleted: phase.isCompleted !== undefined ? phase.isCompleted : phase.IsCompleted || false,
+          completedAt: phase.completedAt || phase.CompletedAt
+        }));
+      } catch (e) {
+        console.error('Failed to parse jobPhases:', e);
+        return [];
+      }
+    }
+    
+    return [];
+  }
+
+  applyStatusFilter(): void {
+    if (this.selectedStatus === 'All') {
+      this.filteredJobs = this.assignedJobs;
+    } else {
+      this.filteredJobs = this.assignedJobs.filter(job => job.status === this.selectedStatus);
+    }
+    this.cdr.markForCheck();
+  }
+
+  onStatusFilterChange(status: string): void {
+    this.selectedStatus = status;
+    this.applyStatusFilter();
   }
 }

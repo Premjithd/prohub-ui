@@ -1,551 +1,414 @@
 .pending-jobs-container {
-  max-width: 1200px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 40px 20px;
-  min-height: calc(100vh - 120px);
-}
-
-/* Page Header */
-.page-header {
-  margin-bottom: 40px;
-  text-align: center;
-
-  h1 {
-    font-size: 2.5rem;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 10px 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .subtitle {
-    font-size: 1rem;
-    color: #666;
-    margin: 0;
-  }
-}
-
-/* Alerts */
-.alert {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  font-weight: 500;
-
-  mat-icon {
-    font-size: 1.25rem;
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-
-  &.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-  }
-
-  &.alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-  }
-}
-
-/* Loading State */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 20px;
-
-  p {
-    font-size: 1.1rem;
-    color: #666;
-  }
-}
-
-/* Empty State */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 20px;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 12px;
-
-  .empty-icon {
-    font-size: 4rem;
-    width: 4rem;
-    height: 4rem;
-    color: #999;
-    opacity: 0.6;
-  }
-
-  h2 {
-    font-size: 1.8rem;
-    color: #333;
-    margin: 0;
-  }
-
-  p {
-    font-size: 1rem;
-    color: #666;
-    margin: 0;
-  }
-
-  button {
-    margin-top: 10px;
-  }
-}
-
-/* Jobs Grid */
-.jobs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 24px;
-  margin-top: 30px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Job Card */
-.job-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-
-  &:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    transform: translateY(-4px);
-  }
-
-  mat-card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    border-bottom: none;
-
-    .job-header-content {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      width: 100%;
-
-      .job-title-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
-
-        .job-title {
-          font-size: 1.3rem;
-          font-weight: 600;
-          margin: 0;
-          flex: 1;
-        }
-
-        mat-chip-set {
-          flex-shrink: 0;
-        }
-      }
-
-      .job-category {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.95rem;
-        opacity: 0.9;
-
-        mat-icon {
-          font-size: 1rem;
-          width: 1rem;
-          height: 1rem;
-        }
-      }
-
-      /* Bid Status Chip Styling */
-      mat-chip {
-        &.no-bids {
-          background-color: rgba(255, 255, 255, 0.15) !important;
-          color: rgba(255, 255, 255, 0.8) !important;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-
-          mat-icon {
-            color: rgba(255, 255, 255, 0.8) !important;
-          }
-        }
-      }
-    }
-  }
-
-  mat-card-content {
-    flex: 1;
-    padding: 20px;
-
-    .job-section {
-      margin-bottom: 20px;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-
-      h3 {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #333;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin: 0 0 12px 0;
-      }
-
-      .description {
-        color: #666;
-        line-height: 1.6;
-        margin: 0;
-        max-height: 100px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
-        -webkit-box-orient: vertical;
-      }
-
-      .attachments {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        background-color: #f5f5f5;
-        border-radius: 6px;
-
-        mat-icon {
-          font-size: 1rem;
-          width: 1rem;
-          height: 1rem;
-          color: #667eea;
-        }
-
-        a {
-          color: #667eea;
-          text-decoration: none;
-          font-size: 0.9rem;
-
-          &:hover {
-            text-decoration: underline;
-          }
-        }
-      }
-    }
-
-    .details-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 20px;
-
-      .detail-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-
-        mat-icon {
-          color: #667eea;
-          font-size: 1.2rem;
-          width: 1.2rem;
-          height: 1.2rem;
-          margin-top: 2px;
-          flex-shrink: 0;
-        }
-
-        div {
-          min-width: 0;
-        }
-
-        .label {
-          font-size: 0.8rem;
-          color: #999;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
-          display: block;
-          margin-bottom: 4px;
-        }
-
-        .value {
-          font-size: 0.95rem;
-          color: #333;
-          font-weight: 500;
-          margin: 0;
-          word-break: break-word;
-        }
-      }
-    }
-  }
-
-  mat-card-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 16px 20px;
-    border-top: 1px solid #e0e0e0;
-    background-color: #fafafa;
-
-    button {
-      flex: 1;
-      font-size: 0.85rem;
-
-      mat-icon {
-        margin-right: 4px;
-      }
-    }
-  }
-}
-
-/* Material Chip Overrides */
-::ng-deep {
-  .mat-mdc-chip {
-    &.mat-accent {
-      background-color: rgba(255, 255, 255, 0.3) !important;
-      color: white !important;
-    }
-
-    &.mat-primary {
-      background-color: rgba(255, 255, 255, 0.3) !important;
-      color: white !important;
-    }
-
-    &.mat-warn {
-      background-color: rgba(255, 255, 255, 0.3) !important;
-      color: white !important;
-    }
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .pending-jobs-container {
-    padding: 30px 15px;
-  }
 
   .page-header {
+    margin-bottom: 2rem;
+
     h1 {
-      font-size: 2rem;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 1.1rem;
+      margin: 0;
     }
   }
 
-  .jobs-grid {
-    grid-template-columns: 1fr;
-  }
+  // Alerts
+  .alert {
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 500;
+    animation: slideDown 0.3s ease;
 
-  .job-card {
-    mat-card-content {
-      .details-grid {
-        grid-template-columns: 1fr;
+    &.alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+
+      mat-icon {
+        color: #28a745;
       }
     }
 
-    mat-card-actions {
-      flex-direction: column;
+    &.alert-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
 
-      button {
-        width: 100%;
+      mat-icon {
+        color: #dc3545;
       }
     }
   }
-}
-/* Bids Panel */
-.bids-panel {
-  margin-top: 1rem;
-  border: 1px solid #e0e0e0 !important;
-}
 
-.bids-panel::before {
-  display: none;
-}
+  // Status Filter
+  .status-filter {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
 
-.bids-loading,
-.no-bids {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 2rem;
-  text-align: center;
-  color: #999;
+    .filter-label {
+      font-weight: 600;
+      color: #333;
+      font-size: 0.95rem;
+    }
 
-  mat-icon {
-    font-size: 2rem;
-    width: 2rem;
-    height: 2rem;
-    color: #ccc;
+    .status-toggle-group {
+      display: flex;
+      gap: 0;
+
+      mat-button-toggle {
+        border: 2px solid #ddd;
+        color: #666;
+        background: white;
+        transition: all 0.3s ease;
+
+        &:first-child {
+          border-radius: 6px 0 0 6px;
+        }
+
+        &:last-child {
+          border-radius: 0 6px 6px 0;
+        }
+
+        &:not(:last-child) {
+          border-right: none;
+        }
+
+        &.mat-mdc-button-toggle-checked {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-color: #667eea;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        &:hover:not(.mat-mdc-button-toggle-checked) {
+          background-color: #f5f5f5;
+        }
+      }
+    }
   }
 
-  p {
-    margin: 0;
-    font-size: 0.95rem;
-  }
-}
-
-.bids-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding: 1rem 0;
-}
-
-.bid-item {
-  padding: 1.5rem;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  background-color: #fafafa;
-
-  &:hover {
-    background-color: #f5f5f5;
-    border-color: #d0d0d0;
-  }
-}
-
-.bid-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  gap: 1rem;
-
-  @media (max-width: 768px) {
+  // Loading State
+  .loading-container {
+    display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+
+    p {
+      margin-top: 1rem;
+      color: #666;
+      font-size: 1.1rem;
+    }
   }
-}
 
-.bid-pro-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  .pro-name {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #333;
-  }
-}
-
-.bid-date {
-  font-size: 0.85rem;
-  color: #999;
-  white-space: nowrap;
-}
-
-.bid-amount {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-
-  .label {
-    font-weight: 600;
+  // Empty State
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
     color: #666;
+
+    .empty-icon {
+      font-size: 4rem;
+      width: 4rem;
+      height: 4rem;
+      color: #ccc;
+      margin: 0 auto 1rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin: 1rem 0;
+      color: #333;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    button {
+      margin-top: 1rem;
+    }
   }
 
-  .amount {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #667eea;
+  // Jobs List Container
+  .jobs-list-container {
+    .jobs-list-card {
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(102, 126, 234, 0.1);
+      overflow: hidden;
+      background: white;
+      transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      &:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(102, 126, 234, 0.2);
+      }
+
+      mat-card-header {
+        padding: 2rem;
+        border-bottom: 2px solid #f0f0f0;
+        margin: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        h2 {
+          font-size: 1.6rem;
+          font-weight: 700;
+          color: white;
+          margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          &::before {
+            content: '📋';
+            font-size: 1.8rem;
+          }
+        }
+      }
+
+      mat-card-content {
+        padding: 0;
+        overflow-x: auto;
+
+        .jobs-table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+
+          thead {
+            background: linear-gradient(to bottom, #f8f9fa, #f0f0f0);
+            position: sticky;
+            top: 0;
+
+            th {
+              padding: 1.5rem;
+              text-align: left;
+              font-weight: 700;
+              color: #333;
+              border-bottom: 2px solid #ddd;
+              font-size: 0.9rem;
+              text-transform: uppercase;
+              letter-spacing: 0.6px;
+              background-color: #f8f9fa;
+
+              &.actions {
+                text-align: center;
+                width: 140px;
+              }
+            }
+          }
+
+          tbody {
+            tr.job-row {
+              border-bottom: 1px solid #f0f0f0;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+              &:hover {
+                background-color: #f8f9ff;
+                box-shadow: inset 0 0 0 1px #667eea20;
+              }
+
+              &.completed {
+                opacity: 0.65;
+                background-color: #f5f5f5;
+
+                .title-cell {
+                  color: #999;
+                  text-decoration: line-through;
+                }
+              }
+
+              td {
+                padding: 1.5rem;
+                vertical-align: middle;
+                color: #666;
+                font-size: 0.95rem;
+
+                &.title-cell {
+                  font-weight: 600;
+                  color: #1a1a1a;
+                  font-size: 1rem;
+                  min-width: 250px;
+                  max-width: 350px;
+                }
+
+                .category-badge {
+                  display: inline-block;
+                  padding: 0.5rem 1rem;
+                  background: linear-gradient(135deg, #667eea15, #764ba215);
+                  border: 1px solid #667eea30;
+                  border-radius: 20px;
+                  font-size: 0.85rem;
+                  color: #667eea;
+                  font-weight: 600;
+                }
+
+                .bid-count {
+                  display: inline-block;
+                  padding: 0.5rem 1rem;
+                  background: linear-gradient(135deg, #667eea15, #764ba215);
+                  border: 1px solid #667eea30;
+                  border-radius: 20px;
+                  font-size: 0.85rem;
+                  color: #667eea;
+                  font-weight: 600;
+                }
+
+                &.actions {
+                  text-align: center;
+                  min-width: 160px;
+                  display: flex;
+                  flex-direction: row;
+                  align-items: center;
+                  justify-content: center;
+                  gap: 0.5rem;
+
+                  button {
+                    margin: 0;
+                    padding: 0.5rem 1rem;
+                    font-weight: 600;
+                    border-radius: 6px;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    white-space: nowrap;
+                    
+                    &.view-button {
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      border: none;
+                      
+                      &:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
-.bid-message {
-  margin-bottom: 1.5rem;
+@media (max-width: 1024px) {
+  .pending-jobs-container {
+    padding: 1rem;
 
-  .label {
-    display: block;
-    font-weight: 600;
-    color: #666;
-    margin-bottom: 0.5rem;
-  }
+    .jobs-list-container {
+      .jobs-table {
+        font-size: 0.85rem;
 
-  p {
-    margin: 0;
-    color: #555;
-    line-height: 1.5;
-    font-size: 0.95rem;
-  }
-}
+        thead th {
+          padding: 0.75rem;
+        }
 
-.bid-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-
-  button {
-    margin: 0;
+        tbody td {
+          padding: 0.75rem;
+        }
+      }
+    }
   }
 }
 
-/* Bids Received/No Bids Indicators */
-.bids-received-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 4px 12px;
-  background-color: #d4edda;
-  color: #155724;
-  border-radius: 12px;
-  font-weight: 500;
-  font-size: 0.9rem;
+@media (max-width: 768px) {
+  .pending-jobs-container {
+    padding: 0.75rem;
 
-  mat-icon {
-    font-size: 1.1rem;
-    width: 1.1rem;
-    height: 1.1rem;
-    color: #28a745;
-  }
+    .page-header {
+      margin-bottom: 1.5rem;
 
-  .bid-status-text {
-    display: inline-block;
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      .subtitle {
+        font-size: 0.95rem;
+      }
+    }
+
+    .status-filter {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .status-toggle-group {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+    }
+
+    .jobs-list-container {
+      .jobs-list-card {
+        border-radius: 8px;
+
+        mat-card-header {
+          padding: 1.5rem 1rem;
+
+          h2 {
+            font-size: 1.2rem;
+          }
+        }
+
+        mat-card-content {
+          .jobs-table {
+            font-size: 0.8rem;
+
+            thead th {
+              padding: 0.75rem 0.5rem;
+              font-size: 0.75rem;
+            }
+
+            tbody {
+              tr.job-row {
+                td {
+                  padding: 1rem 0.5rem;
+
+                  &.title-cell {
+                    min-width: 150px;
+                    max-width: 200px;
+                  }
+
+                  &.actions {
+                    flex-direction: column;
+                    min-width: 100px;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
-.no-bids-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 4px 12px;
-  background-color: #e7f3ff;
-  color: #0c5aa0;
-  border-radius: 12px;
-  font-weight: 500;
-  font-size: 0.9rem;
-
-  mat-icon {
-    font-size: 1.1rem;
-    width: 1.1rem;
-    height: 1.1rem;
-    color: #0c5aa0;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-
-  .bid-status-text {
-    display: inline-block;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

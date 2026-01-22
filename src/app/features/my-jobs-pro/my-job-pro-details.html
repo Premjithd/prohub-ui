@@ -1,0 +1,316 @@
+<div class="job-details-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-top">
+      <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Back to My Jobs">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-title">
+        <h1>{{ job?.title || 'Job Details' }}</h1>
+        <p class="subtitle">View and manage job progress</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading job details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !loading" class="alert alert-error">
+    <mat-icon>error</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <mat-icon>check_circle</mat-icon>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <!-- Job Details -->
+  <div *ngIf="job && !loading" class="job-details-card">
+    <mat-card>
+      <!-- Job Header -->
+      <mat-card-header class="job-card-header">
+        <div class="job-header-content">            
+          <div class="job-category-section">
+            <span class="category-label">Category</span>
+            <div class="job-category">
+              <mat-icon>layers</mat-icon>
+              <span>{{ job.category?.name || 'Uncategorized' }}</span>
+            </div>
+          </div>
+          <div class="job-status-section">
+            <span class="status-label">Status</span>
+            <mat-chip-set>
+              <mat-chip [color]="getStatusColor(job.status)" selected>
+                {{ job.status }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Description -->
+        <div class="job-section">
+          <h3>Description</h3>
+          <p class="description">{{ job.description }}</p>
+        </div>
+
+        Details Grid
+        <div class="details-grid">
+          <!-- Location -->
+          <div class="detail-item">
+            <mat-icon>location_on</mat-icon>
+            <div>
+              <span class="label">Location</span>
+              <p class="value">{{ job.location }}</p>
+            </div>
+          </div>
+
+          <!-- Budget -->
+          <div class="detail-item">
+            <mat-icon>attach_money</mat-icon>
+            <div>
+              <span class="label">Budget</span>
+              <p class="value">{{ formatBudget(job.budget) }}</p>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="detail-item">
+            <mat-icon>schedule</mat-icon>
+            <div>
+              <span class="label">Timeline</span>
+              <p class="value">{{ formatTimeline(job.timeline) }}</p>
+            </div>
+          </div>
+
+          <!-- Posted Date -->
+          <div class="detail-item">
+            <mat-icon>calendar_today</mat-icon>
+            <div>
+              <span class="label">Posted</span>
+              <p class="value">{{ job.createdAt | date: 'MMM dd, yyyy' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="customer-section">
+          <h3>Customer</h3>
+          <div class="customer-info">
+            <mat-icon>person</mat-icon>
+            <div>
+              <p class="customer-name">
+                {{ job.user?.firstName && job.user?.lastName ? (job.user?.firstName + ' ' + job.user?.lastName) : (job.user?.name || 'Unknown Customer') }}
+              </p>
+              <p class="customer-email">{{ job.user?.email }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attachments -->
+        <div *ngIf="job.attachments" class="job-section">
+          <h3>Attachments</h3>
+          <div class="attachments">
+            <mat-icon>attach_file</mat-icon>
+            <a href="#" target="_blank">{{ job.attachments }}</a>
+          </div>
+        </div>
+
+        <!-- Customer Communication Section -->
+        <div *ngIf="job.status === 'In Progress'" class="customer-communication-section">
+          <h3>
+            <mat-icon>mail</mat-icon>
+            Customer Communication
+          </h3>
+
+          <mat-tab-group class="messages-tabs">
+            <!-- Messages Tab -->
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon>message</mat-icon>
+                <span>Messages</span>
+              </ng-template>
+
+              <div class="messages-container">
+                <!-- Loading State -->
+                <div *ngIf="loadingMessages" class="messages-loading">
+                  <mat-spinner diameter="30"></mat-spinner>
+                  <p>Loading messages...</p>
+                </div>
+
+                <!-- Messages List -->
+                <div *ngIf="!loadingMessages" class="messages-list">
+                  <div *ngIf="jobMessages.length === 0" class="no-messages">
+                    <mat-icon>mail_outline</mat-icon>
+                    <p>No messages yet</p>
+                  </div>
+
+                  <div *ngFor="let msg of jobMessages" class="message-item" [class.received]="msg.senderType === 'User'">
+                    <div class="message-header">
+                      <span class="sender-type" [class.user]="msg.senderType === 'User'" [class.pro]="msg.senderType === 'Pro'">
+                        {{ msg.senderType === 'User' ? 'Customer' : 'You' }}
+                      </span>
+                      <span class="message-time">{{ msg.sentAt | date: 'MMM dd, yyyy HH:mm' }}</span>
+                    </div>
+                    <p class="message-content">{{ msg.content }}</p>
+                  </div>
+                </div>
+
+                <!-- Send Message Form -->
+                <div class="message-form-section">
+                  <div class="message-input-group">
+                    <input type="text"
+                           [(ngModel)]="messageText"
+                           placeholder="Send a message to customer..."
+                           [disabled]="messageSending"
+                           class="message-input"
+                           (keyup.enter)="sendMessageToCustomer()">
+                    <button mat-icon-button 
+                            color="primary"
+                            (click)="sendMessageToCustomer()" 
+                            [disabled]="messageSending || !messageText.trim()"
+                            matTooltip="Send message">
+                      <mat-icon *ngIf="!messageSending">send</mat-icon>
+                      <mat-spinner *ngIf="messageSending" diameter="20"></mat-spinner>
+                    </button>
+                  </div>
+                  <p class="message-status" *ngIf="messageStatus">{{ messageStatus }}</p>
+                </div>
+              </div>
+            </mat-tab>
+
+            <!-- Bid Details Tab -->
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon>how_to_vote</mat-icon>
+                <span>My Bid</span>
+              </ng-template>
+
+              <div *ngIf="loadingBids" class="bids-loading">
+                <mat-spinner diameter="30"></mat-spinner>
+                <p>Loading bid details...</p>
+              </div>
+
+              <mat-card *ngIf="!loadingBids && getProBid() as proBid" class="pro-bid-card">
+                <div class="bid-header-info">
+                  <div class="bid-status-badge">
+                    <mat-chip-set>
+                      <mat-chip [color]="getBidStatusColor(proBid.status)" selected>
+                        {{ getBidStatus(proBid.status) }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </div>
+                </div>
+
+                <div class="bid-details">
+                  <div *ngIf="proBid.bidAmount" class="bid-detail-item">
+                    <span class="detail-label">Bid Amount:</span>
+                    <span class="detail-value bid-amount">${{ proBid.bidAmount | number: '1.2-2' }}</span>
+                  </div>
+
+                  <div *ngIf="proBid.bidMessage" class="bid-detail-item">
+                    <span class="detail-label">Bid Message:</span>
+                    <p class="detail-value bid-message">{{ proBid.bidMessage }}</p>
+                  </div>
+
+                  <div class="bid-detail-item">
+                    <span class="detail-label">Bid Date:</span>
+                    <span class="detail-value">{{ proBid.createdAt | date: 'MMM dd, yyyy HH:mm' }}</span>
+                  </div>
+                </div>
+              </mat-card>
+
+              <div *ngIf="!loadingBids && !getProBid()" class="no-bid">
+                <mat-icon>info</mat-icon>
+                <p>No bid submitted for this job</p>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+
+        <!-- Job Phases Section -->
+        <div class="phases-section">
+          <div class="phases-header">
+            <div class="phases-title-row">
+              <h3>
+                <mat-icon>flag</mat-icon>
+                Progress Tracking
+              </h3>
+              <div class="unsaved-indicator" *ngIf="hasUnsavedChanges(job.id)">
+                <mat-icon class="warning-icon">info</mat-icon>
+                <span>Unsaved changes</span>
+              </div>
+            </div>
+            <div class="phase-progress">
+              <mat-progress-bar 
+                mode="determinate" 
+                [value]="getPhaseProgress(job)"
+                color="accent">
+              </mat-progress-bar>
+              <span class="progress-text">{{ getPhaseProgress(job) }}% Complete</span>
+            </div>
+          </div>
+          
+          <div class="phases-list">
+            <div 
+              *ngFor="let phase of getJobPhases(job)" 
+              class="phase-item"
+              [class.completed]="phase.isCompleted">
+              <div class="phase-checkbox">
+                <mat-checkbox 
+                  [checked]="phase.isCompleted"
+                  (change)="togglePhaseCompletion(job, phase.id)"
+                  color="accent">
+                </mat-checkbox>
+              </div>
+              <div class="phase-content">
+                <h4 [class.completed]="phase.isCompleted">{{ phase.title }}</h4>
+                <p class="phase-description">{{ phase.description }}</p>
+                <p *ngIf="phase.isCompleted && phase.completedAt" class="phase-completed-date">
+                  <mat-icon>check_circle</mat-icon>
+                  Completed on {{ phase.completedAt | date: 'MMM dd, yyyy HH:mm' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div class="phases-footer" *ngIf="hasUnsavedChanges(job.id)">
+            <button 
+              mat-raised-button 
+              color="accent"
+              (click)="savePhaseChanges(job)"
+              [disabled]="savingJobId === job.id">
+              <mat-icon *ngIf="savingJobId !== job.id">save</mat-icon>
+              <mat-icon *ngIf="savingJobId === job.id" class="spinner">schedule</mat-icon>
+              {{ savingJobId === job.id ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <!-- Job Actions -->
+      <mat-card-actions>
+        <button 
+          mat-button 
+          color="accent" 
+          *ngIf="job.status !== 'Completed'"
+          (click)="markAsCompleted(job.id)">
+          <mat-icon>check_circle</mat-icon>
+          Mark Completed
+        </button>
+        <button mat-button color="warn" *ngIf="job.status === 'Completed'" disabled>
+          <mat-icon>done_all</mat-icon>
+          Completed
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

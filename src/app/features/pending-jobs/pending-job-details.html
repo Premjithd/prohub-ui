@@ -1,0 +1,322 @@
+<div class="job-details-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-top">
+      <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Back to My Jobs">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-title">
+        <h1>{{ job?.title || 'Job Details' }}</h1>
+        <p class="subtitle">View job details and track progress</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading job details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !loading" class="alert alert-error">
+    <mat-icon>error</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <mat-icon>check_circle</mat-icon>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <!-- Job Details -->
+  <div *ngIf="job && !loading" class="job-details-card">
+    <mat-card>
+      <!-- Job Header -->
+      <mat-card-header class="job-card-header">
+        <div class="job-header-content">
+            <div class="job-category-section">
+            <span class="category-label">Category</span>
+            <div class="job-category">
+              <mat-icon>layers</mat-icon>
+              <span>{{ job.category?.name || 'Uncategorized' }}</span>
+            </div>
+          </div>
+          <div class="job-status-section">
+            <span class="status-label">Status</span>
+            <mat-chip-set>
+              <mat-chip [color]="getStatusColor(job.status)" selected>
+                {{ job.status }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Description -->
+        <div class="job-section">
+          <h3>Description</h3>
+          <p class="description">{{ job.description }}</p>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="details-grid">
+          <!-- Location -->
+          <div class="detail-item">
+            <mat-icon>location_on</mat-icon>
+            <div>
+              <span class="label">Location</span>
+              <p class="value">{{ job.location }}</p>
+            </div>
+          </div>
+
+          <!-- Budget -->
+          <div class="detail-item">
+            <mat-icon>attach_money</mat-icon>
+            <div>
+              <span class="label">Budget</span>
+              <p class="value">{{ formatBudget(job.budget) }}</p>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="detail-item">
+            <mat-icon>schedule</mat-icon>
+            <div>
+              <span class="label">Timeline</span>
+              <p class="value">{{ formatTimeline(job.timeline) }}</p>
+            </div>
+          </div>
+
+          <!-- Posted Date -->
+          <div class="detail-item">
+            <mat-icon>calendar_today</mat-icon>
+            <div>
+              <span class="label">Posted</span>
+              <p class="value">{{ job.createdAt | date: 'MMM dd, yyyy' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attachments -->
+        <div *ngIf="job.attachments" class="job-section">
+          <h3>Attachments</h3>
+          <div class="attachments">
+            <mat-icon>attach_file</mat-icon>
+            <a href="#" target="_blank">{{ job.attachments }}</a>
+          </div>
+        </div>
+
+        <!-- Assigned Professional Information Section -->
+        <div *ngIf="job.status === 'In Progress' && job.assignedPro && getAssignedBid() as assignedBid" class="assigned-pro-section">
+          <h3>
+            <mat-icon>person_check</mat-icon>
+            Assigned Professional
+          </h3>
+
+          <mat-tab-group class="messages-tabs">
+            <!-- Bid Tab -->
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon>how_to_vote</mat-icon>
+                <span>Bid Details</span>
+              </ng-template>
+
+              <mat-card class="assigned-bid-card">
+                <div class="bid-header-info">
+                  <div class="pro-info">
+                    <h4 class="pro-business-name">{{ job.assignedPro?.businessName }}</h4>
+                    <p class="pro-contact">{{ job.assignedPro?.name || job.assignedPro?.firstName }}</p>
+                  </div>
+                  <div class="bid-status-badge">
+                    <mat-chip-set>
+                      <mat-chip [color]="getBidStatusColor(assignedBid.status)" selected>
+                        {{ getBidStatus(assignedBid.status) }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </div>
+                </div>
+
+                <div class="assigned-bid-details">
+                  <div *ngIf="assignedBid.bidAmount" class="bid-detail-item">
+                    <span class="detail-label">Bid Amount:</span>
+                    <span class="detail-value bid-amount">${{ assignedBid.bidAmount | number: '1.2-2' }}</span>
+                  </div>
+
+                  <div *ngIf="assignedBid.bidMessage" class="bid-detail-item">
+                    <span class="detail-label">Bid Message:</span>
+                    <p class="detail-value bid-message">{{ assignedBid.bidMessage }}</p>
+                  </div>
+
+                  <div class="bid-detail-item">
+                    <span class="detail-label">Bid Date:</span>
+                    <span class="detail-value">{{ assignedBid.createdAt | date: 'MMM dd, yyyy HH:mm' }}</span>
+                  </div>
+                </div>
+              </mat-card>
+            </mat-tab>
+
+            <!-- Messages Tab -->
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon>message</mat-icon>
+                <span>Messages</span>
+              </ng-template>
+
+              <div class="messages-container">
+                <!-- Loading State -->
+                <div *ngIf="loadingMessages" class="messages-loading">
+                  <mat-spinner diameter="30"></mat-spinner>
+                  <p>Loading messages...</p>
+                </div>
+
+                <!-- Messages List -->
+                <div *ngIf="!loadingMessages" class="messages-list">
+                  <div *ngIf="jobMessages.length === 0" class="no-messages">
+                    <mat-icon>mail_outline</mat-icon>
+                    <p>No messages yet</p>
+                  </div>
+
+                  <div *ngFor="let msg of jobMessages" class="message-item" [class.received]="msg.senderType === 'Pro'">
+                    <div class="message-header">
+                      <span class="sender-type" [class.pro]="msg.senderType === 'Pro'" [class.user]="msg.senderType === 'User'">
+                        {{ msg.senderType === 'Pro' ? 'Professional' : 'You' }}
+                      </span>
+                      <span class="message-time">{{ msg.sentAt | date: 'MMM dd, yyyy HH:mm' }}</span>
+                    </div>
+                    <p class="message-content">{{ msg.content }}</p>
+                  </div>
+                </div>
+
+                <!-- Send Message Form -->
+                <div class="message-form-section">
+                  <div class="message-input-group">
+                    <input type="text"
+                           [(ngModel)]="messageText"
+                           placeholder="Send a message..."
+                           [disabled]="messageSending"
+                           class="message-input"
+                           (keyup.enter)="sendMessageToAssignedPro()">
+                    <button mat-icon-button 
+                            color="primary"
+                            (click)="sendMessageToAssignedPro()" 
+                            [disabled]="messageSending || !messageText.trim()"
+                            matTooltip="Send message">
+                      <mat-icon *ngIf="!messageSending">send</mat-icon>
+                      <mat-spinner *ngIf="messageSending" diameter="20"></mat-spinner>
+                    </button>
+                  </div>
+                  <p class="message-status" *ngIf="messageStatus">{{ messageStatus }}</p>
+                </div>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+
+        <!-- Project Phases Progress (for In Progress jobs) -->
+        <div *ngIf="job.status === 'In Progress'" class="phases-progress-section">
+          <h3>
+            <mat-icon>timeline</mat-icon>
+            Progress Tracking
+          </h3>
+          <div class="phase-progress-info">
+            <div class="progress-bar-container">
+              <mat-progress-bar 
+                mode="determinate" 
+                [value]="getJobPhaseProgress(job)"
+                color="accent">
+              </mat-progress-bar>
+              <span class="progress-percentage">{{ getJobPhaseProgress(job) }}%</span>
+            </div>
+          </div>
+          
+          <div class="phases-timeline" *ngIf="getJobPhases(job).length > 0">
+            <div class="phase-milestone" *ngFor="let phase of getJobPhases(job); let i = index">
+              <div class="milestone-marker" [class.completed]="phase.isCompleted">
+                <mat-icon *ngIf="phase.isCompleted" class="completed-icon">check_circle</mat-icon>
+                <span *ngIf="!phase.isCompleted" class="milestone-number">{{ i + 1 }}</span>
+              </div>
+              <div class="milestone-content">
+                <h4 [class.completed]="phase.isCompleted">{{ phase.title }}</h4>
+                <p class="milestone-description">{{ phase.description }}</p>
+                <p *ngIf="phase.isCompleted && phase.completedAt" class="milestone-date">
+                  ✓ Completed on {{ phase.completedAt | date: 'MMM dd, yyyy' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bids Section -->
+        <div class="bids-section" *ngIf="job.status !== 'In Progress'">
+          <h3>
+            <mat-icon>how_to_vote</mat-icon>
+            Bids Received
+          </h3>
+
+          <!-- Loading Bids -->
+          <div *ngIf="loadingBids" class="bids-loading">
+            <mat-spinner diameter="30"></mat-spinner>
+            <p>Loading bids...</p>
+          </div>
+
+          <!-- No Bids State -->
+          <div *ngIf="!loadingBids && jobBids.length === 0" class="no-bids">
+            <mat-icon>mail_outline</mat-icon>
+            <p>No bids received yet</p>
+          </div>
+
+          <!-- Bids List -->
+          <div *ngIf="!loadingBids && jobBids.length > 0" class="bids-list">
+            <div *ngFor="let bid of jobBids" class="bid-item">
+              <div class="bid-header">
+                <div class="bid-pro-info">
+                  <h4 class="pro-name">{{ bid.pro?.businessName }}</h4>
+                  <span class="label">Representative: {{ bid.pro?.proName }}</span>
+                  <mat-chip-set>
+                    <mat-chip [color]="getBidStatusColor(bid.status)" selected>
+                      {{ getBidStatus(bid.status) }}
+                    </mat-chip>
+                  </mat-chip-set>
+                </div>
+                <div class="bid-date">
+                  {{ bid.createdAt | date: 'MMM dd, yyyy HH:mm' }}
+                </div>
+              </div>
+
+              <!-- Bid Amount -->
+              <div *ngIf="bid.bidAmount" class="bid-amount">
+                <span class="label">Proposed Amount:</span>
+                <span class="amount">${{ bid.bidAmount | number: '1.2-2' }}</span>
+              </div>
+
+              <!-- Bid Message -->
+              <div *ngIf="bid.bidMessage" class="bid-message">
+                <span class="label">Message:</span>
+                <p>{{ bid.bidMessage }}</p>
+              </div>
+
+              <!-- Bid Actions -->
+              <div class="bid-actions">
+                <button mat-button color="accent" *ngIf="bid.status === 'Pending'" (click)="acceptBid(job.id, bid)">
+                  <mat-icon>check</mat-icon>
+                  Accept
+                </button>
+                <button mat-button color="warn" *ngIf="bid.status === 'Pending'" (click)="rejectBid(job.id, bid)">
+                  <mat-icon>close</mat-icon>
+                  Reject
+                </button>
+                <a mat-button color="primary" [href]="'mailto:' + bid.pro?.email">
+                  <mat-icon>email</mat-icon>
+                  Contact
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

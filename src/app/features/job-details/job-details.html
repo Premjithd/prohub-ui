@@ -35,7 +35,7 @@
         <div class="job-title-section">
           <h1 class="job-title">{{ job.title }}</h1>
           <div class="job-meta">
-            <span class="job-category">{{ job.category }}</span>
+            <span class="job-category">{{ job.category?.name || 'Uncategorized' }}</span>
             <span class="job-status" [class.status-open]="job.status === 'Open'">
               {{ job.status }}
             </span>

@@ -1,0 +1,35 @@
+<div class="send-message-dialog">
+  <h2 mat-dialog-title>Send Message to {{ data.recipientName }}</h2>
+
+  <mat-dialog-content>
+    <div *ngIf="error" class="error-message">
+      <mat-icon>error</mat-icon>
+      <span>{{ error }}</span>
+    </div>
+
+    <mat-form-field class="message-input-field">
+      <mat-label>Message</mat-label>
+      <textarea matInput
+                [(ngModel)]="message"
+                placeholder="Enter your message here..."
+                rows="6"
+                [disabled]="loading">
+      </textarea>
+    </mat-form-field>
+
+    <p class="character-count">
+      {{ message.length }} / 1000 characters
+    </p>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="loading">
+      Cancel
+    </button>
+    <button mat-raised-button color="primary" (click)="sendMessage()" [disabled]="loading || !message.trim()">
+      <mat-icon *ngIf="!loading">send</mat-icon>
+      <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+      {{ loading ? 'Sending...' : 'Send Message' }}
+    </button>
+  </mat-dialog-actions>
+</div>

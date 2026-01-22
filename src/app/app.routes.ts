@@ -52,6 +52,11 @@ export const routes: Routes = [
           .then(m => m.PendingJobsModule)
       },
       {
+        path: 'pending-jobs/:jobId',
+        loadComponent: () => import('./features/pending-jobs/pending-job-details.js')
+          .then(m => m.PendingJobDetailsComponent)
+      },
+      {
         path: 'my-services',
         loadChildren: () => import('./features/my-services/my-services-module')
           .then(m => m.MyServicesModule)
@@ -80,6 +85,11 @@ export const routes: Routes = [
         path: 'my-jobs-pro',
         loadComponent: () => import('./features/my-jobs-pro/my-jobs-pro')
           .then(m => m.MyJobsProComponent)
+      },
+      {
+        path: 'my-jobs-pro/:jobId',
+        loadComponent: () => import('./features/my-jobs-pro/my-job-pro-details')
+          .then(m => m.MyJobProDetailsComponent)
       },
       {
         path: 'job-details',

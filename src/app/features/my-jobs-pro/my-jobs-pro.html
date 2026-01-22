@@ -35,116 +35,91 @@
   </div>
 
   <!-- Jobs List -->
-  <div *ngIf="!loading && assignedJobs.length > 0" class="jobs-grid">
-    <mat-card *ngFor="let job of assignedJobs" class="job-card">
-      <!-- Job Header -->
+  <div *ngIf="!loading && assignedJobs.length > 0" class="jobs-list-container">
+    <!-- Status Filter -->
+    <div class="status-filter">
+      <span class="filter-label">Filter by Status:</span>
+      <mat-button-toggle-group 
+        [value]="selectedStatus" 
+        (change)="onStatusFilterChange($event.value)"
+        class="status-toggle-group">
+        <mat-button-toggle *ngFor="let status of availableStatuses" [value]="status">
+          {{ status }}
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+    <mat-card class="jobs-list-card">
       <mat-card-header>
-        <div class="job-header-content">
-          <div class="job-title-section">
-            <h2 class="job-title">{{ job.title }}</h2>
-            <mat-chip-set>
-              <mat-chip [color]="getStatusColor(job.status)" selected>
-                {{ job.status }}
-              </mat-chip>
-            </mat-chip-set>
-          </div>
-          <div class="job-category">
-            <mat-icon>layers</mat-icon>
-            <span>{{ job.category?.name || 'Uncategorized' }}</span>
-          </div>
-        </div>
+        <h2>Your Assigned Jobs ({{ filteredJobs.length }})</h2>
       </mat-card-header>
-
-      <!-- Job Content -->
       <mat-card-content>
-        <!-- Description -->
-        <div class="job-section">
-          <h3>Description</h3>
-          <p class="description">{{ job.description }}</p>
-        </div>
-
-        <!-- Details Grid -->
-        <div class="details-grid">
-          <!-- Location -->
-          <div class="detail-item">
-            <mat-icon>location_on</mat-icon>
-            <div>
-              <span class="label">Location</span>
-              <p class="value">{{ job.location }}</p>
-            </div>
-          </div>
-
-          <!-- Budget -->
-          <div class="detail-item">
-            <mat-icon>attach_money</mat-icon>
-            <div>
-              <span class="label">Budget</span>
-              <p class="value">{{ formatBudget(job.budget) }}</p>
-            </div>
-          </div>
-
-          <!-- Timeline -->
-          <div class="detail-item">
-            <mat-icon>schedule</mat-icon>
-            <div>
-              <span class="label">Timeline</span>
-              <p class="value">{{ formatTimeline(job.timeline) }}</p>
-            </div>
-          </div>
-
-          <!-- Posted Date -->
-          <div class="detail-item">
-            <mat-icon>calendar_today</mat-icon>
-            <div>
-              <span class="label">Posted</span>
-              <p class="value">{{ job.createdAt | date: 'MMM dd, yyyy' }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Customer Info -->
-        <div class="customer-section">
-          <h3>Customer</h3>
-          <div class="customer-info">
-            <mat-icon>person</mat-icon>
-            <div>
-              <p class="customer-name">
-                {{ job.user?.firstName && job.user?.lastName ? (job.user?.firstName + ' ' + job.user?.lastName) : (job.user?.name || 'Unknown Customer') }}
-              </p>
-              <p class="customer-email">{{ job.user?.email }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Attachments -->
-        <div *ngIf="job.attachments" class="job-section">
-          <h3>Attachments</h3>
-          <div class="attachments">
-            <mat-icon>attach_file</mat-icon>
-            <a href="#" target="_blank">{{ job.attachments }}</a>
-          </div>
-        </div>
+        <table class="jobs-table">
+          <thead>
+            <tr>
+              <th>Job Title</th>
+              <th>Category</th>
+              <th>Status</th>
+              <!-- <th>Budget</th> -->
+              <!-- <th>Timeline</th> -->
+              <th>Progress</th>
+              <th class="actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let job of filteredJobs" class="job-row" [class.completed]="job.status === 'Completed'">
+              <td class="title-cell">
+                <strong>{{ job.title }}</strong>
+              </td>
+              <td>
+                <span class="category-badge">{{ job.category?.name || 'Uncategorized' }}</span>
+              </td>
+              <td>
+                <mat-chip-set>
+                  <mat-chip [color]="getStatusColor(job.status)" selected size="small">
+                    {{ job.status }}
+                  </mat-chip>
+                </mat-chip-set>
+              </td>
+              <!-- <td>
+                {{ formatBudget(job.budget) }}
+              </td> -->
+              <!-- td>
+                {{ formatTimeline(job.timeline) }}
+              </td> -->
+              <td>
+                <div class="progress-cell">
+                  <mat-progress-bar 
+                    mode="determinate" 
+                    [value]="getPhaseProgress(job)"
+                    color="accent">
+                  </mat-progress-bar>
+                  <span class="progress-percent">{{ getPhaseProgress(job) }}%</span>
+                </div>
+              </td>
+              <td class="actions">
+                <button 
+                  mat-raised-button 
+                  class="view-button"
+                  matTooltip="View Details"
+                  (click)="viewJobDetails(job.id)">
+                  <mat-icon>visibility</mat-icon>
+                  View
+                </button>
+                <button 
+                  mat-raised-button 
+                  color="accent"
+                  matTooltip="Mark Completed"
+                  *ngIf="job.status !== 'Completed'"
+                  (click)="markAsCompleted(job.id)">
+                  <mat-icon>check_circle</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </mat-card-content>
-
-      <!-- Job Actions -->
-      <mat-card-actions>
-        <button mat-button color="primary" (click)="viewJobDetails(job.id)">
-          <mat-icon>visibility</mat-icon>
-          View Details
-        </button>
-        <button 
-          mat-button 
-          color="accent" 
-          *ngIf="job.status !== 'Completed'"
-          (click)="markAsCompleted(job.id)">
-          <mat-icon>check_circle</mat-icon>
-          Mark Completed
-        </button>
-        <button mat-button color="warn" *ngIf="job.status === 'Completed'" disabled>
-          <mat-icon>done_all</mat-icon>
-          Completed
-        </button>
-      </mat-card-actions>
     </mat-card>
   </div>
 </div>
+
