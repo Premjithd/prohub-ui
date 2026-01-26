@@ -77,7 +77,8 @@
             <mat-icon>attach_money</mat-icon>
             <div>
               <span class="label">Budget</span>
-              <p class="value">{{ formatBudget(job.budget) }}</p>
+              <!-- <p class="value">{{ formatBudget(job.budget) }}</p> -->
+              <p class="value">{{ job.budget }}</p>
             </div>
           </div>
 
@@ -110,13 +111,73 @@
         </div>
 
         <!-- Assigned Professional Information Section -->
-        <div *ngIf="job.status === 'In Progress' && job.assignedPro && getAssignedBid() as assignedBid" class="assigned-pro-section">
+        <div *ngIf="(job.status === 'In Progress' || job.status === 'Completed') && job.assignedPro && getAssignedBid() as assignedBid" class="assigned-pro-section">
           <h3>
             <mat-icon>person_check</mat-icon>
             Assigned Professional
           </h3>
 
-          <mat-tab-group class="messages-tabs">
+          <mat-tab-group class="messages-tabs" [selectedIndex]="selectedTabIndex" (selectedTabChange)="onTabChanged($event.index)">
+            <!-- Messages Tab -->
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon>message</mat-icon>
+                <span>Messages</span>
+              </ng-template>
+
+              <div class="messages-container">
+                <!-- Loading State -->
+                <div *ngIf="loadingMessages" class="messages-loading">
+                  <mat-spinner diameter="30"></mat-spinner>
+                  <p>Loading messages...</p>
+                </div>
+
+                <!-- Messages List -->
+                <div *ngIf="!loadingMessages" class="messages-list">
+                  <div *ngIf="jobMessages.length === 0" class="no-messages">
+                    <mat-icon>mail_outline</mat-icon>
+                    <p>No messages yet</p>
+                  </div>
+
+                  <div *ngFor="let msg of getReversedMessages()" class="message-item" [class.received]="msg.senderType === 'Pro'">
+                    <div class="message-header">
+                      <span class="sender-type" [class.pro]="msg.senderType === 'Pro'" [class.user]="msg.senderType === 'User'">
+                        {{ msg.senderType === 'Pro' ? job.assignedPro?.businessName : 'You' }}
+                      </span>
+                      <span class="message-time">{{ msg.sentAt | date: 'MMM dd, yyyy HH:mm' }}</span>
+                    </div>
+                    <p class="message-content">{{ msg.content }}</p>
+                  </div>
+                </div>
+
+                <!-- Send Message Form (only for In Progress jobs) -->
+                <div class="message-form-section" *ngIf="job.status === 'In Progress'">
+                  <div class="message-input-group">
+                    <input type="text"
+                           [(ngModel)]="messageText"
+                           placeholder="Send a message..."
+                           [disabled]="messageSending"
+                           class="message-input"
+                           (keyup.enter)="sendMessageToAssignedPro()">
+                    <button mat-icon-button 
+                            color="primary"
+                            (click)="sendMessageToAssignedPro()" 
+                            [disabled]="messageSending || !messageText.trim()"
+                            matTooltip="Send message">
+                      <mat-icon *ngIf="!messageSending">send</mat-icon>
+                      <mat-spinner *ngIf="messageSending" diameter="20"></mat-spinner>
+                    </button>
+                  </div>
+                  <p class="message-status" *ngIf="messageStatus">{{ messageStatus }}</p>
+                </div>
+
+                <!-- Read-only Indicator for Completed Jobs -->
+                <div class="message-readonly-note" *ngIf="job.status === 'Completed'">
+                  <mat-icon>lock</mat-icon>
+                </div>
+              </div>
+            </mat-tab>
+
             <!-- Bid Tab -->
             <mat-tab>
               <ng-template mat-tab-label>
@@ -128,7 +189,7 @@
                 <div class="bid-header-info">
                   <div class="pro-info">
                     <h4 class="pro-business-name">{{ job.assignedPro?.businessName }}</h4>
-                    <p class="pro-contact">{{ job.assignedPro?.name || job.assignedPro?.firstName }}</p>
+                    <p class="pro-contact">{{ job?.assignedPro?.proName ? job?.assignedPro?.proName : 'Professional'}}</p>
                   </div>
                   <div class="bid-status-badge">
                     <mat-chip-set>
@@ -157,71 +218,20 @@
                 </div>
               </mat-card>
             </mat-tab>
-
-            <!-- Messages Tab -->
-            <mat-tab>
-              <ng-template mat-tab-label>
-                <mat-icon>message</mat-icon>
-                <span>Messages</span>
-              </ng-template>
-
-              <div class="messages-container">
-                <!-- Loading State -->
-                <div *ngIf="loadingMessages" class="messages-loading">
-                  <mat-spinner diameter="30"></mat-spinner>
-                  <p>Loading messages...</p>
-                </div>
-
-                <!-- Messages List -->
-                <div *ngIf="!loadingMessages" class="messages-list">
-                  <div *ngIf="jobMessages.length === 0" class="no-messages">
-                    <mat-icon>mail_outline</mat-icon>
-                    <p>No messages yet</p>
-                  </div>
-
-                  <div *ngFor="let msg of jobMessages" class="message-item" [class.received]="msg.senderType === 'Pro'">
-                    <div class="message-header">
-                      <span class="sender-type" [class.pro]="msg.senderType === 'Pro'" [class.user]="msg.senderType === 'User'">
-                        {{ msg.senderType === 'Pro' ? 'Professional' : 'You' }}
-                      </span>
-                      <span class="message-time">{{ msg.sentAt | date: 'MMM dd, yyyy HH:mm' }}</span>
-                    </div>
-                    <p class="message-content">{{ msg.content }}</p>
-                  </div>
-                </div>
-
-                <!-- Send Message Form -->
-                <div class="message-form-section">
-                  <div class="message-input-group">
-                    <input type="text"
-                           [(ngModel)]="messageText"
-                           placeholder="Send a message..."
-                           [disabled]="messageSending"
-                           class="message-input"
-                           (keyup.enter)="sendMessageToAssignedPro()">
-                    <button mat-icon-button 
-                            color="primary"
-                            (click)="sendMessageToAssignedPro()" 
-                            [disabled]="messageSending || !messageText.trim()"
-                            matTooltip="Send message">
-                      <mat-icon *ngIf="!messageSending">send</mat-icon>
-                      <mat-spinner *ngIf="messageSending" diameter="20"></mat-spinner>
-                    </button>
-                  </div>
-                  <p class="message-status" *ngIf="messageStatus">{{ messageStatus }}</p>
-                </div>
-              </div>
-            </mat-tab>
           </mat-tab-group>
         </div>
 
-        <!-- Project Phases Progress (for In Progress jobs) -->
-        <div *ngIf="job.status === 'In Progress'" class="phases-progress-section">
-          <h3>
-            <mat-icon>timeline</mat-icon>
-            Progress Tracking
-          </h3>
-          <div class="phase-progress-info">
+        <!-- Project Phases Progress (for In Progress and Completed jobs) -->
+        <div *ngIf="job.status === 'In Progress' || job.status === 'Completed'" >
+
+          <!-- Progress Tracking Details -->
+          <div class="phases-progress-section">
+            <div class="phase-progress-info" >
+              <h3>
+                <mat-icon>timeline</mat-icon>
+                Progress Tracking
+              </h3>
+            </div>
             <div class="progress-bar-container">
               <mat-progress-bar 
                 mode="determinate" 
@@ -230,27 +240,28 @@
               </mat-progress-bar>
               <span class="progress-percentage">{{ getJobPhaseProgress(job) }}%</span>
             </div>
-          </div>
-          
-          <div class="phases-timeline" *ngIf="getJobPhases(job).length > 0">
-            <div class="phase-milestone" *ngFor="let phase of getJobPhases(job); let i = index">
-              <div class="milestone-marker" [class.completed]="phase.isCompleted">
-                <mat-icon *ngIf="phase.isCompleted" class="completed-icon">check_circle</mat-icon>
-                <span *ngIf="!phase.isCompleted" class="milestone-number">{{ i + 1 }}</span>
-              </div>
-              <div class="milestone-content">
-                <h4 [class.completed]="phase.isCompleted">{{ phase.title }}</h4>
-                <p class="milestone-description">{{ phase.description }}</p>
-                <p *ngIf="phase.isCompleted && phase.completedAt" class="milestone-date">
-                  ✓ Completed on {{ phase.completedAt | date: 'MMM dd, yyyy' }}
-                </p>
+            
+            
+            <div class="phases-timeline" *ngIf="getJobPhases(job).length > 0">
+              <div class="phase-milestone" *ngFor="let phase of getJobPhases(job); let i = index">
+                <div class="milestone-marker" [class.completed]="phase.isCompleted">
+                  <mat-icon *ngIf="phase.isCompleted" class="completed-icon">check_circle</mat-icon>
+                  <span *ngIf="!phase.isCompleted" class="milestone-number">{{ i + 1 }}</span>
+                </div>
+                <div class="milestone-content">
+                  <h4 [class.completed]="phase.isCompleted">{{ phase.title }}</h4>
+                  <p class="milestone-description">{{ phase.description }}</p>
+                  <p *ngIf="phase.isCompleted && phase.completedAt" class="milestone-date">
+                    ✓ Completed on {{ phase.completedAt | date: 'MMM dd, yyyy' }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Bids Section -->
-        <div class="bids-section" *ngIf="job.status !== 'In Progress'">
+        <!-- Bids Section (for Open jobs only) -->
+        <div class="bids-section" *ngIf="job.status === 'Open'">
           <h3>
             <mat-icon>how_to_vote</mat-icon>
             Bids Received
@@ -274,7 +285,7 @@
               <div class="bid-header">
                 <div class="bid-pro-info">
                   <h4 class="pro-name">{{ bid.pro?.businessName }}</h4>
-                  <span class="label">Representative: {{ bid.pro?.proName }}</span>
+                  <span class="label">Representative: {{ bid.pro?.proName || 'Professional' }}</span>
                   <mat-chip-set>
                     <mat-chip [color]="getBidStatusColor(bid.status)" selected>
                       {{ getBidStatus(bid.status) }}

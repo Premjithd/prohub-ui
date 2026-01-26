@@ -62,7 +62,7 @@
               <th>Status</th>
               <!-- <th>Budget</th> -->
               <th>Progress</th>
-              <th>Bids</th>
+              <!-- <th>Bids</th> -->
               <th class="actions">Actions</th>
             </tr>
           </thead>
@@ -95,9 +95,9 @@
                 </div>
                 <span *ngIf="job.status !== 'In Progress'" class="progress-na">—</span>
               </td>
-              <td>
+              <!-- <td>
                 <span class="bid-count">{{ (jobBidsMap.get(job.id) || []).length }} bid<span *ngIf="(jobBidsMap.get(job.id) || []).length !== 1">s</span></span>
-              </td>
+              </td> -->
               <td class="actions">
                 <button 
                   mat-raised-button 

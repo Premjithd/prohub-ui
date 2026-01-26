@@ -114,7 +114,7 @@
             <div *ngIf="job.assignedProId" class="info-item">
               <span class="info-label">Assigned to:</span>
               <span class="info-value">
-                {{ job?.assignedPro?.firstName && job?.assignedPro?.lastName ? (job?.assignedPro?.firstName + ' ' + job?.assignedPro?.lastName) : (job?.assignedPro?.name || 'Professional') }}
+                {{ job?.assignedPro?.proName ? job?.assignedPro?.proName : 'Professional' }}
               </span>
             </div>
             <div *ngIf="!job.assignedProId" class="info-item">

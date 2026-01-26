@@ -13,10 +13,11 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { JobService, Job, JobPhase, Message, JobBid } from '../../services/job.service.js';
 import { Auth } from '../../core/services/auth';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, interval } from 'rxjs';
+import { takeUntil, switchMap, filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-my-job-pro-details',
@@ -35,7 +36,8 @@ import { takeUntil } from 'rxjs/operators';
     MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatDialogModule
   ],
   templateUrl: './my-job-pro-details.html',
   styleUrl: './my-job-pro-details.scss'
@@ -54,14 +56,19 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   messageText: string = '';
   messageSending = false;
   messageStatus: string = '';
+  selectedTabIndex = 0; // Track selected tab: 0 = Messages (default), 1 = Bid Details
   private destroy$ = new Subject<void>();
+  private pollMessages$ = new Subject<void>(); // Subject to control polling
+  private currentJobId: number | null = null;
+  private messagePollInterval = 5000; // 5 seconds
 
   constructor(
     private jobService: JobService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
     public auth: Auth,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -75,6 +82,8 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.pollMessages$.next(); // Stop polling
+    this.pollMessages$.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -82,6 +91,7 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   loadJobDetails(jobId: number): void {
     this.loading = true;
     this.errorMessage = '';
+    this.currentJobId = jobId; // Store job ID for polling
     
     this.jobService.getJob(jobId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (job) => {
@@ -93,6 +103,8 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
         this.loadBidsForJob(jobId);
         // Load messages for the job
         this.loadMessagesForJob(jobId);
+        // Start message polling
+        this.setupMessagePolling(jobId);
       },
       error: (error) => {
         console.error('Error loading job details:', error);
@@ -184,17 +196,6 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
     return Math.round((completed / phases.length) * 100);
   }
 
-  formatBudget(budget: string): string {
-    const budgetMap: { [key: string]: string } = {
-      'under-100': 'Under $100',
-      '100-250': '$100 - $250',
-      '250-500': '$250 - $500',
-      '500-1000': '$500 - $1,000',
-      'over-1000': 'Over $1,000'
-    };
-    return budgetMap[budget] || budget;
-  }
-
   formatTimeline(timeline: string): string {
     const timelineMap: { [key: string]: string } = {
       'asap': 'ASAP (within 24 hours)',
@@ -268,26 +269,33 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   markAsCompleted(jobId: number): void {
     if (!this.job || this.job.id !== jobId) return;
 
-    if (confirm('Mark this job as completed?')) {
-      this.jobService.markJobCompleted(jobId).pipe(takeUntil(this.destroy$)).subscribe({
-        next: () => {
-          this.successMessage = 'Job marked as completed!';
-          if (this.job) {
-            this.job.status = 'Completed';
-          }
-          this.cdr.markForCheck();
-          setTimeout(() => {
-            this.successMessage = '';
+    const dialogRef = this.dialog.open(ConfirmCompletionDialogComponent, {
+      width: '400px',
+      data: { jobTitle: this.job.title }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.jobService.markJobCompleted(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.successMessage = 'Job marked as completed!';
+            if (this.job) {
+              this.job.status = 'Completed';
+            }
             this.cdr.markForCheck();
-          }, 3000);
-        },
-        error: (error) => {
-          console.error('Error marking job as completed:', error);
-          this.errorMessage = 'Failed to mark job as completed. Please try again.';
-          this.cdr.markForCheck();
-        }
-      });
-    }
+            setTimeout(() => {
+              this.successMessage = '';
+              this.cdr.markForCheck();
+            }, 3000);
+          },
+          error: (error) => {
+            console.error('Error marking job as completed:', error);
+            this.errorMessage = 'Failed to mark job as completed. Please try again.';
+            this.cdr.markForCheck();
+          }
+        });
+      }
+    });
   }
 
   goBack(): void {
@@ -364,11 +372,11 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
 
     this.jobService.sendMessage(this.job.id, { content: this.messageText })
       .pipe(takeUntil(this.destroy$)).subscribe({
-        next: (message) => {
+        next: (messages) => {
           this.messageSending = false;
           this.messageStatus = '✓ Sent';
           this.messageText = '';
-          this.jobMessages.push(message);
+          this.jobMessages = messages;
           this.cdr.markForCheck();
 
           // Clear status message after 2 seconds
@@ -418,5 +426,143 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
       default:
         return 'Unknown';
     }
+  }
+
+  // Get reversed messages for display (newest on top)
+  getReversedMessages(): Message[] {
+    return [...this.jobMessages].reverse();
+  }
+
+  // Handle tab change
+  onTabChanged(index: number): void {
+    this.selectedTabIndex = index;
+    
+    // Start polling when Messages tab (index 0) is selected
+    if (index === 0 && this.currentJobId) {
+      this.setupMessagePolling(this.currentJobId);
+    } else {
+      // Stop polling when switching to other tabs
+      this.pollMessages$.next();
+    }
+    
+    this.cdr.markForCheck();
+  }
+
+  // Setup polling for messages
+  private setupMessagePolling(jobId: number): void {
+    // Start polling with 5-second interval when Messages tab is active
+    interval(this.messagePollInterval)
+      .pipe(
+        filter(() => this.selectedTabIndex === 0), // Only poll when Messages tab is active
+        switchMap(() => this.jobService.getJobMessages(jobId)),
+        takeUntil(this.pollMessages$),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (messages) => {
+          this.jobMessages = messages;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error polling messages:', error);
+        }
+      });
+  }
+}
+
+// Confirmation Dialog Component
+import { Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+
+@Component({
+  selector: 'app-confirm-completion-dialog',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule],
+  template: `
+    <div class="confirmation-dialog">
+      <div class="dialog-header">
+        <mat-icon class="dialog-icon">check_circle_outline</mat-icon>
+        <h2>Mark Job as Completed?</h2>
+      </div>
+      
+      <div class="dialog-content">
+        <p>Are you sure you want to mark <strong>{{ data.jobTitle }}</strong> as completed?</p>
+        <p class="dialog-note">This action cannot be undone.</p>
+      </div>
+      
+      <div class="dialog-actions">
+        <button mat-button (click)="onCancel()">
+          Cancel
+        </button>
+        <button mat-raised-button color="accent" (click)="onConfirm()">
+          <mat-icon>check</mat-icon>
+          Mark as Completed
+        </button>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .confirmation-dialog {
+      padding: 20px;
+    }
+    
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .dialog-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: #4caf50;
+    }
+    
+    .dialog-header h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    
+    .dialog-content {
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    
+    .dialog-content p {
+      margin: 8px 0;
+    }
+    
+    .dialog-note {
+      font-size: 13px;
+      color: #666;
+      font-style: italic;
+    }
+    
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    
+    button {
+      min-width: 120px;
+    }
+  `]
+})
+export class ConfirmCompletionDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<ConfirmCompletionDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { jobTitle: string }
+  ) {}
+
+  onCancel(): void {
+    this.dialogRef.close(false);
+  }
+
+  onConfirm(): void {
+    this.dialogRef.close(true);
   }
 }

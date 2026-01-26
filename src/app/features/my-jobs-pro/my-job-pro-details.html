@@ -77,7 +77,7 @@
             <mat-icon>attach_money</mat-icon>
             <div>
               <span class="label">Budget</span>
-              <p class="value">{{ formatBudget(job.budget) }}</p>
+              <p class="value">{{ job.budget }}</p>
             </div>
           </div>
 
@@ -130,7 +130,7 @@
             Customer Communication
           </h3>
 
-          <mat-tab-group class="messages-tabs">
+          <mat-tab-group class="messages-tabs" [selectedIndex]="selectedTabIndex" (selectedTabChange)="onTabChanged($event.index)">
             <!-- Messages Tab -->
             <mat-tab>
               <ng-template mat-tab-label>
@@ -152,10 +152,10 @@
                     <p>No messages yet</p>
                   </div>
 
-                  <div *ngFor="let msg of jobMessages" class="message-item" [class.received]="msg.senderType === 'User'">
+                  <div *ngFor="let msg of getReversedMessages()" class="message-item" [class.received]="msg.senderType === 'User'">
                     <div class="message-header">
                       <span class="sender-type" [class.user]="msg.senderType === 'User'" [class.pro]="msg.senderType === 'Pro'">
-                        {{ msg.senderType === 'User' ? 'Customer' : 'You' }}
+                        {{ msg.senderType === 'User' ? (job.user?.firstName ? job.user?.firstName: 'Customer') : 'You' }}
                       </span>
                       <span class="message-time">{{ msg.sentAt | date: 'MMM dd, yyyy HH:mm' }}</span>
                     </div>

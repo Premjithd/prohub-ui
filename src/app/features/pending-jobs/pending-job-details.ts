@@ -15,8 +15,8 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { JobService, Job, JobBid, JobPhase, Message } from '../../services/job.service.js';
 import { Auth } from '../../core/services/auth';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, interval } from 'rxjs';
+import { takeUntil, switchMap, filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-pending-job-details',
@@ -52,7 +52,11 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   messageText: string = '';
   messageSending = false;
   messageStatus: string = '';
+  selectedTabIndex = 0; // Track selected tab: 0 = Messages (default), 1 = Bid Details
   private destroy$ = new Subject<void>();
+  private pollMessages$ = new Subject<void>(); // Subject to control polling
+  private currentJobId: number | null = null;
+  private messagePollInterval = 5000; // 5 seconds
 
   constructor(
     private jobService: JobService,
@@ -73,6 +77,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.pollMessages$.next(); // Stop polling
+    this.pollMessages$.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -80,6 +86,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   loadJobDetails(jobId: number): void {
     this.loading = true;
     this.errorMessage = '';
+    this.currentJobId = jobId; // Store job ID for polling
 
     this.jobService.getJob(jobId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (job) => {
@@ -90,6 +97,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         this.loadBidsForJob(jobId);
         // Load messages for the job
         this.loadMessagesForJob(jobId);
+        // Start message polling
+        this.setupMessagePolling(jobId);
       },
       error: (error) => {
         console.error('Error loading job details:', error);
@@ -148,27 +157,14 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  formatBudget(budget: string): string {
-    const budgetMap: { [key: string]: string } = {
-      'under-100': 'Under $100',
-      '100-500': '$100 - $500',
-      '500-1000': '$500 - $1,000',
-      '1000-5000': '$1,000 - $5,000',
-      '5000-10000': '$5,000 - $10,000',
-      'over-10000': 'Over $10,000'
-    };
-    return budgetMap[budget] || 'Not specified';
-  }
-
   formatTimeline(timeline: string): string {
     const timelineMap: { [key: string]: string } = {
-      'less-than-week': 'Less than a week',
-      'one-to-two-weeks': '1 - 2 weeks',
-      'two-to-four-weeks': '2 - 4 weeks',
-      'one-to-three-months': '1 - 3 months',
-      'more-than-three-months': 'More than 3 months'
+      'asap': 'ASAP (within 24 hours)',
+      '1-week': 'Within 1 week',
+      '1-month': 'Within 1 month',
+      'flexible': 'No specific deadline'
     };
-    return timelineMap[timeline] || 'Not specified';
+    return timelineMap[timeline] || timeline;
   }
 
   getBidStatusColor(status: string): string {
@@ -331,11 +327,11 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
 
     this.jobService.sendMessage(this.job.id, { content: this.messageText })
       .pipe(takeUntil(this.destroy$)).subscribe({
-        next: (message) => {
+        next: (messages) => {
           this.messageSending = false;
           this.messageStatus = '✓ Sent';
           this.messageText = '';
-          this.jobMessages.push(message);
+          this.jobMessages = messages;
           this.cdr.markForCheck();
 
           // Clear status message after 2 seconds
@@ -355,6 +351,47 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
             this.messageStatus = '';
             this.cdr.markForCheck();
           }, 3000);
+        }
+      });
+  }
+
+  // Get reversed messages for display (newest on top)
+  getReversedMessages(): Message[] {
+    return [...this.jobMessages].reverse();
+  }
+
+  // Handle tab change
+  onTabChanged(index: number): void {
+    this.selectedTabIndex = index;
+    
+    // Start polling when Messages tab (index 0) is selected
+    if (index === 0 && this.currentJobId) {
+      this.setupMessagePolling(this.currentJobId);
+    } else {
+      // Stop polling when switching to other tabs
+      this.pollMessages$.next();
+    }
+    
+    this.cdr.markForCheck();
+  }
+
+  // Setup polling for messages
+  private setupMessagePolling(jobId: number): void {
+    // Start polling with 5-second interval when Messages tab is active and job is not completed
+    interval(this.messagePollInterval)
+      .pipe(
+        filter(() => this.selectedTabIndex === 0 && this.job?.status !== 'Completed'), // Only poll when Messages tab is active and job is not completed
+        switchMap(() => this.jobService.getJobMessages(jobId)),
+        takeUntil(this.pollMessages$),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (messages) => {
+          this.jobMessages = messages;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error polling messages:', error);
         }
       });
   }

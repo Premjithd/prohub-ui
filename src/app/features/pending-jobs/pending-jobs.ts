@@ -93,7 +93,7 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
           if (job.status.toLowerCase() === 'in progress' && job.assignedPro) {
             const proName = job.assignedPro.firstName && job.assignedPro.lastName
               ? `${job.assignedPro.firstName} ${job.assignedPro.lastName}`
-              : (job.assignedPro.name || 'Professional');
+              : (job.assignedPro.proName || 'Professional');
             this.assignedProMap.set(job.id, {
               name: proName,
               email: job.assignedPro.email || ''

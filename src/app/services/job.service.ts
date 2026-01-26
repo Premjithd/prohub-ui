@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';import { map } from 'rxjs/operators';import { environment } from '../../environments/environment';
+import { Observable } from 'rxjs';import { map, switchMap } from 'rxjs/operators';import { environment } from '../../environments/environment';
 
 export interface JobPhase {
   id: string;
@@ -43,7 +43,7 @@ export interface Job {
     id: number;
     firstName?: string;
     lastName?: string;
-    name?: string;
+    proName?: string;
     businessName?: string;
     email?: string;
     phoneNumber?: string;
@@ -251,7 +251,7 @@ export class JobService {
 
   // Get messages for a job
   getJobMessages(jobId: number): Observable<Message[]> {
-    return this.http.get<any>(`${this.apiUrl}/${jobId}/messages`).pipe(
+    return this.http.get<any>(`${environment.apiUrl}/messages/job/${jobId}`).pipe(
       map(response => {
         // Handle wrapped response format
         if (response && response.$values && Array.isArray(response.$values)) {
@@ -271,8 +271,11 @@ export class JobService {
     );
   }
 
-  // Send a message
-  sendMessage(jobId: number, message: { content: string }): Observable<Message> {
-    return this.http.post<Message>(`${this.apiUrl}/${jobId}/messages`, message);
+  // Send a message and refresh chat history
+  sendMessage(jobId: number, message: { content: string }): Observable<Message[]> {
+    return this.http.post<Message>(`${environment.apiUrl}/messages/job/${jobId}`, message).pipe(
+      // After sending, fetch the updated message list
+      switchMap(() => this.getJobMessages(jobId))
+    );
   }
 }
