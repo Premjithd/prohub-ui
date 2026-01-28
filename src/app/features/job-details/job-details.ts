@@ -32,6 +32,9 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
   userHasBid = false;
   userBidMessage: string | null = null;
   userBidAmount: number | null = null;
+  userBidStatus: string | null = null;
+  jobMessages: any[] = [];
+  loadingMessages = false;
   currentUserId!: number;
   private destroy$ = new Subject<void>();
 
@@ -121,7 +124,10 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
           if (userBid) {
             this.userBidMessage = userBid.bidMessage || null;
             this.userBidAmount = userBid.bidAmount || null;
-            console.log(`User ${this.currentUserId} bid:`, { message: this.userBidMessage, amount: this.userBidAmount });
+            this.userBidStatus = userBid.status || null;
+            console.log(`User ${this.currentUserId} bid:`, { message: this.userBidMessage, amount: this.userBidAmount, status: this.userBidStatus });
+            // Load messages related to this bid
+            this.loadJobMessages();
           }
           
           this.cdr.markForCheck();
@@ -131,6 +137,33 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
           this.userHasBid = false;
           this.userBidMessage = null;
           this.userBidAmount = null;
+          this.userBidStatus = null;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  // Load messages for the job
+  loadJobMessages(): void {
+    this.loadingMessages = true;
+    this.jobService.getJobMessages(this.jobId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (messages) => {
+          // Filter messages to only those related to the current pro user
+          // Messages where recipientId matches current user or senderType is Pro
+          this.jobMessages = messages.filter(msg => 
+            msg.recipientId === this.currentUserId || 
+            (msg.senderType === 'Pro' && msg.senderId === this.currentUserId) ||
+            msg.senderType === 'User' // Show all messages from users (job posters)
+          );
+          this.loadingMessages = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error loading job messages:', error);
+          this.jobMessages = [];
+          this.loadingMessages = false;
           this.cdr.markForCheck();
         }
       });
@@ -221,7 +254,7 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.userHasBid) {
+    if (this.userHasBid && this.userBidStatus !== 'Rejected') {
       this.errorMessage = 'You have already submitted a bid for this job.';
       return;
     }
@@ -232,7 +265,8 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
       disableClose: false,
       data: {
         jobTitle: this.job.title,
-        jobBudget: this.job.budget
+        jobBudget: this.job.budget,
+        isResubmission: this.userBidStatus === 'Rejected'
       }
     });
 
@@ -261,9 +295,11 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
         next: (response) => {
           console.log('Bid submitted successfully:', response);
           this.bidSuccess = true;
-          this.userHasBid = true; // Mark that user has bid
           this.submittingBid = false;
           this.cdr.markForCheck();
+          
+          // Refresh bid status to show updated bid
+          this.checkIfUserHasBid();
           
           // Show success message for 3 seconds
           setTimeout(() => {

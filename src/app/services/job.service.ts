@@ -272,8 +272,9 @@ export class JobService {
   }
 
   // Send a message and refresh chat history
-  sendMessage(jobId: number, message: { content: string }): Observable<Message[]> {
-    return this.http.post<Message>(`${environment.apiUrl}/messages/job/${jobId}`, message).pipe(
+  sendMessage(jobId: number, message: { content: string }, recipientId?: number): Observable<Message[]> {
+    const payload = recipientId ? { ...message, recipientId } : message;
+    return this.http.post<Message>(`${environment.apiUrl}/messages/job/${jobId}`, payload).pipe(
       // After sending, fetch the updated message list
       switchMap(() => this.getJobMessages(jobId))
     );

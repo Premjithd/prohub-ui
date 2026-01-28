@@ -126,10 +126,10 @@
               <div *ngIf="!userHasBid" class="bid-status-container">
                 <span class="info-value">Not yet bid</span>
               </div>
-              <div *ngIf="userHasBid" class="bid-status-container bid-submitted">
+              <div *ngIf="userHasBid" class="bid-status-container bid-submitted" [class.bid-rejected]="userBidStatus === 'Rejected'">
                 <div class="bid-status-header">
-                  <mat-icon>check_circle</mat-icon>
-                  <span class="bid-status-text">Bid Submitted</span>
+                  <mat-icon [class.rejected-icon]="userBidStatus === 'Rejected'">{{ userBidStatus === 'Rejected' ? 'cancel' : 'check_circle' }}</mat-icon>
+                  <span class="bid-status-text">{{ userBidStatus === 'Rejected' ? 'Bid Rejected' : 'Bid Submitted' }}</span>
                 </div>
                 <div class="bid-details">
                   <div *ngIf="userBidAmount" class="bid-detail-item">
@@ -141,14 +141,43 @@
                     <p class="bid-detail-value message">{{ userBidMessage }}</p>
                   </div>
                 </div>
+                <div *ngIf="userBidStatus === 'Rejected' && job.status === 'Open'" class="bid-resubmit-section">
+                  <p class="resubmit-message">Your bid was not accepted. You can try submit a new bid.</p>
+                  <button mat-raised-button color="accent" (click)="submitBid()">
+                    <mat-icon>refresh</mat-icon>
+                    Submit New Bid
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Message History Section -->
+            <div class="info-item" *ngIf="userHasBid && jobMessages.length > 0">
+              <span class="info-label">Message History:</span>
+              <div class="messages-section">
+                <!-- Loading State -->
+                <div *ngIf="loadingMessages" class="messages-loading">
+                  <mat-spinner diameter="20"></mat-spinner>
+                  <p>Loading messages...</p>
+                </div>
+
+                <!-- Messages List -->
+                <div *ngIf="!loadingMessages && jobMessages.length > 0" class="messages-list">
+                  <div *ngFor="let msg of jobMessages" class="message-item" [class.sent]="msg.senderType === 'Pro'">
+                    <div class="message-header">
+                      <span class="sender-type">{{ msg.senderType === 'Pro' ? 'You' : 'Job Poster' }}</span>
+                      <span class="message-time">{{ msg.sentAt | date: 'MMM dd, HH:mm' }}</span>
+                    </div>
+                    <p class="message-content">{{ msg.content }}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
-      </div>
 
-      <!-- Action Buttons -->
-      <div class="job-actions">
+        <!-- Action Buttons -->
+        <div class="job-actions">
         <button mat-raised-button color="primary" class="full-width" (click)="submitBid()" [disabled]="submittingBid || userHasBid">
           <mat-icon *ngIf="!submittingBid && !userHasBid">handshake</mat-icon>
           <mat-icon *ngIf="userHasBid">check_circle</mat-icon>

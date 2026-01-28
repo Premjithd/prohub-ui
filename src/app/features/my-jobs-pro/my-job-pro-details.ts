@@ -62,6 +62,20 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   private currentJobId: number | null = null;
   private messagePollInterval = 5000; // 5 seconds
 
+  // Predefined phase options for professionals to choose from
+  readonly PHASE_OPTIONS: JobPhase[] = [
+    { id: 'consultation', title: 'Initial Consultation', description: 'Meet with client to discuss requirements, scope, budget, and timeline', isCompleted: false },
+    { id: 'assessment', title: 'Site Assessment & Planning', description: 'On-site assessment and detailed project planning', isCompleted: false },
+    { id: 'design', title: 'Design & Proposal', description: 'Create design mockups and finalize proposal with quote', isCompleted: false },
+    { id: 'implementation', title: 'Implementation & Execution', description: 'Execute project according to agreed plan and timeline', isCompleted: false },
+    { id: 'inspection', title: 'Quality Inspection', description: 'Verify work quality and ensure all requirements are met', isCompleted: false },
+    { id: 'walkthrough', title: 'Client Walkthrough', description: 'Walkthrough with client and address any adjustments', isCompleted: false },
+    { id: 'delivery', title: 'Final Delivery', description: 'Complete delivery, documentation, and project closure', isCompleted: false },
+    { id: 'testing', title: 'Testing & Verification', description: 'Comprehensive testing and verification of all deliverables', isCompleted: false },
+    { id: 'training', title: 'Client Training', description: 'Provide training to client on project deliverables', isCompleted: false },
+    { id: 'warranty', title: 'Warranty & Support', description: 'Provide post-completion warranty and technical support', isCompleted: false }
+  ];
+
   constructor(
     private jobService: JobService,
     private activatedRoute: ActivatedRoute,
@@ -152,17 +166,6 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
       isCompleted: phase.isCompleted !== undefined ? phase.isCompleted : phase.IsCompleted || false,
       completedAt: phase.completedAt || phase.CompletedAt
     }));
-    
-    // If no phases or empty array, initialize with defaults
-    if (!phases || phases.length === 0) {
-      phases = [
-        { id: '1', title: 'Project Setup', description: 'Initial project setup and requirements review', isCompleted: false },
-        { id: '2', title: 'Design & Planning', description: 'Design and planning phase', isCompleted: false },
-        { id: '3', title: 'Implementation', description: 'Main implementation and development', isCompleted: false },
-        { id: '4', title: 'Testing & Review', description: 'Testing and client review', isCompleted: false },
-        { id: '5', title: 'Final Delivery', description: 'Final delivery and handover', isCompleted: false }
-      ];
-    }
     
     job.jobPhases = phases;
   }
@@ -264,6 +267,34 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
 
   hasUnsavedChanges(jobId: number): boolean {
     return this.unsavedJobIds.has(jobId);
+  }
+
+  openPhaseSelectionDialog(job: Job): void {
+    if (!job) return;
+
+    const currentPhaseIds = this.getJobPhases(job).map(p => p.id);
+    const dialogRef = this.dialog.open(PhaseSelectionDialogComponent, {
+      width: '600px',
+      maxHeight: '80vh',
+      data: {
+        availablePhases: this.PHASE_OPTIONS,
+        selectedPhaseIds: currentPhaseIds,
+        maxPhases: 7
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.selectedPhases && result.selectedPhases.length > 0) {
+        const selectedPhases: JobPhase[] = result.selectedPhases.map((phase: any) => ({
+          ...phase,
+          isCompleted: false
+        }));
+        
+        job.jobPhases = selectedPhases;
+        this.unsavedJobIds.add(job.id);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   markAsCompleted(jobId: number): void {
@@ -564,5 +595,144 @@ export class ConfirmCompletionDialogComponent {
 
   onConfirm(): void {
     this.dialogRef.close(true);
+  }
+}
+// Phase Selection Dialog Component
+@Component({
+  selector: 'app-phase-selection-dialog',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule, MatCheckboxModule, MatFormFieldModule],
+  template: `
+    <div class="phase-selection-dialog">
+      <h2 mat-dialog-title>Select Project Phases (Maximum 7)</h2>
+      
+      <mat-dialog-content>
+        <div class="selection-info">
+          <p>Selected: <strong>{{ selectedPhases.length }} / {{ data.maxPhases }}</strong> phases</p>
+        </div>
+
+        <div class="phases-grid">
+          <div *ngFor="let phase of data.availablePhases" class="phase-option">
+            <mat-checkbox 
+              [checked]="isPhaseSelected(phase.id)"
+              [disabled]="!isPhaseSelected(phase.id) && selectedPhases.length >= data.maxPhases"
+              (change)="togglePhaseSelection(phase)">
+            </mat-checkbox>
+            <div class="phase-info">
+              <h4>{{ phase.title }}</h4>
+              <p>{{ phase.description }}</p>
+            </div>
+          </div>
+        </div>
+      </mat-dialog-content>
+
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()">
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button mat-raised-button color="accent" (click)="onSave()" [disabled]="selectedPhases.length === 0">
+          <mat-icon>save</mat-icon>
+          Save Phases
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `,
+  styles: [`
+    .phase-selection-dialog {
+      min-width: 500px;
+    }
+
+    .selection-info {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 6px;
+    }
+
+    .selection-info p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .phases-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .phase-option {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      align-items: flex-start;
+
+      &:hover {
+        background: #f9f9f9;
+      }
+    }
+
+    .phase-option mat-checkbox {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .phase-info {
+      flex: 1;
+    }
+
+    .phase-info h4 {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .phase-info p {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    mat-dialog-actions {
+      gap: 8px;
+    }
+  `]
+})
+export class PhaseSelectionDialogComponent {
+  selectedPhases: JobPhase[] = [];
+
+  constructor(
+    public dialogRef: MatDialogRef<PhaseSelectionDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { availablePhases: JobPhase[]; selectedPhaseIds: string[]; maxPhases: number }
+  ) {
+    this.selectedPhases = data.availablePhases.filter(p => data.selectedPhaseIds.includes(p.id));
+  }
+
+  isPhaseSelected(phaseId: string): boolean {
+    return this.selectedPhases.some(p => p.id === phaseId);
+  }
+
+  togglePhaseSelection(phase: JobPhase): void {
+    const index = this.selectedPhases.findIndex(p => p.id === phase.id);
+    if (index >= 0) {
+      this.selectedPhases.splice(index, 1);
+    } else if (this.selectedPhases.length < this.data.maxPhases) {
+      this.selectedPhases.push({ ...phase });
+    }
+  }
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+
+  onSave(): void {
+    if (this.selectedPhases.length > 0) {
+      this.dialogRef.close({ selectedPhases: this.selectedPhases });
+    }
   }
 }

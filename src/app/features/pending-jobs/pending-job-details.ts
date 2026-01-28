@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -12,6 +12,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { JobService, Job, JobBid, JobPhase, Message } from '../../services/job.service.js';
 import { Auth } from '../../core/services/auth';
@@ -35,6 +36,7 @@ import { takeUntil, switchMap, filter } from 'rxjs/operators';
     MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatDialogModule,
     FormsModule
   ],
   templateUrl: './pending-job-details.html',
@@ -63,7 +65,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     public auth: Auth,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -194,51 +197,61 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   }
 
   acceptBid(jobId: number, bid: JobBid): void {
-    if (!confirm('Are you sure you want to accept this bid?')) {
-      return;
-    }
+    const dialogRef = this.dialog.open(BidConfirmationDialogComponent, {
+      width: '400px',
+      data: { action: 'accept', bidAmount: bid.bidAmount, businessName: bid.pro?.businessName }
+    });
 
-    this.jobService.acceptBid(jobId, bid.id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.successMessage = 'Bid accepted successfully!';
-        setTimeout(() => {
-          this.successMessage = '';
-          this.cdr.markForCheck();
-        }, 3000);
-        this.loadJobDetails(jobId);
-      },
-      error: (error) => {
-        console.error('Error accepting bid:', error);
-        this.errorMessage = 'Failed to accept bid.';
-        setTimeout(() => {
-          this.errorMessage = '';
-          this.cdr.markForCheck();
-        }, 3000);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.jobService.acceptBid(jobId, bid.id).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.successMessage = 'Bid accepted successfully!';
+            setTimeout(() => {
+              this.successMessage = '';
+              this.cdr.markForCheck();
+            }, 3000);
+            this.loadJobDetails(jobId);
+          },
+          error: (error) => {
+            console.error('Error accepting bid:', error);
+            this.errorMessage = 'Failed to accept bid.';
+            setTimeout(() => {
+              this.errorMessage = '';
+              this.cdr.markForCheck();
+            }, 3000);
+          }
+        });
       }
     });
   }
 
   rejectBid(jobId: number, bid: JobBid): void {
-    if (!confirm('Are you sure you want to reject this bid?')) {
-      return;
-    }
+    const dialogRef = this.dialog.open(BidConfirmationDialogComponent, {
+      width: '400px',
+      data: { action: 'reject', bidAmount: bid.bidAmount, businessName: bid.pro?.businessName }
+    });
 
-    this.jobService.rejectBid(jobId, bid.id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.successMessage = 'Bid rejected successfully!';
-        setTimeout(() => {
-          this.successMessage = '';
-          this.cdr.markForCheck();
-        }, 3000);
-        this.loadJobDetails(jobId);
-      },
-      error: (error) => {
-        console.error('Error rejecting bid:', error);
-        this.errorMessage = 'Failed to reject bid.';
-        setTimeout(() => {
-          this.errorMessage = '';
-          this.cdr.markForCheck();
-        }, 3000);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.jobService.rejectBid(jobId, bid.id).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.successMessage = 'Bid rejected successfully!';
+            setTimeout(() => {
+              this.successMessage = '';
+              this.cdr.markForCheck();
+            }, 3000);
+            this.loadJobDetails(jobId);
+          },
+          error: (error) => {
+            console.error('Error rejecting bid:', error);
+            this.errorMessage = 'Failed to reject bid.';
+            setTimeout(() => {
+              this.errorMessage = '';
+              this.cdr.markForCheck();
+            }, 3000);
+          }
+        });
       }
     });
   }
@@ -375,12 +388,50 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  // Send message to a bid professional
+  messageBidProfessional(bid: JobBid): void {
+    if (!this.job) return;
+
+    const dialogRef = this.dialog.open(BidMessageDialogComponent, {
+      width: '500px',
+      data: {
+        jobTitle: this.job.title,
+        professionalName: bid.pro?.businessName || 'Professional',
+        bidId: bid.id
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.message) {
+        this.jobService.sendMessage(this.job!.id, { content: result.message }, bid.proId)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.successMessage = 'Message sent successfully!';
+              setTimeout(() => {
+                this.successMessage = '';
+                this.cdr.markForCheck();
+              }, 3000);
+            },
+            error: (error) => {
+              console.error('Error sending message:', error);
+              this.errorMessage = 'Failed to send message.';
+              setTimeout(() => {
+                this.errorMessage = '';
+                this.cdr.markForCheck();
+              }, 3000);
+            }
+          });
+      }
+    });
+  }
+
   // Setup polling for messages
   private setupMessagePolling(jobId: number): void {
     // Start polling with 5-second interval when Messages tab is active and job is not completed
     interval(this.messagePollInterval)
       .pipe(
-        filter(() => this.selectedTabIndex === 0 && this.job?.status !== 'Completed'), // Only poll when Messages tab is active and job is not completed
+        filter(() => this.selectedTabIndex === 0 && this.job?.status === 'In Progress'), // Only poll when Messages tab is active and job is In Progress
         switchMap(() => this.jobService.getJobMessages(jobId)),
         takeUntil(this.pollMessages$),
         takeUntil(this.destroy$)
@@ -394,6 +445,198 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
           console.error('Error polling messages:', error);
         }
       });
+  }
+}
+
+// Bid Message Dialog Component
+@Component({
+  selector: 'app-bid-message-dialog',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule],
+  template: `
+    <div class="bid-message-dialog">
+      <h2 mat-dialog-title>Send Message to {{ data.professionalName }}</h2>
+      
+      <mat-dialog-content>
+        <p class="dialog-subtitle">Job: {{ data.jobTitle }}</p>
+        
+        <mat-form-field appearance="outline" class="message-field">
+          <mat-label>Your Message</mat-label>
+          <textarea matInput 
+            [(ngModel)]="message" 
+            placeholder="Type your message here..."
+            rows="5"></textarea>
+        </mat-form-field>
+      </mat-dialog-content>
+
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()">
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button mat-raised-button color="accent" (click)="onSend()" [disabled]="!message.trim()">
+          <mat-icon>send</mat-icon>
+          Send Message
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `,
+  styles: [`
+    .bid-message-dialog {
+      min-width: 400px;
+    }
+
+    .dialog-subtitle {
+      margin: 0 0 16px 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .message-field {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    mat-dialog-actions {
+      gap: 8px;
+    }
+  `]
+})
+export class BidMessageDialogComponent {
+  message = '';
+
+  constructor(
+    public dialogRef: MatDialogRef<BidMessageDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {}
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+
+  onSend(): void {
+    if (this.message.trim()) {
+      this.dialogRef.close({ message: this.message });
+    }
+  }
+}
+
+// Bid Confirmation Dialog Component
+@Component({
+  selector: 'app-bid-confirmation-dialog',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule],
+  template: `
+    <div class="bid-confirmation-dialog">
+      <div class="dialog-header">
+        <mat-icon class="dialog-icon" [class.accept]="data.action === 'accept'" [class.reject]="data.action === 'reject'">
+          {{ data.action === 'accept' ? 'check_circle' : 'cancel' }}
+        </mat-icon>
+        <h2 mat-dialog-title>
+          {{ data.action === 'accept' ? 'Accept Bid' : 'Reject Bid' }}
+        </h2>
+      </div>
+
+      <mat-dialog-content>
+        <div class="bid-info">
+          <p class="business-name"><strong>{{ data.businessName }}</strong></p>
+          <p *ngIf="data.bidAmount" class="bid-amount">
+            Bid Amount: <strong>{{ '\$' + (data.bidAmount | number: '1.2-2') }}</strong>
+          </p>
+          <p class="confirmation-message">
+            {{ data.action === 'accept' 
+              ? 'Are you sure you want to accept this bid? ' + data.businessName + ' will be assigned to this job.' 
+              : 'Are you sure you want to reject this bid? This action cannot be undone.' }}
+          </p>
+        </div>
+      </mat-dialog-content>
+
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()">
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button mat-raised-button 
+          [color]="data.action === 'accept' ? 'accent' : 'warn'" 
+          (click)="onConfirm()">
+          <mat-icon>{{ data.action === 'accept' ? 'check' : 'block' }}</mat-icon>
+          {{ data.action === 'accept' ? 'Accept' : 'Reject' }}
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `,
+  styles: [`
+    .bid-confirmation-dialog {
+      min-width: 300px;
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .dialog-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      
+      &.accept {
+        color: #4caf50;
+      }
+
+      &.reject {
+        color: #f44336;
+      }
+    }
+
+    mat-dialog-content {
+      padding: 16px 0;
+    }
+
+    .bid-info {
+      background: #f5f5f5;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .business-name {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+    }
+
+    .bid-amount {
+      margin: 0 0 12px 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .confirmation-message {
+      margin: 0;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    mat-dialog-actions {
+      gap: 8px;
+    }
+  `]
+})
+export class BidConfirmationDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<BidConfirmationDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {}
+
+  onCancel(): void {
+    this.dialogRef.close(false);
+  }
+
+  onConfirm(): void {
+    this.dialogRef.close(true);
   }
 }
 

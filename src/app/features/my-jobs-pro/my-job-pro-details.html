@@ -242,12 +242,21 @@
               <h3>
                 <mat-icon>flag</mat-icon>
                 Progress Tracking
-              </h3>
+              </h3>              
+              <button 
+                mat-raised-button 
+                (click)="openPhaseSelectionDialog(job)"
+                matTooltip="Edit project phases"
+                color="primary">
+                <mat-icon >edit</mat-icon>
+                {{ 'Add Phases' }}
+              </button>
               <div class="unsaved-indicator" *ngIf="hasUnsavedChanges(job.id)">
                 <mat-icon class="warning-icon">info</mat-icon>
                 <span>Unsaved changes</span>
               </div>
             </div>
+            <p class="subtitle">Click 'Add Phases' to add project phases below and help user track the progress of your work</p>
             <div class="phase-progress">
               <mat-progress-bar 
                 mode="determinate" 

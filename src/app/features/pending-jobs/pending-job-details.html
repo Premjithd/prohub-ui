@@ -319,10 +319,10 @@
                   <mat-icon>close</mat-icon>
                   Reject
                 </button>
-                <a mat-button color="primary" [href]="'mailto:' + bid.pro?.email">
-                  <mat-icon>email</mat-icon>
-                  Contact
-                </a>
+                <button mat-button color="primary" (click)="messageBidProfessional(bid)">
+                  <mat-icon>message</mat-icon>
+                  Message
+                </button>
               </div>
             </div>
           </div>
