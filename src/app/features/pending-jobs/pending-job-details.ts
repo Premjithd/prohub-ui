@@ -338,6 +338,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     this.messageSending = true;
     this.messageStatus = '';
 
+    const proId = this.job.assignedProId;
+
     this.jobService.sendMessage(this.job.id, { content: this.messageText })
       .pipe(takeUntil(this.destroy$)).subscribe({
         next: (messages) => {
@@ -347,11 +349,16 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
           this.jobMessages = messages;
           this.cdr.markForCheck();
 
-          // Clear status message after 2 seconds
-          setTimeout(() => {
-            this.messageStatus = '';
-            this.cdr.markForCheck();
-          }, 2000);
+          // Navigate to messages page after a short delay
+          if (proId) {
+            setTimeout(() => {
+              this.router.navigate(['/messages'], {
+                queryParams: { 
+                  partnerId: proId.toString()
+                }
+              });
+            }, 300);
+          }
         },
         error: (error) => {
           console.error('Error sending message:', error);
@@ -390,8 +397,19 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
 
   // Send message to a bid professional
   messageBidProfessional(bid: JobBid): void {
-    if (!this.job) return;
+    if (!this.job || !bid.proId) return;
 
+    // If message exchange already happened, redirect to messages page
+    if (bid.isMessageExchange) {
+      this.router.navigate(['/messages'], {
+        queryParams: { 
+          partnerId: bid.proId.toString()
+        }
+      });
+      return;
+    }
+
+    // First time messaging - open dialog to compose message
     const dialogRef = this.dialog.open(BidMessageDialogComponent, {
       width: '500px',
       data: {
@@ -403,15 +421,28 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result && result.message) {
-        this.jobService.sendMessage(this.job!.id, { content: result.message }, bid.proId)
+        // Use the new bid-specific endpoint
+        this.jobService.sendMessageToBid(bid.id, { content: result.message })
           .pipe(takeUntil(this.destroy$))
           .subscribe({
             next: () => {
+              // Mark isMessageExchange as true locally
+              bid.isMessageExchange = true;
+              
               this.successMessage = 'Message sent successfully!';
               setTimeout(() => {
                 this.successMessage = '';
                 this.cdr.markForCheck();
               }, 3000);
+
+              // Redirect to messages page after short delay
+              setTimeout(() => {
+                this.router.navigate(['/messages'], {
+                  queryParams: { 
+                    partnerId: bid.proId!.toString()
+                  }
+                });
+              }, 500);
             },
             error: (error) => {
               console.error('Error sending message:', error);

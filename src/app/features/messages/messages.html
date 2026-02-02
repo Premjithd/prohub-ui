@@ -1,0 +1,134 @@
+<div class="messages-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading conversations...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !loading" class="alert alert-error">
+    <mat-icon>error</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <mat-icon>check_circle</mat-icon>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <!-- Main Messages Layout -->
+  <div *ngIf="!loading" class="messages-main">
+    <!-- Conversations List -->
+    <div class="conversations-panel">
+      <div class="conversations-header">
+        <h2>
+          <mat-icon>mail</mat-icon>
+          Messages
+        </h2>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- No Conversations State -->
+      <div *ngIf="conversations.length === 0" class="no-conversations">
+        <mat-icon>mail_outline</mat-icon>
+        <p>No conversations yet</p>
+        <span class="subtitle">Start a conversation to begin messaging</span>
+      </div>
+
+      <!-- Conversations List -->
+      <div *ngIf="conversations.length > 0" class="conversations-list">
+        <div 
+          *ngFor="let conversation of conversations"
+          (click)="selectConversation(conversation)"
+          [class.selected]="selectedConversation?.userId === conversation.userId"
+          class="conversation-item">
+          
+          <div class="conversation-avatar">
+            <mat-icon [matBadge]="conversation.unreadCount" matBadgeColor="accent" [matBadgeHidden]="conversation.unreadCount === 0">
+              person
+            </mat-icon>
+          </div>
+
+          <div class="conversation-details">
+            <div class="conversation-header-row">
+              <span class="conversation-name">{{ conversation.userName }}</span>
+              <span class="conversation-time">{{ getFormattedTime(conversation.lastMessageTime) }}</span>
+            </div>
+            <p class="conversation-last-message">{{ conversation.lastMessage | slice:0:50 }}{{ conversation.lastMessage.length > 50 ? '...' : '' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages Panel -->
+    <div class="messages-panel">
+      <!-- No Conversation Selected State -->
+      <div *ngIf="!selectedConversation" class="no-conversation-selected">
+        <mat-icon>mail_outline</mat-icon>
+        <p>Select a conversation to view messages</p>
+      </div>
+
+      <!-- Conversation Messages -->
+      <div *ngIf="selectedConversation" class="conversation-view">
+        <!-- Conversation Header -->
+        <div class="conversation-header-bar">
+          <button mat-icon-button (click)="closeConversation()" class="close-button" matTooltip="Back to conversations">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div class="header-info">
+            <h3>{{ selectedConversation.userName }}</h3>
+            <p *ngIf="selectedConversation.userEmail" class="user-email">{{ selectedConversation.userEmail }}</p>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Messages Loading -->
+        <div *ngIf="loadingMessages" class="messages-loading">
+          <mat-spinner diameter="30"></mat-spinner>
+          <p>Loading messages...</p>
+        </div>
+
+        <!-- Messages List -->
+        <div *ngIf="!loadingMessages" class="messages-list">
+          <div *ngIf="messages.length === 0" class="no-messages">
+            <p>No messages yet. Start the conversation!</p>
+          </div>
+
+          <div *ngFor="let message of messages" [class.sent]="isSentByCurrentUser(message)" class="message-item">
+            <div class="message-content">
+              <div class="message-bubble">
+                <p>{{ message.content }}</p>
+              </div>
+              <span class="message-time">{{ getFormattedTime(message.sentAt) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="message-input-section" *ngIf="!loadingMessages">
+          <mat-form-field class="message-input-field">
+            <mat-label>Type a message...</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="messageText"
+              (keyup.enter)="sendMessage()"
+              [disabled]="messageSending"
+              placeholder="Type your message...">
+          </mat-form-field>
+          <button 
+            mat-icon-button 
+            (click)="sendMessage()"
+            [disabled]="!messageText.trim() || messageSending"
+            color="primary"
+            matTooltip="Send message">
+            <mat-icon *ngIf="!messageSending">send</mat-icon>
+            <mat-icon *ngIf="messageSending" class="spinner">schedule</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

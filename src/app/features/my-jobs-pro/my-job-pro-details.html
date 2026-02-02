@@ -310,7 +310,7 @@
         <button 
           mat-button 
           color="accent" 
-          *ngIf="job.status !== 'Completed'"
+          *ngIf="job.status !== 'Completed' && getPhaseProgress(job) === 100 && !unsavedJobIds.has(job.id)"
           (click)="markAsCompleted(job.id)">
           <mat-icon>check_circle</mat-icon>
           Mark Completed

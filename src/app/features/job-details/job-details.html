@@ -87,7 +87,7 @@
               <h3>Posted By</h3>
             </div>
             <p class="detail-value">
-              {{ job?.user?.firstName && job?.user?.lastName ? (job?.user?.firstName + ' ' + job?.user?.lastName) : (job?.user?.name || 'User') }}
+              {{ job.user?.firstName && job.user?.lastName ? (job.user?.firstName + ' ' + job.user?.lastName) : (job.user?.name || 'User') }}
             </p>
           </div>
         </section>
@@ -114,7 +114,7 @@
             <div *ngIf="job.assignedProId" class="info-item">
               <span class="info-label">Assigned to:</span>
               <span class="info-value">
-                {{ job?.assignedPro?.proName ? job?.assignedPro?.proName : 'Professional' }}
+                {{ job.assignedPro?.proName || 'Professional' }}
               </span>
             </div>
             <div *ngIf="!job.assignedProId" class="info-item">

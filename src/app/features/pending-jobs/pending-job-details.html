@@ -142,7 +142,7 @@
                   <div *ngFor="let msg of getReversedMessages()" class="message-item" [class.received]="msg.senderType === 'Pro'">
                     <div class="message-header">
                       <span class="sender-type" [class.pro]="msg.senderType === 'Pro'" [class.user]="msg.senderType === 'User'">
-                        {{ msg.senderType === 'Pro' ? job.assignedPro?.businessName : 'You' }}
+                        {{ msg.senderType === 'Pro' ? job.assignedPro.businessName : 'You' }}
                       </span>
                       <span class="message-time">{{ msg.sentAt | date: 'MMM dd, yyyy HH:mm' }}</span>
                     </div>
@@ -188,8 +188,8 @@
               <mat-card class="assigned-bid-card">
                 <div class="bid-header-info">
                   <div class="pro-info">
-                    <h4 class="pro-business-name">{{ job.assignedPro?.businessName }}</h4>
-                    <p class="pro-contact">{{ job?.assignedPro?.proName ? job?.assignedPro?.proName : 'Professional'}}</p>
+                    <h4 class="pro-business-name">{{ job.assignedPro.businessName }}</h4>
+                    <p class="pro-contact">{{ job.assignedPro?.proName ? job.assignedPro.proName : 'Professional'}}</p>
                   </div>
                   <div class="bid-status-badge">
                     <mat-chip-set>

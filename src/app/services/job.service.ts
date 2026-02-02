@@ -69,6 +69,7 @@ export interface JobBid {
   status: string;
   createdAt: string;
   updatedAt?: string;
+  isMessageExchange?: boolean;
   pro?: {
     id: number;
     proName?: string;
@@ -279,4 +280,84 @@ export class JobService {
       switchMap(() => this.getJobMessages(jobId))
     );
   }
-}
+
+  // Send a message to a bid professional
+  sendMessageToBid(bidId: number, message: { content: string }): Observable<Message> {
+    return this.http.post<Message>(`${environment.apiUrl}/messages/bid/${bidId}`, message);
+  }
+
+  // Get all messages for the current user
+  getAllMessages(): Observable<Message[]> {
+    return this.http.get<any>(`${environment.apiUrl}/messages`).pipe(
+      map(response => {
+        // Handle wrapped response format
+        if (response && response.$values && Array.isArray(response.$values)) {
+          return response.$values;
+        }
+        // Handle direct array response
+        if (Array.isArray(response)) {
+          return response;
+        }
+        // Handle response.data wrapped format
+        if (response && response.data && Array.isArray(response.data)) {
+          return response.data;
+        }
+        // Return empty array if format not recognized
+        return [];
+      })
+    );
+  }
+
+  // Get conversation partners with user details
+  getConversationPartners(userType: string): Observable<any[]> {
+    return this.http.get<any>(`${environment.apiUrl}/messages/conversations?userType=${userType}`).pipe(
+      map(response => {
+        // Handle wrapped response format
+        if (response && response.$values && Array.isArray(response.$values)) {
+          return response.$values;
+        }
+        // Handle direct array response
+        if (Array.isArray(response)) {
+          return response;
+        }
+        // Handle response.data wrapped format
+        if (response && response.data && Array.isArray(response.data)) {
+          return response.data;
+        }
+        // Return empty array if format not recognized
+        return [];
+      })
+    );
+  }
+
+  // Get messages with a specific user (not job-related)
+  getMessagesWithUser(userId: number): Observable<Message[]> {
+    return this.http.get<any>(`${environment.apiUrl}/messages/user/${userId}`).pipe(
+      map(response => {
+        // Handle wrapped response format
+        if (response && response.$values && Array.isArray(response.$values)) {
+          return response.$values;
+        }
+        // Handle direct array response
+        if (Array.isArray(response)) {
+          return response;
+        }
+        // Handle response.data wrapped format
+        if (response && response.data && Array.isArray(response.data)) {
+          return response.data;
+        }
+        // Return empty array if format not recognized
+        return [];
+      })
+    );
+  }
+
+  // Send a direct message to another user
+  sendDirectMessage(message: Message): Observable<Message> {
+    return this.http.post<Message>(`${environment.apiUrl}/messages/send`, message);
+  }
+
+  // Mark a message as read
+  markMessageAsRead(messageId: number): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/messages/${messageId}/read`, {});
+  }}

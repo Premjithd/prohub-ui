@@ -4,12 +4,14 @@ import { AboutComponent } from './about/about/about';
 import { ContactComponent } from './contact/contact/contact';
 import { HomeComponent } from './home/home/home';
 import { ProfileComponent } from './profile/profile/profile';
+import { MessagesComponent } from './messages/messages';
 
 const routes: Routes = [
   { path: 'about', component: AboutComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'home', component: HomeComponent },
-  { path: 'profile', component: ProfileComponent }
+  { path: 'profile', component: ProfileComponent },
+  { path: 'messages', component: MessagesComponent }
 ];
 
 @NgModule({

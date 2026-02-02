@@ -64,10 +64,13 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
 
   // Predefined phase options for professionals to choose from
   readonly PHASE_OPTIONS: JobPhase[] = [
-    { id: 'consultation', title: 'Initial Consultation', description: 'Meet with client to discuss requirements, scope, budget, and timeline', isCompleted: false },
-    { id: 'assessment', title: 'Site Assessment & Planning', description: 'On-site assessment and detailed project planning', isCompleted: false },
-    { id: 'design', title: 'Design & Proposal', description: 'Create design mockups and finalize proposal with quote', isCompleted: false },
-    { id: 'implementation', title: 'Implementation & Execution', description: 'Execute project according to agreed plan and timeline', isCompleted: false },
+    { id: 'initialconsultation', title: 'Initial Consultation', description: 'Discuss requirements, scope, budget, and timeline', isCompleted: false },
+    { id: 'initialestimation', title: 'Initial Estimation', description: 'Based on requirements, scope, budget, and timeline an initial estimation is created', isCompleted: false },
+    { id: 'onsiteassessment', title: 'On-Site Assessment', description: 'Visit the site for assessment and review requirements, scope, budget and timeline', isCompleted: false },
+    { id: 'proposalimprovements', title: 'Proposal & Improvements', description: 'Based on on-site assessment provide suggestions for improvements, if any', isCompleted: false },
+    { id: 'finalestimation', title: 'Final Estimation', description: 'Based on on-site assessment a final estimation is created', isCompleted: false },
+    { id: 'payment', title: 'Payment', description: 'Received payment for the job', isCompleted: false },
+    { id: 'execution', title: 'Job Execution', description: 'Perform the work according to agreed plan and timeline', isCompleted: false },
     { id: 'inspection', title: 'Quality Inspection', description: 'Verify work quality and ensure all requirements are met', isCompleted: false },
     { id: 'walkthrough', title: 'Client Walkthrough', description: 'Walkthrough with client and address any adjustments', isCompleted: false },
     { id: 'delivery', title: 'Final Delivery', description: 'Complete delivery, documentation, and project closure', isCompleted: false },
@@ -279,7 +282,7 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
       data: {
         availablePhases: this.PHASE_OPTIONS,
         selectedPhaseIds: currentPhaseIds,
-        maxPhases: 7
+        maxPhases: 10
       }
     });
 
@@ -604,7 +607,7 @@ export class ConfirmCompletionDialogComponent {
   imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule, MatCheckboxModule, MatFormFieldModule],
   template: `
     <div class="phase-selection-dialog">
-      <h2 mat-dialog-title>Select Project Phases (Maximum 7)</h2>
+      <h2 mat-dialog-title>Select Project Phases (Maximum 10)</h2>
       
       <mat-dialog-content>
         <div class="selection-info">
