@@ -180,7 +180,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
     const message: Message = {
       id: 0,
-      jobId: 0,
       senderId: this.currentUserId,
       recipientId: this.selectedConversation.userId,
       senderType: this.auth.getUserType() || 'User',
@@ -258,4 +257,3 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.messages = [];
   }
 }
-

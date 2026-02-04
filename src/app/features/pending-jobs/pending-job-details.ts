@@ -98,10 +98,6 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
         // Load bids for the job
         this.loadBidsForJob(jobId);
-        // Load messages for the job
-        this.loadMessagesForJob(jobId);
-        // Start message polling
-        this.setupMessagePolling(jobId);
       },
       error: (error) => {
         console.error('Error loading job details:', error);
@@ -311,88 +307,16 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   }
 
   // Load messages for a job
-  loadMessagesForJob(jobId: number): void {
-    this.loadingMessages = true;
 
-    this.jobService.getJobMessages(jobId).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (messages) => {
-        this.jobMessages = messages;
-        this.loadingMessages = false;
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        console.error('Error loading messages:', error);
-        this.jobMessages = [];
-        this.loadingMessages = false;
-        this.cdr.markForCheck();
+  // Navigate to messages page with partner ID
+  goToMessagesPage(): void {
+    if (!this.job || !this.job.assignedProId) return;
+
+    this.router.navigate(['/messages'], {
+      queryParams: { 
+        partnerId: this.job.assignedProId.toString()
       }
     });
-  }
-
-  // Send message to assigned professional
-  sendMessageToAssignedPro(): void {
-    if (!this.messageText.trim() || !this.job) {
-      return;
-    }
-
-    this.messageSending = true;
-    this.messageStatus = '';
-
-    const proId = this.job.assignedProId;
-
-    this.jobService.sendMessage(this.job.id, { content: this.messageText })
-      .pipe(takeUntil(this.destroy$)).subscribe({
-        next: (messages) => {
-          this.messageSending = false;
-          this.messageStatus = '✓ Sent';
-          this.messageText = '';
-          this.jobMessages = messages;
-          this.cdr.markForCheck();
-
-          // Navigate to messages page after a short delay
-          if (proId) {
-            setTimeout(() => {
-              this.router.navigate(['/messages'], {
-                queryParams: { 
-                  partnerId: proId.toString()
-                }
-              });
-            }, 300);
-          }
-        },
-        error: (error) => {
-          console.error('Error sending message:', error);
-          this.messageSending = false;
-          this.messageStatus = '✗ Failed to send';
-          this.cdr.markForCheck();
-
-          // Clear status message after 3 seconds
-          setTimeout(() => {
-            this.messageStatus = '';
-            this.cdr.markForCheck();
-          }, 3000);
-        }
-      });
-  }
-
-  // Get reversed messages for display (newest on top)
-  getReversedMessages(): Message[] {
-    return [...this.jobMessages].reverse();
-  }
-
-  // Handle tab change
-  onTabChanged(index: number): void {
-    this.selectedTabIndex = index;
-    
-    // Start polling when Messages tab (index 0) is selected
-    if (index === 0 && this.currentJobId) {
-      this.setupMessagePolling(this.currentJobId);
-    } else {
-      // Stop polling when switching to other tabs
-      this.pollMessages$.next();
-    }
-    
-    this.cdr.markForCheck();
   }
 
   // Send message to a bid professional
@@ -455,27 +379,6 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
           });
       }
     });
-  }
-
-  // Setup polling for messages
-  private setupMessagePolling(jobId: number): void {
-    // Start polling with 5-second interval when Messages tab is active and job is not completed
-    interval(this.messagePollInterval)
-      .pipe(
-        filter(() => this.selectedTabIndex === 0 && this.job?.status === 'In Progress'), // Only poll when Messages tab is active and job is In Progress
-        switchMap(() => this.jobService.getJobMessages(jobId)),
-        takeUntil(this.pollMessages$),
-        takeUntil(this.destroy$)
-      )
-      .subscribe({
-        next: (messages) => {
-          this.jobMessages = messages;
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          console.error('Error polling messages:', error);
-        }
-      });
   }
 }
 

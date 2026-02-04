@@ -81,7 +81,6 @@ export interface JobBid {
 
 export interface Message {
   id: number;
-  jobId: number;
   senderId: number;
   recipientId: number;
   senderType: string;  // "User" or "Pro"
@@ -354,7 +353,11 @@ export class JobService {
 
   // Send a direct message to another user
   sendDirectMessage(message: Message): Observable<Message> {
-    return this.http.post<Message>(`${environment.apiUrl}/messages/send`, message);
+    return this.http.post<Message>(`${environment.apiUrl}/messages/send`, {
+      recipientId: message.recipientId,
+      senderType: message.senderType,
+      content: message.content
+    });
   }
 
   // Mark a message as read
