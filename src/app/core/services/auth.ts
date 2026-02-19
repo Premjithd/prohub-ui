@@ -61,6 +61,11 @@ export class Auth {
     this.storage.removeItem(this.USER_ID_KEY);
   }
 
+  logoutOnServer(userType: string): Observable<ApiResponse<void>> {
+    const endpoint = `auth/${userType.toLowerCase()}/logout`;
+    return this.api.post<void>(endpoint, {});
+  }
+
   isAuthenticated(): boolean {
     try {
       return !!this.storage.getItem(this.AUTH_TOKEN_KEY);
