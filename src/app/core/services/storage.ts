@@ -12,7 +12,8 @@ export class StorageService {
     if (isPlatformBrowser(this.platformId)) {
       try {
         return localStorage.getItem(key);
-      } catch {
+      } catch (e) {
+        console.error(`StorageService.getItem failed from localStorage for key=${key}`, e);
         return this.memoryStorage.get(key) || null;
       }
     }
@@ -23,7 +24,8 @@ export class StorageService {
     if (isPlatformBrowser(this.platformId)) {
       try {
         localStorage.setItem(key, value);
-      } catch {
+      } catch (e) {
+        console.error(`StorageService.setItem failed for key=${key}`, e);
         this.memoryStorage.set(key, value);
       }
     } else {

@@ -29,4 +29,8 @@ export class SidebarComponent {
   isProUser(): boolean {
     return this.auth.getUserType() === 'Pro';
   }
+
+  isAdmin(): boolean {
+    return this.auth.getUserType() === 'Admin';
+  }
 }

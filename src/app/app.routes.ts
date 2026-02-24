@@ -4,6 +4,11 @@ import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
+    path: 'accept-admin-invite',
+    loadComponent: () => import('./features/accept-admin-invite/accept-admin-invite')
+      .then(m => m.AcceptAdminInviteComponent)
+  },
+  {
     path: '',
     component: MainLayout,
     children: [
@@ -96,6 +101,12 @@ export const routes: Routes = [
         path: 'job-details',
         loadComponent: () => import('./features/job-details/job-details')
           .then(m => m.JobDetailsComponent)
+      },
+      {
+        path: 'admin-users',
+        loadComponent: () => import('./features/admin-users/admin-users')
+          .then(m => m.AdminUsersComponent),
+        canActivate: [AuthGuard]
       },
       {
         path: 'messages',

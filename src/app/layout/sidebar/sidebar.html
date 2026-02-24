@@ -34,8 +34,16 @@
   </ng-container>
 
   <ng-container *ngIf="auth.isAuthenticated()">
+    <!-- Admin Dashboard -->
+    <a *ngIf="isAdmin()" mat-list-item routerLink="/admin-users" routerLinkActive="active" (click)="onMenuItemClick()">
+      <mat-icon>admin_panel_settings</mat-icon>
+      <span>Admin Dashboard</span>
+    </a>
+
+    <mat-divider *ngIf="isAdmin()"></mat-divider>
+
     <!-- Show "My Jobs" for regular users -->
-    <a *ngIf="!isProUser()" mat-list-item routerLink="/pending-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
+    <a *ngIf="!isProUser() && !isAdmin()" mat-list-item routerLink="/pending-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>assignment</mat-icon>
       <span>My Jobs</span>
     </a>
@@ -65,7 +73,7 @@
     </a>
 
     <!-- Show "Post Job" link for regular users only -->
-    <a *ngIf="!isProUser()" mat-list-item routerLink="/post-job" routerLinkActive="active" (click)="onMenuItemClick()">
+    <a *ngIf="!isProUser() && !isAdmin()" mat-list-item routerLink="/post-job" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>add_circle</mat-icon>
       <span>Post Job</span>
     </a>

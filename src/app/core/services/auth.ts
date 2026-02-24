@@ -95,4 +95,29 @@ export class Auth {
   getUserType(): string | null {
     return this.storage.getItem(this.USER_TYPE_KEY);
   }
+
+  acceptAdminInvitation(
+    token: string,
+    firstName: string,
+    lastName: string,
+    password: string
+  ): Observable<LoginResponse> {
+    const payload = {
+      token,
+      firstName,
+      lastName,
+      password
+    };
+
+    return this.api.loginUser('auth/accept-admin-invite', payload).pipe(
+      tap(response => {
+        if (response) {
+          this.storage.setItem(this.AUTH_TOKEN_KEY, response.token);
+          this.storage.setItem(this.USER_TYPE_KEY, response.role);
+          this.storage.setItem(this.USER_NAME_KEY, response.firstName);
+          this.storage.setItem(this.USER_ID_KEY, response?.id?.toString() || '');
+        }
+      })
+    );
+  }
 }

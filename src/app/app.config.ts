@@ -1,10 +1,27 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS, withXsrfConfiguration, withFetch } from '@angular/common/http';
+import { MSAL_INSTANCE, MsalService } from '@azure/msal-angular';
+import { PublicClientApplication, BrowserCacheLocation, Configuration } from '@azure/msal-browser';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+
+// MSAL Configuration
+const msalConfig: Configuration = {
+  auth: {
+    clientId: '06de8cc3-b92d-416d-ba2b-6bc939ca20fb', // Replace with your registered app's client ID
+    authority: `https://login.microsoftonline.com/b33c0879-0364-4a0f-9d84-ff1a7420fed5`, // Using provided tenant ID
+    redirectUri: `${window.location.origin}/auth/callback`,
+    postLogoutRedirectUri: `${window.location.origin}/`,
+  },
+  cache: {
+    cacheLocation: BrowserCacheLocation.LocalStorage,
+  }
+};
+
+const msalInstance = new PublicClientApplication(msalConfig);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,6 +41,11 @@ export const appConfig: ApplicationConfig = {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true
-    }
+    },
+    {
+      provide: MSAL_INSTANCE,
+      useValue: msalInstance
+    },
+    MsalService
   ]
 };

@@ -11,7 +11,8 @@ import { Auth } from '../../core/services/auth';
   styleUrl: './login.scss'
 })
 export class LoginComponent {
-  userType: string = 'user'; // 'user' or 'pro'
+  userType: string = 'user'; // 'user', 'pro', or 'admin'
+  isLoading: boolean = false;
 
   constructor(
     private auth: Auth,
@@ -20,20 +21,37 @@ export class LoginComponent {
 
   onSubmit(form: any) {
     if (form.valid) {
+      console.log('Login attempt for email:', form.value.email);
+      this.isLoading = true;
+      
+      // Use unified login that will determine user type from response
       const loginObservable = this.userType === 'pro'
         ? this.auth.loginPro(form.value)
         : this.auth.login(form.value);
 
       loginObservable.subscribe({
         next: (response) => {
-          this.router.navigate(['/']);
+          console.log('Login successful, response role:', response.role);
+          const userType = response.role;
+          console.log('User type from response:', userType);
+          this.isLoading = false;
+          
+          // Navigate based on actual user type from response
+          if (userType === 'Admin') {
+            this.router.navigate(['/admin-users']);
+          } else if (userType === 'Pro') {
+            this.router.navigate(['/']);
+          } else {
+            this.router.navigate(['/']);
+          }
         },
         error: (error) => {
           console.error('Login failed:', error);
+          this.isLoading = false;
           alert('Login failed. Please try again.');
         },
         complete: () => {
-          console.log('Request completed');
+          console.log('Login request completed');
         }
       });
     }

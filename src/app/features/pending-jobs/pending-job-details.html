@@ -121,7 +121,7 @@
           <div class="pro-card-inprogress">
             <div class="pro-info">
               <h4>{{ job.assignedPro.businessName }}</h4>
-              <p>{{ job.assignedPro?.proName ? job.assignedPro.proName : 'Professional' }}</p>
+              <p>{{ job.assignedPro.proName || 'Professional' }}</p>
             </div>
             <div class="bid-details-grid">
               <div class="detail-item" *ngIf="assignedBid.bidAmount">

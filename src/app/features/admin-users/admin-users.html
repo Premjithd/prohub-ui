@@ -1,0 +1,438 @@
+<div class="admin-users-container">
+  <div class="admin-header">
+    <div class="header-top">
+      <h1><mat-icon>admin_panel_settings</mat-icon> Admin Users Management</h1>
+      <button (click)="inviteAdmin()" class="invite-admin-btn">
+        <mat-icon>person_add</mat-icon>
+        Invite Admin
+      </button>
+    </div>
+  </div>
+
+  <div class="admin-content">
+    <!-- Search Section -->
+    <div class="search-section">
+      <form (ngSubmit)="search()" class="search-form">
+        <div class="search-controls">
+          <div class="search-input-group">
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              name="searchQuery"
+              placeholder="Search by email or name..."
+              class="search-input"
+            />
+            <button type="submit" class="search-btn" [disabled]="isSearching || !searchQuery.trim()">
+              <mat-icon>{{ isSearching ? 'hourglass_empty' : 'search' }}</mat-icon>
+              {{ isSearching ? 'Searching...' : 'Search' }}
+            </button>
+          </div>
+
+          <div class="search-type">
+            <label>
+              <input type="radio" [(ngModel)]="searchType" value="user" name="searchType" />
+              Users
+            </label>
+            <label>
+              <input type="radio" [(ngModel)]="searchType" value="pro" name="searchType" />
+              Professionals
+            </label>
+          </div>
+        </div>
+      </form>
+
+      <!-- Search Results -->
+      <div class="search-results" *ngIf="users.length > 0 || pros.length > 0">
+        <div class="results-list">
+          <!-- Users Results -->
+          <div *ngIf="users.length > 0" class="results-group">
+            <h3>Users ({{ users.length }})</h3>
+            <div class="user-item" *ngFor="let user of users" (click)="selectUser(user)" [class.selected]="selectedUser?.id === user.id">
+              <div class="user-info">
+                <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+                <div class="user-email">{{ user.email }}</div>
+                <div class="user-meta">
+                  <span *ngIf="user.isEmailVerified" class="badge badge-verified">
+                    <mat-icon>verified</mat-icon> Email Verified
+                  </span>
+                  <span class="user-date">Joined: {{ formatDate(user.createdAt) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pros Results -->
+          <div *ngIf="pros.length > 0" class="results-group">
+            <h3>Professionals ({{ pros.length }})</h3>
+            <div class="pro-item" *ngFor="let pro of pros" (click)="selectPro(pro)" [class.selected]="selectedPro?.id === pro.id">
+              <div class="pro-info">
+                <div class="pro-name">{{ pro.proName }}</div>
+                <div class="pro-business">{{ pro.businessName }}</div>
+                <div class="pro-email">{{ pro.email }}</div>
+                <div class="pro-meta">
+                  <span *ngIf="pro.isEmailVerified" class="badge badge-verified">
+                    <mat-icon>verified</mat-icon> Email Verified
+                  </span>
+                  <span class="pro-date">Joined: {{ formatDate(pro.createdAt) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Section -->
+    <div class="details-section" *ngIf="selectedUser || selectedPro">
+      <div class="details-header">
+        <h2 *ngIf="selectedUser">{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h2>
+        <h2 *ngIf="selectedPro">{{ selectedPro.proName }}</h2>
+        <button (click)="impersonate()" class="impersonate-btn">
+          <mat-icon>person_add</mat-icon>
+          Impersonate
+        </button>
+        <button (click)="clearSelection()" class="clear-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <mat-tab-group class="details-tabs">
+        <!-- Profile Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>person</mat-icon>
+            Profile
+          </ng-template>
+          <div class="tab-content">
+            <div *ngIf="selectedUser" class="profile-details">
+              <div class="detail-row">
+                <label>Email:</label>
+                <span>{{ selectedUser.email }}</span>
+              </div>
+              <div class="detail-row">
+                <label>Phone:</label>
+                <span>{{ selectedUser.phoneNumber }}</span>
+              </div>
+              <div class="detail-row">
+                <label>Email Verified:</label>
+                <span><mat-icon [class.verified]="selectedUser.isEmailVerified">{{ selectedUser.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon></span>
+              </div>
+              <div class="detail-row">
+                <label>Phone Verified:</label>
+                <span><mat-icon [class.verified]="selectedUser.isPhoneVerified">{{ selectedUser.isPhoneVerified ? 'check_circle' : 'cancel' }}</mat-icon></span>
+              </div>
+              <div class="detail-row">
+                <label>Address:</label>
+                <span *ngIf="selectedUser.street1">{{ selectedUser.street1 }}, {{ selectedUser.city }}, {{ selectedUser.state }} {{ selectedUser.zipPostalCode }}</span>
+                <span *ngIf="!selectedUser.street1">Not provided</span>
+              </div>
+              <div class="detail-row">
+                <label>Joined:</label>
+                <span>{{ formatDate(selectedUser.createdAt) }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="selectedPro" class="profile-details">
+              <div class="detail-row">
+                <label>Name:</label>
+                <span>{{ selectedPro.proName }}</span>
+              </div>
+              <div class="detail-row">
+                <label>Business:</label>
+                <span>{{ selectedPro.businessName }}</span>
+              </div>
+              <div class="detail-row">
+                <label>Email:</label>
+                <span>{{ selectedPro.email }}</span>
+              </div>
+              <div class="detail-row">
+                <label>Phone:</label>
+                <span>{{ selectedPro.phoneNumber }}</span>
+              </div>
+              <div class="detail-row">
+                <label>Email Verified:</label>
+                <span><mat-icon [class.verified]="selectedPro.isEmailVerified">{{ selectedPro.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon></span>
+              </div>
+              <div class="detail-row">
+                <label>Phone Verified:</label>
+                <span><mat-icon [class.verified]="selectedPro.isPhoneVerified">{{ selectedPro.isPhoneVerified ? 'check_circle' : 'cancel' }}</mat-icon></span>
+              </div>
+              <div class="detail-row">
+                <label>Address:</label>
+                <span *ngIf="selectedPro.street1">{{ selectedPro.street1 }}, {{ selectedPro.city }}, {{ selectedPro.state }} {{ selectedPro.zipPostalCode }}</span>
+                <span *ngIf="!selectedPro.street1">Not provided</span>
+              </div>
+              <div class="detail-row">
+                <label>Joined:</label>
+                <span>{{ formatDate(selectedPro.createdAt) }}</span>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Job History Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>work</mat-icon>
+            Job History
+          </ng-template>
+          <div class="tab-content">
+            <div *ngIf="isLoadingDetails" class="loading">
+              <mat-spinner diameter="40"></mat-spinner>
+              Loading job history...
+            </div>
+
+            <div *ngIf="!isLoadingDetails && selectedUser && userJobs.length > 0" class="jobs-list">
+              <div class="job-card" *ngFor="let job of userJobs" [class.job-in-progress]="job.status === 'In Progress'">
+                <div class="job-header">
+                  <div class="job-title-section">
+                    <h4>{{ job.title }}</h4>
+                    <span *ngIf="job.isBid" class="bid-badge"><mat-icon>local_offer</mat-icon> Bid Job</span>
+                  </div>
+                  <span class="status-badge" [ngClass]="'status-' + job.status">{{ job.status }}</span>
+                </div>
+                <div class="job-details">
+                  <div *ngIf="job.description" class="job-description">
+                    <strong>Description:</strong>
+                    <p>{{ job.description }}</p>
+                  </div>
+                  <div><strong>Category:</strong> {{ job.category?.name || 'N/A' }}</div>
+                  <div><strong>Location:</strong> {{ job.location }}</div>
+                  <div><strong>Budget:</strong> {{ job.budget }}</div>
+                  <div><strong>Timeline:</strong> {{ job.timeline }}</div>
+                  <div><strong>Posted by:</strong> {{ job.userName }}</div>
+                  <div *ngIf="job.assignedProId"><strong>Assigned To:</strong> {{ job.assignedProBusinessName }}</div>
+                  
+                  <!-- In-Progress Job Details -->
+                  <div *ngIf="job.status === 'In Progress'" class="in-progress-details">
+                    <div class="detail-section">
+                      <strong>Job Phases:</strong>
+                      <div class="phases-info" *ngIf="job.jobPhases; else noPhases">
+                        {{ job.jobPhases }}
+                      </div>
+                      <ng-template #noPhases>
+                        <div class="no-phases">No phases defined</div>
+                      </ng-template>
+                    </div>
+                    <div class="detail-section" *ngIf="job.attachments">
+                      <strong>Attachments:</strong>
+                      <span class="attachment-count">Multiple files</span>
+                    </div>
+                  </div>
+                  
+                  <div class="job-dates">
+                    <span><strong>Created:</strong> {{ formatDate(job.createdAt) }}</span>
+                    <span *ngIf="job.updatedAt"><strong>Updated:</strong> {{ formatDate(job.updatedAt) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!isLoadingDetails && selectedPro && proJobs.length > 0" class="jobs-list">
+              <div class="job-card" *ngFor="let job of proJobs" [class.job-in-progress]="job.status === 'In Progress'">
+                <div class="job-header">
+                  <div class="job-title-section">
+                    <h4>{{ job.title }}</h4>
+                    <span *ngIf="job.isBid" class="bid-badge"><mat-icon>local_offer</mat-icon> Bid Job</span>
+                  </div>
+                  <span class="status-badge" [ngClass]="'status-' + job.status">{{ job.status }}</span>
+                </div>
+                <div class="job-details">
+                  <div *ngIf="job.description" class="job-description">
+                    <strong>Description:</strong>
+                    <p>{{ job.description }}</p>
+                  </div>
+                  <div><strong>Category:</strong> {{ job.category?.name || 'N/A' }}</div>
+                  <div><strong>Location:</strong> {{ job.location }}</div>
+                  <div><strong>Budget:</strong> {{ job.budget }}</div>
+                  <div><strong>Timeline:</strong> {{ job.timeline }}</div>
+                  <div><strong>Posted by:</strong> {{ job.userName }}</div>
+                  <div *ngIf="job.assignedProId"><strong>Assigned To:</strong> {{ job.assignedProBusinessName }}</div>
+                  
+                  <!-- In-Progress Job Details -->
+                  <div *ngIf="job.status === 'In Progress'" class="in-progress-details">
+                    <div class="detail-section">
+                      <strong>Job Phases:</strong>
+                      <div class="phases-info" *ngIf="job.jobPhases; else noPhases">
+                        {{ job.jobPhases }}
+                      </div>
+                      <ng-template #noPhases>
+                        <div class="no-phases">No phases defined</div>
+                      </ng-template>
+                    </div>
+                    <div class="detail-section" *ngIf="job.attachments">
+                      <strong>Attachments:</strong>
+                      <span class="attachment-count">Multiple files</span>
+                    </div>
+                  </div>
+                  
+                  <div class="job-dates">
+                    <span><strong>Created:</strong> {{ formatDate(job.createdAt) }}</span>
+                    <span *ngIf="job.updatedAt"><strong>Updated:</strong> {{ formatDate(job.updatedAt) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!isLoadingDetails && ((selectedUser && userJobs.length === 0) || (selectedPro && proJobs.length === 0))" class="no-data">
+              <mat-icon>folder_open</mat-icon>
+              <p>No job history found</p>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Chat History Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>message</mat-icon>
+            Chat History
+          </ng-template>
+          <div class="tab-content">
+            <div *ngIf="isLoadingDetails" class="loading">
+              <mat-spinner diameter="40"></mat-spinner>
+              Loading chat history...
+            </div>
+
+            <div class="chat-section" *ngIf="!isLoadingDetails">
+              <div class="conversations-panel">
+                <h3>Conversations</h3>
+                <div *ngIf="selectedUser && userConversations.length > 0" class="conversations-list">
+                  <div
+                    class="conversation-item"
+                    *ngFor="let conversation of userConversations"
+                    (click)="selectConversation(conversation)"
+                    [class.selected]="selectedConversation?.userId === conversation.userId"
+                  >
+                    <div class="conversation-info">
+                      <div class="conversation-name">{{ conversation.userName || 'Unknown User' }}</div>
+                      <div class="conversation-meta">{{ conversation.userType }}</div>
+                    </div>
+                    <div class="conversation-time" *ngIf="conversation.lastMessageTime">
+                      {{ formatDate(conversation.lastMessageTime) }}
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="selectedPro && proConversations.length > 0" class="conversations-list">
+                  <div
+                    class="conversation-item"
+                    *ngFor="let conversation of proConversations"
+                    (click)="selectConversation(conversation)"
+                    [class.selected]="selectedConversation?.userId === conversation.userId"
+                  >
+                    <div class="conversation-info">
+                      <div class="conversation-name">{{ conversation.userName || 'Unknown User' }}</div>
+                      <div class="conversation-meta">{{ conversation.userType }}</div>
+                    </div>
+                    <div class="conversation-time" *ngIf="conversation.lastMessageTime">
+                      {{ formatDate(conversation.lastMessageTime) }}
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="((selectedUser && userConversations.length === 0) || (selectedPro && proConversations.length === 0))" class="no-conversations">
+                  <p>No conversations</p>
+                </div>
+              </div>
+
+              <div class="messages-panel" *ngIf="selectedConversation">
+                <h3>Messages - {{ selectedConversation.userName }}</h3>
+                <div class="messages-list">
+                  <div class="message" *ngFor="let message of conversationMessages" [ngClass]="'message-' + (message.senderType ? message.senderType.toLowerCase() : 'unknown')">
+                    <div class="message-sender">{{ message.senderType }}</div>
+                    <div class="message-content">{{ message.content }}</div>
+                    <div class="message-time">{{ formatDate(message.sentAt) }}</div>
+                    <div class="message-status" *ngIf="message.isRead">
+                      <mat-icon>done_all</mat-icon> Read
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="no-conversation-selected" *ngIf="!selectedConversation && (userConversations.length > 0 || proConversations.length > 0)">
+                <p>Select a conversation to view messages</p>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Pending Invitations Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>mail_outline</mat-icon>
+            Pending Invitations
+          </ng-template>
+          <div class="tab-content">
+            <div *ngIf="isLoadingInvitations" class="loading">
+              <mat-spinner diameter="40"></mat-spinner>
+              Loading invitations...
+            </div>
+
+            <div *ngIf="!isLoadingInvitations && adminInvitations.length > 0" class="invitations-table">
+              <table class="invitations-list">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Expires In</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let invitation of adminInvitations" [class.expired]="invitation.isExpired">
+                    <td>{{ invitation.email }}</td>
+                    <td>
+                      <span *ngIf="invitation.isUsed" class="badge badge-used">
+                        <mat-icon>check_circle</mat-icon> Used
+                      </span>
+                      <span *ngIf="!invitation.isUsed && !invitation.isExpired" class="badge badge-pending">
+                        <mat-icon>schedule</mat-icon> Pending
+                      </span>
+                      <span *ngIf="!invitation.isUsed && invitation.isExpired" class="badge badge-expired">
+                        <mat-icon>close_circle</mat-icon> Expired
+                      </span>
+                    </td>
+                    <td>{{ formatDate(invitation.createdAt) }}</td>
+                    <td>
+                      <span *ngIf="!invitation.isExpired && !invitation.isUsed" class="expires">
+                        {{ invitation.daysUntilExpiry }} days
+                      </span>
+                      <span *ngIf="invitation.isExpired" class="expired-text">Expired</span>
+                      <span *ngIf="invitation.isUsed" class="used-text">
+                        {{ formatDate(invitation.usedAt) }}
+                      </span>
+                    </td>
+                    <td>
+                      <button 
+                        *ngIf="!invitation.isUsed && !invitation.isExpired"
+                        (click)="resendInvitation(invitation.id)"
+                        class="action-btn resend-btn"
+                        title="Resend invitation email">
+                        <mat-icon>mail</mat-icon>
+                        Resend
+                      </button>
+                      <span *ngIf="invitation.isUsed || invitation.isExpired" class="action-disabled">-</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div *ngIf="!isLoadingInvitations && adminInvitations.length === 0" class="no-data">
+              <mat-icon>inbox</mat-icon>
+              <p>No pending invitations</p>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!selectedUser && !selectedPro && users.length === 0 && pros.length === 0">
+      <mat-icon>search</mat-icon>
+      <h3>Search for Users or Professionals</h3>
+      <p>Enter a name or email address to find user accounts or professional offerings</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,127 @@
+<div class="accept-invite-container">
+  <div class="invite-card">
+    <div class="invite-header">
+      <mat-icon class="header-icon">shield_admin</mat-icon>
+      <h1>Accept Admin Invitation</h1>
+      <p class="subtitle">Complete your admin account setup</p>
+    </div>
+
+    <div class="invite-content">
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="message-box error-box">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- Success Message -->
+      <div *ngIf="successMessage" class="message-box success-box">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ successMessage }}</span>
+      </div>
+
+      <!-- Invitation Form -->
+      <form [formGroup]="invitationForm" (ngSubmit)="submitForm()" *ngIf="!successMessage" class="invite-form">
+        <!-- First Name -->
+        <mat-form-field class="full-width">
+          <mat-label>First Name</mat-label>
+          <input
+            matInput
+            formControlName="firstName"
+            type="text"
+            placeholder="Enter your first name"
+            [disabled]="isProcessing"
+          />
+          <mat-error>{{ getFieldError('firstName') }}</mat-error>
+        </mat-form-field>
+
+        <!-- Last Name -->
+        <mat-form-field class="full-width">
+          <mat-label>Last Name</mat-label>
+          <input
+            matInput
+            formControlName="lastName"
+            type="text"
+            placeholder="Enter your last name"
+            [disabled]="isProcessing"
+          />
+          <mat-error>{{ getFieldError('lastName') }}</mat-error>
+        </mat-form-field>
+
+        <!-- Password -->
+        <mat-form-field class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="Create a strong password"
+            [disabled]="isProcessing"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [disabled]="isProcessing"
+            class="visibility-toggle"
+          >
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error>{{ getFieldError('password') }}</mat-error>
+        </mat-form-field>
+
+        <!-- Confirm Password -->
+        <mat-form-field class="full-width">
+          <mat-label>Confirm Password</mat-label>
+          <input
+            matInput
+            formControlName="confirmPassword"
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            placeholder="Re-enter your password"
+            [disabled]="isProcessing"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="toggleConfirmPasswordVisibility()"
+            [disabled]="isProcessing"
+            class="visibility-toggle"
+          >
+            <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="invitationForm.get('confirmPassword')?.errors?.['required']">
+            Confirm Password is required
+          </mat-error>
+          <mat-error *ngIf="invitationForm.errors?.['passwordMismatch']">
+            Passwords do not match
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          mat-raised-button
+          class="submit-btn"
+          [disabled]="!canSubmit()"
+          [class.loading]="isProcessing"
+        >
+          <mat-icon *ngIf="!isProcessing">check</mat-icon>
+          <mat-spinner *ngIf="isProcessing" diameter="20"></mat-spinner>
+          <span>{{ isProcessing ? 'Creating Account...' : 'Create Admin Account' }}</span>
+        </button>
+      </form>
+
+      <!-- Invitation Info -->
+      <div *ngIf="!successMessage" class="invite-info">
+        <h3>What to expect:</h3>
+        <ul>
+          <li>Create a unique password for your admin account</li>
+          <li>Your first and last name will be displayed in the admin panel</li>
+          <li>You'll have full access to the admin dashboard</li>
+          <li>This invitation link can only be used once</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
