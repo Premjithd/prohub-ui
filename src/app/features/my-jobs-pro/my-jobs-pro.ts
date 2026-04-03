@@ -153,6 +153,30 @@ export class MyJobsProComponent implements OnInit, OnDestroy {
           const job = this.assignedJobs.find(j => j.id === jobId);
           if (job) {
             job.status = 'Completed';
+            
+            // Mark all phases as completed (sets progress to 100%)
+            const phases = this.getJobPhases(job);
+            if (phases && phases.length > 0) {
+              const updatedPhases = phases.map(phase => ({
+                ...phase,
+                isCompleted: true,
+                completedAt: new Date().toISOString()
+              }));
+              
+              // Update phases on backend
+              this.jobService.updateJobPhases(jobId, updatedPhases)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                  next: () => {
+                    // Update local job object
+                    job.jobPhases = updatedPhases;
+                    this.cdr.markForCheck();
+                  },
+                  error: (error) => {
+                    console.error('Error updating job phases:', error);
+                  }
+                });
+            }
           }
           this.cdr.markForCheck();
           setTimeout(() => {

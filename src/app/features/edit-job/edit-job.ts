@@ -30,11 +30,11 @@ export class EditJobComponent implements OnInit, OnDestroy {
   categoriesLoading = true;
 
   budgetRanges = [
-    { value: 'under-100', label: 'Under $100', icon: '$' },
-    { value: '100-250', label: '$100 - $250', icon: '$$' },
-    { value: '250-500', label: '$250 - $500', icon: '$$$' },
-    { value: '500-1000', label: '$500 - $1,000', icon: '$$$$' },
-    { value: 'over-1000', label: 'Over $1,000', icon: '$$$$$' }
+    { value: 'under-100', label: 'Under ₹100', icon: '$' },
+    { value: '100-250', label: '$100 - ₹250', icon: '$$' },
+    { value: '250-500', label: '$250 - ₹500', icon: '$$$' },
+    { value: '500-1000', label: '$500 - ₹1,000', icon: '$$$$' },
+    { value: 'over-1000', label: 'Over ₹1,000', icon: '$$$$$' }
   ];
 
   timelineOptions = [

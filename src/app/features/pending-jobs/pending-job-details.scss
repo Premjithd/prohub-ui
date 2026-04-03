@@ -91,6 +91,16 @@
         color: #dc3545;
       }
     }
+
+    &.alert-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+
+      mat-icon {
+        color: #17a2b8;
+      }
+    }
   }
 
   .job-details-card {
@@ -263,7 +273,7 @@
         .bids-section {
           margin-top: 2rem;
           padding-top: 2rem;
-          border-top: 2px solid #f0f0f0;
+          border-top: 2px solid #ca1d1d;
 
           h3 {
             display: flex;
@@ -317,7 +327,7 @@
           }
 
           .bid-item {
-            border: 1px solid #e0e0e0;
+            border: 1px solid #8d0a0a;
             border-radius: 8px;
             padding: 1.5rem;
             transition: all 0.3s ease;
@@ -384,6 +394,43 @@
               }
             }
 
+            .bid-phase1a-details {
+              margin-bottom: 1rem;
+              padding: 1rem;
+              background-color: #fafafa;
+              border-left: 4px solid #667eea;
+              border-radius: 4px;
+
+              .detail-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 0.75rem;
+                gap: 1rem;
+
+                &:last-child {
+                  margin-bottom: 0;
+                }
+
+                .label {
+                  font-weight: 600;
+                  color: #333;
+                  min-width: 150px;
+                }
+
+                .value {
+                  color: #666;
+                  flex: 1;
+                  text-align: right;
+
+                  p {
+                    margin: 0;
+                    line-height: 1.5;
+                  }
+                }
+              }
+            }
+
             .bid-message {
               margin-bottom: 1rem;
 
@@ -398,6 +445,30 @@
                 margin: 0;
                 color: #666;
                 line-height: 1.5;
+              }
+            }
+
+            .bid-details-info {
+              display: flex;
+              align-items: flex-start;
+              gap: 0.75rem;
+              margin-bottom: 1rem;
+              padding: 0.75rem 1rem;
+              background-color: #e3f2fd;
+              border-left: 4px solid #2196f3;
+              border-radius: 4px;
+
+              mat-icon {
+                color: #2196f3;
+                flex-shrink: 0;
+                margin-top: 2px;
+              }
+
+              p {
+                margin: 0;
+                color: #1565c0;
+                font-size: 0.9rem;
+                line-height: 1.4;
               }
             }
 

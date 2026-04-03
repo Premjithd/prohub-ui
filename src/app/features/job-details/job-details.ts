@@ -4,16 +4,18 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { JobService, Job } from '../../services/job.service';
+import { PaymentService } from '../../services/payment.service';
 import { Auth } from '../../core/services/auth';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BidSubmissionDialogComponent } from './bid-submission-dialog.component';
+import { RazorpayCheckoutComponent } from '../payments/razorpay-checkout.component';
 
 @Component({
   selector: 'app-job-details',
@@ -33,6 +35,10 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
   userBidMessage: string | null = null;
   userBidAmount: number | null = null;
   userBidStatus: string | null = null;
+  userBidCommenceDate: Date | null = null;
+  userBidExpectedDuration: number | null = null;
+  userBidMaterials: string | null = null;
+  userBidExpiresAt: Date | null = null;
   jobMessages: any[] = [];
   loadingMessages = false;
   currentUserId!: number;
@@ -40,11 +46,13 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
 
   constructor(
     private jobService: JobService,
+    private paymentService: PaymentService,
     private auth: Auth,
     private router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private fb: FormBuilder
   ) {}
 
@@ -125,7 +133,20 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
             this.userBidMessage = userBid.bidMessage || null;
             this.userBidAmount = userBid.bidAmount || null;
             this.userBidStatus = userBid.status || null;
-            console.log(`User ${this.currentUserId} bid:`, { message: this.userBidMessage, amount: this.userBidAmount, status: this.userBidStatus });
+            // Phase 1A fields - convert string dates to Date objects
+            this.userBidCommenceDate = userBid.commenceDate ? new Date(userBid.commenceDate) : null;
+            this.userBidExpectedDuration = userBid.expectedDurationDays || null;
+            this.userBidMaterials = userBid.materialsDescription || null;
+            this.userBidExpiresAt = userBid.expiresAt ? new Date(userBid.expiresAt) : null;
+            console.log(`User ${this.currentUserId} bid:`, { 
+              message: this.userBidMessage, 
+              amount: this.userBidAmount, 
+              status: this.userBidStatus,
+              commenceDate: this.userBidCommenceDate,
+              duration: this.userBidExpectedDuration,
+              materials: this.userBidMaterials,
+              expiresAt: this.userBidExpiresAt
+            });
             // Load messages related to this bid
             this.loadJobMessages();
           }
@@ -138,6 +159,10 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
           this.userBidMessage = null;
           this.userBidAmount = null;
           this.userBidStatus = null;
+          this.userBidCommenceDate = null;
+          this.userBidExpectedDuration = null;
+          this.userBidMaterials = null;
+          this.userBidExpiresAt = null;
           this.cdr.markForCheck();
         }
       });
@@ -173,12 +198,12 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
     if (!price) return 'Contact for price';
     if (typeof price === 'string') {
       // If it's already formatted like "100-500", return as is
-      if (price.includes('-')) return `$${price}`;
+      if (price.includes('-')) return `₹${price}`;
       // Otherwise parse and format
       const parsed = parseFloat(price);
-      return isNaN(parsed) ? price : `$${parsed.toFixed(2)}`;
+      return isNaN(parsed) ? price : `₹${parsed.toFixed(2)}`;
     }
-    return `$${parseFloat(price).toFixed(2)}`;
+    return `₹${parseFloat(price).toFixed(2)}`;
   }
 
   getPostedByName(): string {
@@ -266,18 +291,19 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
       data: {
         jobTitle: this.job.title,
         jobBudget: this.job.budget,
+        serviceCategoryId: this.job.categoryId || 0,
         isResubmission: this.userBidStatus === 'Rejected'
       }
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      if (result && result.message !== undefined && result.amount !== undefined) {
-        this.submitBidWithCustomData(result.message, result.amount);
+      if (result && result.quotedPrice !== undefined && result.commenceDate !== undefined) {
+        this.submitBidWithCustomData(result);
       }
     });
   }
 
-  submitBidWithCustomData(message: string, amount: number): void {
+  submitBidWithCustomData(bidData: any): void {
     if (!this.job) {
       this.errorMessage = 'Job information not loaded';
       return;
@@ -286,10 +312,15 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
     this.submittingBid = true;
     this.errorMessage = '';
 
-    this.jobService.submitJobBid(this.job.id, {
-      bidMessage: message,
-      bidAmount: amount
-    })
+    const bidPayload = {
+      quotedPrice: bidData.quotedPrice,
+      commenceDate: bidData.commenceDate,
+      expectedDurationDays: bidData.expectedDurationDays,
+      materialsDescription: bidData.materialsDescription,
+      message: bidData.message
+    };
+
+    this.jobService.submitJobBid(this.job.id, bidPayload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -300,8 +331,13 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
           
           // Refresh bid status to show updated bid
           this.checkIfUserHasBid();
+
+          // Show success message
+          this.snackBar.open('Bid submitted! Proceed to payment?', 'Pay Now', { duration: 5000 }).onAction().subscribe(() => {
+            this.openPaymentCheckout();
+          });
           
-          // Show success message for 3 seconds
+          // Auto-hide success message after 3 seconds
           setTimeout(() => {
             this.bidSuccess = false;
             this.cdr.markForCheck();
@@ -328,4 +364,50 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+  openPaymentCheckout(): void {
+    if (!this.job || !this.userBidAmount) {
+      this.errorMessage = 'Unable to open payment. Please try again.';
+      return;
+    }
+
+    // Find the user's bid to get the bid ID
+    this.jobService.getJobBids(this.jobId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (bids) => {
+          const userBid = bids.find(bid => bid.proId === this.currentUserId);
+          if (!userBid) {
+            this.errorMessage = 'Bid not found. Please try again.';
+            return;
+          }
+
+          const dialogRef = this.dialog.open(RazorpayCheckoutComponent, {
+            width: '500px',
+            disableClose: true,
+            data: {
+              jobId: this.job!.id,
+              bidId: userBid.id,
+              bidAmount: this.userBidAmount,
+              jobTitle: this.job!.title,
+              consumerName: this.job!.user?.firstName + ' ' + this.job!.user?.lastName || 'Customer',
+              consumerEmail: this.job!.user?.email || '',
+              consumerPhone: this.job!.user?.phoneNumber || ''
+            }
+          });
+
+          dialogRef.afterClosed().subscribe((result) => {
+            if (result && result.success) {
+              this.snackBar.open('Payment successful! Job is now active.', 'Close', { duration: 5000 });
+              this.checkIfUserHasBid();
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error fetching bids for payment:', error);
+          this.errorMessage = 'Failed to fetch bid details. Please try again.';
+        }
+      });
+  }
 }
+

@@ -32,12 +32,28 @@ export interface Job {
   jobPhases?: JobPhase[] | string;  // JSON array of phases or string
   createdAt: string;
   updatedAt?: string;
+  priority?: 'Low' | 'Medium' | 'High' | 'Urgent';
+  // Phase 1A: Structured Address Fields
+  serviceAddressHouse?: string;
+  serviceAddressStreet1?: string;
+  serviceAddressStreet2?: string;
+  serviceAddressCity?: string;
+  serviceAddressState?: string;
+  serviceAddressCountry?: string;
+  serviceAddressPIN?: string;
+  // Contact Person Fields
+  contactPersonName?: string;
+  contactPersonPhone?: string;
+  // Geolocation
+  latitude?: number;
+  longitude?: number;
   user?: {
     id: number;
     firstName?: string;
     lastName?: string;
     name?: string;
     email?: string;
+    phoneNumber?: string;
   };
   assignedPro?: {
     id: number;
@@ -66,6 +82,11 @@ export interface JobBid {
   proId: number;
   bidMessage?: string;
   bidAmount?: number;
+  quotedPrice?: number;
+  commenceDate?: string | Date;
+  expectedDurationDays?: number;
+  materialsDescription?: string;
+  expiresAt?: string | Date;
   status: string;
   createdAt: string;
   updatedAt?: string;
@@ -77,6 +98,17 @@ export interface JobBid {
     phoneNumber?: string;
     email?: string;
   };
+}
+
+export interface CreateJobBidRequest {
+  bidMessage?: string;
+  bidAmount?: number;
+  quotedPrice?: number;
+  commenceDate?: Date;
+  expectedDurationDays?: number;
+  materialsDescription?: string;
+  expiresAt?: Date;
+  message?: string;
 }
 
 export interface Message {
@@ -176,7 +208,7 @@ export class JobService {
   }
 
   // Submit a bid for a job
-  submitJobBid(jobId: number, bidData: { bidMessage?: string; bidAmount?: number }): Observable<any> {
+  submitJobBid(jobId: number, bidData: CreateJobBidRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/${jobId}/bid`, bidData);
   }
 

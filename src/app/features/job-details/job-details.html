@@ -132,13 +132,39 @@
                   <span class="bid-status-text">{{ userBidStatus === 'Rejected' ? 'Bid Rejected' : 'Bid Submitted' }}</span>
                 </div>
                 <div class="bid-details">
+                  <!-- Always show Bid Amount if exists -->
                   <div *ngIf="userBidAmount" class="bid-detail-item">
                     <span class="bid-detail-label">Your Proposed Amount:</span>
-                    <span class="bid-detail-value amount">${{ userBidAmount | number: '1.2-2' }}</span>
+                    <span class="bid-detail-value amount">₹{{ userBidAmount | number: '1.2-2' }}</span>
                   </div>
-                  <div *ngIf="userBidMessage" class="bid-detail-item">
+                  <!-- Phase 1A: Commence Date -->
+                  <div *ngIf="userBidCommenceDate !== null && userBidCommenceDate !== undefined" class="bid-detail-item">
+                    <span class="bid-detail-label">Commence Date:</span>
+                    <span class="bid-detail-value">{{ userBidCommenceDate | date: 'MMM dd, yyyy' }}</span>
+                  </div>
+                  <!-- Phase 1A: Expected Duration -->
+                  <div *ngIf="userBidExpectedDuration !== null && userBidExpectedDuration !== undefined" class="bid-detail-item">
+                    <span class="bid-detail-label">Expected Duration:</span>
+                    <span class="bid-detail-value">{{ userBidExpectedDuration }} days</span>
+                  </div>
+                  <!-- Phase 1A: Materials Needed -->
+                  <div *ngIf="userBidMaterials && userBidMaterials.length > 0" class="bid-detail-item">
+                    <span class="bid-detail-label">Materials Needed:</span>
+                    <p class="bid-detail-value materials">{{ userBidMaterials }}</p>
+                  </div>
+                  <!-- Your Message -->
+                  <div *ngIf="userBidMessage && userBidMessage.length > 0" class="bid-detail-item">
                     <span class="bid-detail-label">Your Message:</span>
                     <p class="bid-detail-value message">{{ userBidMessage }}</p>
+                  </div>
+                  <!-- Phase 1A: Bid Expires -->
+                  <div *ngIf="userBidExpiresAt !== null && userBidExpiresAt !== undefined" class="bid-detail-item">
+                    <span class="bid-detail-label">Bid Expires:</span>
+                    <span class="bid-detail-value">{{ userBidExpiresAt | date: 'MMM dd, yyyy' }}</span>
+                  </div>
+                  <!-- Fallback: Show if bid exists but no details (debugging) -->
+                  <div *ngIf="!userBidAmount && !userBidCommenceDate && !userBidExpectedDuration && !userBidMaterials && !userBidMessage && !userBidExpiresAt" class="bid-detail-item">
+                    <p style="color: #999; font-size: 0.9rem;">✓ Bid submitted on {{ (job.createdAt | date: 'MMM dd, yyyy') }}</p>
                   </div>
                 </div>
                 <div *ngIf="userBidStatus === 'Rejected' && job.status === 'Open'" class="bid-resubmit-section">

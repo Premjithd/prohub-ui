@@ -456,7 +456,8 @@
           color: #4caf50;
         }
 
-        &.message {
+        &.message,
+        &.materials {
           font-size: 0.95rem;
           line-height: 1.5;
           background: white;

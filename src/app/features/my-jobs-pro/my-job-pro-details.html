@@ -167,11 +167,11 @@
         <!-- Job Phases Section -->
         <div class="phases-section">
           <div class="phases-header">
-            <div class="phases-title-row">
-              <h3>
-                <mat-icon>flag</mat-icon>
-                Progress Tracking
-              </h3>              
+            <h3>
+              <mat-icon>flag</mat-icon>
+              Progress Tracking
+            </h3>  
+            <div class="phases-title-row" *ngIf="job.status !== 'Completed'">            
               <button 
                 mat-raised-button 
                 (click)="openPhaseSelectionDialog(job)"
@@ -183,9 +183,9 @@
               <div class="unsaved-indicator" *ngIf="hasUnsavedChanges(job.id)">
                 <mat-icon class="warning-icon">info</mat-icon>
                 <span>Unsaved changes</span>
-              </div>
-            </div>
-            <p class="subtitle">Click 'Add Phases' to add project phases below and help user track the progress of your work</p>
+              </div>            
+            </div>  
+            <p *ngIf="job.status !== 'Completed'" class="subtitle">Define project phases to help the customer track your work progress</p>          
             <div class="phase-progress">
               <mat-progress-bar 
                 mode="determinate" 

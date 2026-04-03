@@ -15,6 +15,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { JobService, Job, JobBid, JobPhase, Message } from '../../services/job.service.js';
+import { PaymentService } from '../../services/payment.service';
+import { RazorpayCheckoutComponent } from '../payments/razorpay-checkout.component';
 import { Auth } from '../../core/services/auth';
 import { Subject, interval } from 'rxjs';
 import { takeUntil, switchMap, filter } from 'rxjs/operators';
@@ -51,6 +53,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   successMessage = '';
   loadingBids = false;
   loadingMessages = false;
+  paymentStatus: { status: string; completed: boolean } | null = null;
+  loadingPayment = false;
   messageText: string = '';
   messageSending = false;
   messageStatus: string = '';
@@ -62,6 +66,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
 
   constructor(
     private jobService: JobService,
+    private paymentService: PaymentService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
     public auth: Auth,
@@ -98,6 +103,10 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
         // Load bids for the job
         this.loadBidsForJob(jobId);
+        // Load payment status if job is assigned
+        if (job.assignedProId) {
+          this.loadPaymentStatus(jobId);
+        }
       },
       error: (error) => {
         console.error('Error loading job details:', error);
@@ -192,6 +201,83 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  loadPaymentStatus(jobId: number): void {
+    this.loadingPayment = true;
+    this.paymentService.getPaymentByJob(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (payment) => {
+        console.log(`Payment status loaded for job ${jobId}:`, payment);
+        const completed = payment.status === 'Completed';
+        this.paymentStatus = {
+          status: payment.status,
+          completed: completed
+        };
+        this.loadingPayment = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error(`Error loading payment status for job ${jobId}:`, error);
+        // If payment not found, mark as not found (no payment yet)
+        this.paymentStatus = {
+          status: 'Not Found',
+          completed: false
+        };
+        this.loadingPayment = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  initiatePaymentForAssignedJob(): void {
+    if (!this.job || !this.job.assignedProId) {
+      this.errorMessage = 'Job not assigned to a professional.';
+      return;
+    }
+
+    // Get accepted bid for this job
+    const acceptedBid = this.jobBids.find(bid => bid.status === 'Accepted');
+    if (!acceptedBid || !acceptedBid.bidAmount) {
+      this.errorMessage = 'Bid information not available for payment.';
+      return;
+    }
+
+    // Open payment dialog
+    const paymentDialogRef = this.dialog.open(RazorpayCheckoutComponent, {
+      width: '600px',
+      maxHeight: '90vh',
+      data: {
+        jobId: this.job.id,
+        bidId: acceptedBid.id,
+        bidAmount: acceptedBid.bidAmount,
+        jobTitle: this.job.title,
+        consumerName: this.auth.getName() || 'User',
+        consumerEmail: this.job.user?.email || '',
+        consumerPhone: this.job.user?.phoneNumber || ''
+      }
+    });
+
+    paymentDialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        this.successMessage = 'Payment completed successfully!';
+        // Update payment status immediately to hide button
+        this.paymentStatus = {
+          status: 'Completed',
+          completed: true
+        };
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.successMessage = '';
+          this.cdr.markForCheck();
+        }, 3000);
+      } else if (result && result.error) {
+        this.errorMessage = result.error;
+        setTimeout(() => {
+          this.errorMessage = '';
+          this.cdr.markForCheck();
+        }, 3000);
+      }
+    });
+  }
+
   acceptBid(jobId: number, bid: JobBid): void {
     const dialogRef = this.dialog.open(BidConfirmationDialogComponent, {
       width: '400px',
@@ -208,6 +294,11 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
               this.cdr.markForCheck();
             }, 3000);
             this.loadJobDetails(jobId);
+            
+            // Open message dialog after successful acceptance
+            setTimeout(() => {
+              this.openMessageDialogForBid(bid);
+            }, 500);
           },
           error: (error) => {
             console.error('Error accepting bid:', error);
@@ -238,6 +329,11 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
               this.cdr.markForCheck();
             }, 3000);
             this.loadJobDetails(jobId);
+            
+            // Open message dialog after successful rejection
+            setTimeout(() => {
+              this.openMessageDialogForBid(bid);
+            }, 500);
           },
           error: (error) => {
             console.error('Error rejecting bid:', error);
@@ -367,6 +463,45 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
                   }
                 });
               }, 500);
+            },
+            error: (error) => {
+              console.error('Error sending message:', error);
+              this.errorMessage = 'Failed to send message.';
+              setTimeout(() => {
+                this.errorMessage = '';
+                this.cdr.markForCheck();
+              }, 3000);
+            }
+          });
+      }
+    });
+  }
+
+  // Open message dialog for a bid after accept/reject
+  openMessageDialogForBid(bid: JobBid): void {
+    if (!this.job || !bid.proId) return;
+
+    const dialogRef = this.dialog.open(BidActionMessageDialogComponent, {
+      width: '500px',
+      data: {
+        jobTitle: this.job.title,
+        professionalName: bid.pro?.businessName || 'Professional',
+        bidId: bid.id
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.message) {
+        // Send message using bid-specific endpoint
+        this.jobService.sendMessageToBid(bid.id, { content: result.message })
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.successMessage = 'Message sent successfully!';
+              setTimeout(() => {
+                this.successMessage = '';
+                this.cdr.markForCheck();
+              }, 3000);
             },
             error: (error) => {
               console.error('Error sending message:', error);
@@ -571,6 +706,89 @@ export class BidConfirmationDialogComponent {
 
   onConfirm(): void {
     this.dialogRef.close(true);
+  }
+}
+
+// Bid Action Message Dialog Component - shown after accept/reject
+@Component({
+  selector: 'app-bid-action-message-dialog',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule],
+  template: `
+    <div class="bid-action-message-dialog">
+      <h2 mat-dialog-title>Message {{ data.professionalName }}</h2>
+      
+      <mat-dialog-content>
+        <p class="dialog-subtitle">Job: {{ data.jobTitle }}</p>
+        <p class="dialog-hint">You can send an optional message to the professional:</p>
+        
+        <mat-form-field appearance="outline" class="message-field">
+          <mat-label>Your Message (Optional)</mat-label>
+          <textarea matInput 
+            [(ngModel)]="message" 
+            placeholder="Type your message here..."
+            rows="5"></textarea>
+        </mat-form-field>
+      </mat-dialog-content>
+
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="onSkip()">
+          <mat-icon>close</mat-icon>
+          Skip
+        </button>
+        <button mat-raised-button color="accent" (click)="onSend()">
+          <mat-icon>send</mat-icon>
+          Send Message
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `,
+  styles: [`
+    .bid-action-message-dialog {
+      min-width: 400px;
+    }
+
+    .dialog-subtitle {
+      margin: 0 0 8px 0;
+      color: #666;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .dialog-hint {
+      margin: 0 0 16px 0;
+      color: #999;
+      font-size: 0.85rem;
+    }
+
+    .message-field {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    mat-dialog-actions {
+      gap: 8px;
+    }
+  `]
+})
+export class BidActionMessageDialogComponent {
+  message = '';
+
+  constructor(
+    public dialogRef: MatDialogRef<BidActionMessageDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {}
+
+  onSkip(): void {
+    this.dialogRef.close();
+  }
+
+  onSend(): void {
+    if (this.message.trim()) {
+      this.dialogRef.close({ message: this.message });
+    } else {
+      this.dialogRef.close();
+    }
   }
 }
 

@@ -4,12 +4,12 @@
     <div class="header-content">
       <div>
         <h1>Available Jobs</h1>
-        <p class="subtitle">See jobs posted by customers. Select a job to see more details and send bids.</p>
+        <p class="subtitle">Find jobs posted by customers. Filter by category, budget & priority.</p>
       </div>
-      <!-- <button mat-raised-button color="primary" (click)="goHome()">
+      <button mat-raised-button color="primary" (click)="goHome()">
         <mat-icon>home</mat-icon>
         Back to Home
-      </button> -->
+      </button>
     </div>
   </div>
 
@@ -25,70 +25,145 @@
     <p>Loading available jobs...</p>
   </div>
 
-  <!-- Empty State -->
-  <div *ngIf="!loading && jobs.length === 0" class="empty-state">
-    <mat-icon class="empty-icon">assignment</mat-icon>
-    <h2>No Jobs Available</h2>
-    <p>There are currently no available jobs. Check back later or post a service to get discovered by customers.</p>
-    <button mat-raised-button color="primary" routerLink="/add-service">
-      <mat-icon>add</mat-icon>
-      Post a Service
-    </button>
-  </div>
+  <!-- Main Content (when not loading) -->
+  <div *ngIf="!loading" class="jobs-container">
+    <!-- Filters Section -->
+    <mat-expansion-panel class="filters-panel" [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>tune</mat-icon>
+          Filters & Sorting
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-  <!-- Jobs List -->
-  <div *ngIf="!loading && jobs.length > 0" class="jobs-grid">
-    <div *ngFor="let job of jobs" class="job-card">
-      <!-- Job Header -->
-      <div class="job-header">
-        <div class="job-title-section">
-          <h2 class="job-title">{{ job.title }}</h2>
-          <div class="job-meta">
-            <span class="job-category">{{ job.category?.name || 'Uncategorized' }}</span>
-          </div>
-        </div>
-        <div class="job-budget">
-          <span class="budget-label">Budget</span>
-          <span class="price">{{ formatPrice(job.budget) }}</span>
-        </div>
-      </div>
+      <div class="filters-grid">
+        <!-- Category Filter -->
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Category</mat-label>
+          <mat-select [(value)]="selectedCategory" (selectionChange)="onFilterChange()">
+            <mat-option [value]="null">All Categories</mat-option>
+            <mat-option *ngFor="let cat of categories" [value]="cat.name">
+              {{ cat.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <!-- Job Content -->
-      <div class="job-content">
-        <!-- Description -->
-        <div class="job-section">
-          <h3>Description</h3>
-          <p class="description">{{ job.description }}</p>
-        </div>
+        <!-- Priority Filter -->
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Priority</mat-label>
+          <mat-select [(value)]="selectedPriority" (selectionChange)="onFilterChange()">
+            <mat-option [value]="null">All Priorities</mat-option>
+            <mat-option value="Urgent">Urgent</mat-option>
+            <mat-option value="High">High</mat-option>
+            <mat-option value="Medium">Medium</mat-option>
+            <mat-option value="Low">Low</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-        <!-- Job Details -->
-        <div class="job-details">
-          <div class="detail-item">
-            <mat-icon>location_on</mat-icon>
-            <span>{{ job.location }}</span>
-          </div>
-          <div class="detail-item">
-            <mat-icon>schedule</mat-icon>
-            <span>Timeline: {{ job.timeline }}</span>
-          </div>
-          <div class="detail-item">
-            <mat-icon>calendar_today</mat-icon>
-            <span>Posted: {{ job.createdAt | date: 'MMM dd, yyyy' }}</span>
-          </div>
-        </div>
-      </div>
+        <!-- Sort Filter -->
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Sort By</mat-label>
+          <mat-select [(value)]="sortBy" (selectionChange)="onFilterChange()">
+            <mat-option value="recent">Most Recent</mat-option>
+            <mat-option value="budget-low">Budget: Low to High</mat-option>
+            <mat-option value="budget-high">Budget: High to Low</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <!-- Job Actions -->
-      <div class="job-actions">
-        <button mat-raised-button color="primary" (click)="viewJobDetails(job.id)">
-          <mat-icon>visibility</mat-icon>
-          View Details
+        <!-- Reset Filters -->
+        <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
+          <mat-icon>restart_alt</mat-icon>
+          Reset Filters
         </button>
       </div>
-    </div>
-  </div>
 
-  <!-- Container -->
-  <div class="available-jobs-container">
+      <!-- Budget Range Info -->
+      <div class="budget-info">
+        <p>Budget Range: <strong>₹{{ budgetRange[0].toLocaleString('en-IN') }} - ₹{{ budgetRange[1].toLocaleString('en-IN') }}</strong></p>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && filteredJobs.length === 0" class="empty-state">
+      <mat-icon class="empty-icon">assignment</mat-icon>
+      <h2>No Jobs Found</h2>
+      <p>No jobs match your current filters. Try adjusting your search criteria.</p>
+      <button mat-raised-button color="primary" (click)="resetFilters()">
+        <mat-icon>restart_alt</mat-icon>
+        Clear Filters
+      </button>
+    </div>
+
+    <!-- Jobs Grid -->
+    <div *ngIf="!loading && filteredJobs.length > 0" class="jobs-grid">
+      <div *ngFor="let job of filteredJobs" class="job-card">
+        <!-- Job Header with Priority Badge -->
+        <div class="job-header">
+          <div class="job-title-section">
+            <h2 class="job-title">{{ job.title }}</h2>
+            <div class="job-meta">
+              <mat-chip-set>
+                <mat-chip class="category-chip">{{ job.category?.name || 'Uncategorized' }}</mat-chip>
+                <mat-chip *ngIf="job.priority" [ngClass]="'priority-' + job.priority.toLowerCase()">
+                  <mat-icon>{{ getPriorityIcon(job.priority) }}</mat-icon>
+                  {{ job.priority }}
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+          </div>
+          <div class="job-budget">
+            <span class="budget-label">Budget</span>
+            <span class="price">{{ formatPrice(job.budget) }}</span>
+          </div>
+        </div>
+
+        <!-- Job Content -->
+        <div class="job-content">
+          <!-- Description -->
+          <div class="job-section">
+            <h3>Description</h3>
+            <p class="description">{{ (job.description | slice:0:150) }}{{ (job.description && job.description.length > 150) ? '...' : '' }}</p>
+          </div>
+
+          <!-- Job Details (Phase 1A Enhanced) -->
+          <div class="job-details">
+            <!-- Location -->
+            <div class="detail-item" *ngIf="job.serviceAddressCity">
+              <mat-icon>location_on</mat-icon>
+              <span>{{ job.serviceAddressCity }}, {{ job.serviceAddressState }}</span>
+            </div>
+            <div class="detail-item" *ngIf="!job.serviceAddressCity">
+              <mat-icon>location_on</mat-icon>
+              <span>{{ job.location }}</span>
+            </div>
+
+            <!-- Timeline -->
+            <div class="detail-item">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ job.timeline }}</span>
+            </div>
+
+            <!-- Posted Date -->
+            <div class="detail-item">
+              <mat-icon>calendar_today</mat-icon>
+              <span>Posted: {{ job.createdAt | date: 'MMM dd, yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job Actions -->
+        <div class="job-actions">
+          <button mat-raised-button color="primary" (click)="viewJobDetails(job.id)">
+            <mat-icon>visibility</mat-icon>
+            View Details & Bid
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Count -->
+    <div *ngIf="!loading && filteredJobs.length > 0" class="job-count">
+      Showing {{ filteredJobs.length }} of {{ jobs.length }} jobs
+    </div>
   </div>
 </div>

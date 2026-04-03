@@ -12,6 +12,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { JobService, Job, JobBid, JobPhase } from '../../services/job.service';
+import { PaymentService } from '../../services/payment.service';
+import { RazorpayCheckoutComponent } from '../payments/razorpay-checkout.component';
 import { Auth } from '../../core/services/auth';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -44,6 +46,8 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
   jobBidsMap: Map<number, JobBid[]> = new Map();
   loadingBidsMap: Map<number, boolean> = new Map();
   acceptedBidMap: Map<number, JobBid> = new Map();
+  paymentStatusMap: Map<number, { status: string; completed: boolean }> = new Map();
+  loadingPaymentMap: Map<number, boolean> = new Map();
   openBidsJobId: number | null = null;
   loading = true;
   errorMessage = '';
@@ -56,7 +60,7 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
   
   private destroy$ = new Subject<void>();
 
-  constructor(private jobService: JobService, public auth: Auth, private cdr: ChangeDetectorRef, private router: Router, private dialog: MatDialog) {}
+  constructor(private jobService: JobService, public auth: Auth, private cdr: ChangeDetectorRef, private router: Router, private dialog: MatDialog, private paymentService: PaymentService) {}
 
   ngOnInit(): void {
     // Only load jobs if user is authenticated
@@ -90,7 +94,7 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
         );
         // Build map of assigned pros for jobs with "In Progress" status
         this.allPendingJobs.forEach(job => {
-          if (job.status.toLowerCase() === 'in progress' && job.assignedPro) {
+          if ((job.status.toLowerCase() === 'in progress' || job.assignedProId) && job.assignedPro) {
             const proName = job.assignedPro.firstName && job.assignedPro.lastName
               ? `${job.assignedPro.firstName} ${job.assignedPro.lastName}`
               : (job.assignedPro.proName || 'Professional');
@@ -100,6 +104,8 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
             });
             // Load bids for in-progress jobs to find accepted bid
             this.loadBidsForJob(job.id);
+            // Load payment status for assigned jobs
+            this.loadPaymentStatusForJob(job.id);
           }
         });
         console.log('All pending jobs loaded:', this.allPendingJobs);
@@ -169,11 +175,11 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
   formatBudget(budget: string): string {
     // Parse budget range and format for display
     const budgetMap: { [key: string]: string } = {
-      'under-100': 'Under $100',
-      '100-250': '$100 - $250',
-      '250-500': '$250 - $500',
-      '500-1000': '$500 - $1,000',
-      'over-1000': 'Over $1,000'
+      'under-100': 'Under ₹5,000',
+      '100-250': '₹5,000 - ₹12,500',
+      '250-500': '₹12,500 - ₹25,000',
+      '500-1000': '₹25,000 - ₹50,000',
+      'over-1000': 'Over ₹50,000'
     };
     return budgetMap[budget] || budget;
   }
@@ -238,6 +244,37 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
         this.acceptedBidMap.set(jobId, acceptedBid);
       }
     }
+  }
+
+  loadPaymentStatusForJob(jobId: number): void {
+    // Prevent loading the same payment status multiple times
+    if (this.paymentStatusMap.has(jobId)) {
+      return;
+    }
+
+    this.loadingPaymentMap.set(jobId, true);
+    this.paymentService.getPaymentByJob(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (payment) => {
+        console.log(`Payment status loaded for job ${jobId}:`, payment);
+        const completed = payment.status === 'Completed';
+        this.paymentStatusMap.set(jobId, {
+          status: payment.status,
+          completed: completed
+        });
+        this.loadingPaymentMap.set(jobId, false);
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error(`Error loading payment status for job ${jobId}:`, error);
+        // If payment not found, mark as no payment
+        this.paymentStatusMap.set(jobId, {
+          status: 'Not Found',
+          completed: false
+        });
+        this.loadingPaymentMap.set(jobId, false);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   onBidsExpandedChange(jobId: number, isExpanded: boolean): void {
@@ -316,6 +353,11 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
               this.successMessage = '';
               this.cdr.markForCheck();
             }, 3000);
+            
+            // Open payment dialog after successful bid acceptance
+            setTimeout(() => {
+              this.openPaymentDialog(jobId, bid);
+            }, 500);
           },
           error: (error) => {
             console.error('Error accepting bid:', error);
@@ -325,6 +367,74 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  // Open payment dialog for bid acceptance
+  openPaymentDialog(jobId: number, bid: JobBid): void {
+    if (!bid.bidAmount) {
+      this.errorMessage = 'Bid amount not available for payment.';
+      return;
+    }
+
+    // Get job title
+    const job = this.pendingJobs.find(j => j.id === jobId);
+    if (!job) return;
+
+    const paymentDialogRef = this.dialog.open(RazorpayCheckoutComponent, {
+      width: '600px',
+      maxHeight: '90vh',
+      data: {
+        jobId: jobId,
+        bidId: bid.id,
+        bidAmount: bid.bidAmount,
+        jobTitle: job.title,
+        consumerName: this.auth.getName() || 'User',
+        consumerEmail: job.user?.email || '',
+        consumerPhone: job.user?.phoneNumber || ''
+      }
+    });
+
+    paymentDialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        this.successMessage = 'Payment completed successfully!';
+        // Update payment status map immediately to hide button
+        this.paymentStatusMap.set(jobId, {
+          status: 'Completed',
+          completed: true
+        });
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.successMessage = '';
+          this.cdr.markForCheck();
+        }, 3000);
+      } else if (result && result.error) {
+        this.errorMessage = result.error;
+        setTimeout(() => {
+          this.errorMessage = '';
+          this.cdr.markForCheck();
+        }, 3000);
+      }
+    });
+  }
+
+  // Initiate payment for an already assigned job
+  initiatePaymentForAssignedJob(jobId: number): void {
+    const job = this.pendingJobs.find(j => j.id === jobId);
+    if (!job || !job.assignedProId) {
+      this.errorMessage = 'Job not assigned to a professional.';
+      return;
+    }
+
+    // Get accepted bid for this job
+    const bids = this.jobBidsMap.get(jobId) || [];
+    const acceptedBid = bids.find(bid => bid.status === 'Accepted');
+
+    if (!acceptedBid || !acceptedBid.bidAmount) {
+      this.errorMessage = 'Bid information not available for payment.';
+      return;
+    }
+
+    this.openPaymentDialog(jobId, acceptedBid);
   }
 
   rejectBid(jobId: number, bid: JobBid): void {
@@ -432,6 +542,36 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
     // In a real app, this would send the message via an API
     this.successMessage = 'Message sent to professional successfully!';
     messageInput.value = '';
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      this.successMessage = '';
+      this.cdr.markForCheck();
+    }, 3000);
+  }
+
+  // Toggle bid details expansion for a job
+  toggleBidsExpansion(jobId: number): void {
+    if (this.openBidsJobId === jobId) {
+      this.openBidsJobId = null; // Collapse if already open
+    } else {
+      this.openBidsJobId = jobId; // Expand for this job
+      // Load bids if not already loaded
+      if (!this.jobBidsMap.has(jobId) || (this.jobBidsMap.get(jobId) || []).length === 0) {
+        this.loadBidsForJob(jobId);
+      }
+    }
+    this.cdr.markForCheck();
+  }
+
+  // Message a professional who submitted a bid
+  messageBidProfessional(bid: JobBid): void {
+    if (!bid.pro || !bid.pro.id) {
+      this.errorMessage = 'Professional information not available';
+      return;
+    }
+    // Navigate to messages page or open message compose dialog
+    // For now, show a placeholder
+    this.successMessage = `Message interface for ${bid.pro.businessName} would open here`;
     this.cdr.markForCheck();
     setTimeout(() => {
       this.successMessage = '';

@@ -34,11 +34,11 @@ export class PostJobComponent implements OnInit, OnDestroy {
   categoriesLoading = true;
 
   budgetRanges = [
-    { value: 'under-100', label: 'Under $100', icon: '$' },
-    { value: '100-250', label: '$100 - $250', icon: '$$' },
-    { value: '250-500', label: '$250 - $500', icon: '$$$' },
-    { value: '500-1000', label: '$500 - $1,000', icon: '$$$$' },
-    { value: 'over-1000', label: 'Over $1,000', icon: '$$$$$' }
+    { value: 'under-100', label: 'Under ₹5,000', icon: '💰' },
+    { value: '100-250', label: '₹5,000 - ₹12,500', icon: '💰💰' },
+    { value: '250-500', label: '₹12,500 - ₹25,000', icon: '💰💰💰' },
+    { value: '500-1000', label: '₹25,000 - ₹50,000', icon: '💰💰💰💰' },
+    { value: 'over-1000', label: 'Over ₹50,000', icon: '💰💰💰💰💰' }
   ];
 
   timelineOptions = [
