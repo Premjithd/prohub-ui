@@ -10,12 +10,14 @@ mat-sidenav-container {
 
 .main-content {
   padding: 2rem 0;
-  min-height: calc(100vh - 64px - 64px); // Subtract header and footer heights
+  min-height: calc(100vh - var(--nav-height) - 64px);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .main-content {
     padding: 1rem 0;
-    min-height: calc(100vh - 56px - 56px); // Adjust for smaller header/footer on mobile
+    // Extra bottom padding so content is not hidden behind the bottom nav
+    padding-bottom: calc(var(--bottom-nav-height) + 1rem);
+    min-height: calc(100vh - var(--nav-height) - var(--bottom-nav-height));
   }
 }

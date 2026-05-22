@@ -1,0 +1,64 @@
+// Hidden on desktop – shown only on mobile
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #fff;
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+    z-index: 1000;
+    align-items: stretch;
+  }
+}
+
+.nav-item {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-decoration: none;
+  color: #9ca3af;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease;
+  padding: 6px 4px 4px;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+  }
+
+  &.active {
+    color: var(--color-primary);
+
+    mat-icon {
+      // Solid fill effect for active state
+      font-variation-settings: 'FILL' 1;
+    }
+  }
+
+  // Primary action item (Post Job) gets accent treatment
+  &.post-btn mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    color: var(--color-primary);
+    margin-top: -4px;
+  }
+}

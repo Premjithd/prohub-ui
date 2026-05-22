@@ -1,0 +1,81 @@
+<nav class="bottom-nav">
+
+  <!-- Home — always visible -->
+  <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+    <mat-icon>home</mat-icon>
+    <span>Home</span>
+  </a>
+
+  <!-- ── Unauthenticated ──────────────────────────────── -->
+  <ng-container *ngIf="!auth.isAuthenticated()">
+    <a class="nav-item" routerLink="/services" routerLinkActive="active">
+      <mat-icon>build</mat-icon>
+      <span>Services</span>
+    </a>
+    <a class="nav-item" routerLink="/about" routerLinkActive="active">
+      <mat-icon>info</mat-icon>
+      <span>About</span>
+    </a>
+    <a class="nav-item" routerLink="/auth/login" routerLinkActive="active">
+      <mat-icon>login</mat-icon>
+      <span>Login</span>
+    </a>
+  </ng-container>
+
+  <!-- ── Regular user ─────────────────────────────────── -->
+  <ng-container *ngIf="auth.isAuthenticated() && !isProUser() && !isAdmin()">
+    <a class="nav-item" routerLink="/pending-jobs" routerLinkActive="active">
+      <mat-icon>assignment</mat-icon>
+      <span>My Jobs</span>
+    </a>
+    <a class="nav-item post-btn" routerLink="/post-job" routerLinkActive="active">
+      <mat-icon>add_circle</mat-icon>
+      <span>Post Job</span>
+    </a>
+    <a class="nav-item" routerLink="/messages" routerLinkActive="active">
+      <mat-icon>mail</mat-icon>
+      <span>Messages</span>
+    </a>
+    <a class="nav-item" routerLink="/profile" routerLinkActive="active">
+      <mat-icon>person</mat-icon>
+      <span>Profile</span>
+    </a>
+  </ng-container>
+
+  <!-- ── Pro user ──────────────────────────────────────── -->
+  <ng-container *ngIf="auth.isAuthenticated() && isProUser()">
+    <a class="nav-item" routerLink="/available-jobs" routerLinkActive="active">
+      <mat-icon>search</mat-icon>
+      <span>Find Jobs</span>
+    </a>
+    <a class="nav-item" routerLink="/my-jobs-pro" routerLinkActive="active">
+      <mat-icon>task_alt</mat-icon>
+      <span>My Work</span>
+    </a>
+    <a class="nav-item" routerLink="/messages" routerLinkActive="active">
+      <mat-icon>mail</mat-icon>
+      <span>Messages</span>
+    </a>
+    <a class="nav-item" routerLink="/profile" routerLinkActive="active">
+      <mat-icon>person</mat-icon>
+      <span>Profile</span>
+    </a>
+  </ng-container>
+
+  <!-- ── Admin ────────────────────────────────────────── -->
+  <ng-container *ngIf="auth.isAuthenticated() && isAdmin()">
+    <a class="nav-item" routerLink="/admin-users" routerLinkActive="active">
+      <mat-icon>admin_panel_settings</mat-icon>
+      <span>Admin</span>
+    </a>
+    <a class="nav-item" routerLink="/messages" routerLinkActive="active">
+      <mat-icon>mail</mat-icon>
+      <span>Messages</span>
+    </a>
+    <a class="nav-item" routerLink="/profile" routerLinkActive="active">
+      <mat-icon>person</mat-icon>
+      <span>Profile</span>
+    </a>
+  </ng-container>
+
+</nav>

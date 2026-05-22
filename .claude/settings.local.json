@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path C:\\\\repos\\\\yProHub -Force)",
+      "Bash(Select-Object Name, Mode)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(npm run *)",
+      "Bash(dotnet build *)",
+      "Bash(npm start *)",
+      "PowerShell(dotnet tool install *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\repos\\\\yProHub\\\\prohub-ui\\\\src\\\\app\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)"
+    ]
+  }
+}

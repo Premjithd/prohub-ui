@@ -371,7 +371,7 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
         amount: (this.orderData.totalAmount * 100),  // Convert to paisa
         currency: this.orderData.currency,
         order_id: this.orderData.orderId,
-        name: 'ProHub',
+        name: 'yProHub',
         description: `Payment for job: ${this.data.jobTitle}`,
         customer_notify: 1,
         prefill: {

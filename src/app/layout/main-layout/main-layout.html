@@ -5,7 +5,7 @@
 
   <mat-sidenav-content>
     <app-navbar (toggleSidenav)="sidenav.toggle()"></app-navbar>
-    
+
     <main class="main-content">
       <div class="container">
         <router-outlet></router-outlet>
@@ -15,3 +15,6 @@
     <app-footer></app-footer>
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+<!-- Fixed bottom navigation (visible on mobile only) -->
+<app-bottom-nav></app-bottom-nav>

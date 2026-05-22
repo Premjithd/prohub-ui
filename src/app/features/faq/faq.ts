@@ -17,33 +17,33 @@ interface FAQItem {
 export class FAQComponent {
   faqItems: FAQItem[] = [
     {
-      question: 'What is ProHub?',
-      answer: 'ProHub is a marketplace platform that connects customers with verified local professionals. Whether you need plumbing, electrical work, house cleaning, tutoring, or any other service, ProHub makes it easy to find, hire, and manage trusted professionals in your area.',
+      question: 'What is yProHub?',
+      answer: 'yProHub is a marketplace platform that connects customers with verified local professionals. Whether you need plumbing, electrical work, house cleaning, tutoring, or any other service, yProHub makes it easy to find, hire, and manage trusted professionals in your area.',
       open: false
     },
     {
       question: 'How do I post a job?',
-      answer: 'To post a job, first create a user account on ProHub. Then navigate to "Post a Job" from your dashboard, describe your project, set your budget, and specify your location. Within minutes, qualified professionals will start sending you bids.',
+      answer: 'To post a job, first create a user account on yProHub. Then navigate to "Post a Job" from your dashboard, describe your project, set your budget, and specify your location. Within minutes, qualified professionals will start sending you bids.',
       open: false
     },
     {
-      question: 'How much does it cost to use ProHub?',
-      answer: 'For customers, posting jobs and receiving bids is completely free. ProHub charges professionals (Pros) a small commission on completed jobs. There are no hidden fees for customers using our platform.',
+      question: 'How much does it cost to use yProHub?',
+      answer: 'For customers, posting jobs and receiving bids is completely free. yProHub charges professionals (Pros) a small commission on completed jobs. There are no hidden fees for customers using our platform.',
       open: false
     },
     {
       question: 'How do I become a Pro?',
-      answer: 'To become a Pro, sign up with a Pro account on ProHub. You\'ll need to provide your business information, verify your identity, and upload documentation of your credentials and insurance. Once approved, you can start bidding on jobs in your service area.',
+      answer: 'To become a Pro, sign up with a Pro account on yProHub. You\'ll need to provide your business information, verify your identity, and upload documentation of your credentials and insurance. Once approved, you can start bidding on jobs in your service area.',
       open: false
     },
     {
-      question: 'Are professionals on ProHub verified?',
-      answer: 'Yes! All professionals on ProHub go through an identity verification process. We verify their credentials, check background information, and maintain a rating system based on customer reviews. This ensures you\'re working with trustworthy professionals.',
+      question: 'Are professionals on yProHub verified?',
+      answer: 'Yes! All professionals on yProHub go through an identity verification process. We verify their credentials, check background information, and maintain a rating system based on customer reviews. This ensures you\'re working with trustworthy professionals.',
       open: false
     },
     {
       question: 'How are payments handled?',
-      answer: 'Payments on ProHub are secured through our escrow system. When you accept a bid, funds are held securely. The professional receives payment only after you confirm the work is complete. This protects both customers and professionals.',
+      answer: 'Payments on yProHub are secured through our escrow system. When you accept a bid, funds are held securely. The professional receives payment only after you confirm the work is complete. This protects both customers and professionals.',
       open: false
     },
     {
@@ -53,17 +53,17 @@ export class FAQComponent {
     },
     {
       question: 'Can I communicate directly with professionals?',
-      answer: 'Absolutely! ProHub provides in-app messaging so you can communicate with professionals before, during, and after the job. This allows you to discuss project details, ask questions, and stay updated on progress.',
+      answer: 'Absolutely! yProHub provides in-app messaging so you can communicate with professionals before, during, and after the job. This allows you to discuss project details, ask questions, and stay updated on progress.',
       open: false
     },
     {
       question: 'How is my personal information protected?',
-      answer: 'We take data security very seriously. ProHub uses industry-standard encryption to protect your personal and payment information. We never share your details with third parties without your consent. Read our Privacy Policy for more details.',
+      answer: 'We take data security very seriously. yProHub uses industry-standard encryption to protect your personal and payment information. We never share your details with third parties without your consent. Read our Privacy Policy for more details.',
       open: false
     },
     {
       question: 'What service categories are available?',
-      answer: 'ProHub offers a wide range of service categories including Home Repair, Cleaning, Tutoring, IT Support, Photography, Writing, Graphic Design, and many more. Browse our services page to see all available categories and find what you need.',
+      answer: 'yProHub offers a wide range of service categories including Home Repair, Cleaning, Tutoring, IT Support, Photography, Writing, Graphic Design, and many more. Browse our services page to see all available categories and find what you need.',
       open: false
     },
     {
@@ -73,7 +73,7 @@ export class FAQComponent {
     },
     {
       question: 'What if I have more questions?',
-      answer: 'We\'re here to help! Visit our Contact page to reach our support team, or check out our Help Center for additional resources. You can also email us at support@prohub.com or call our customer support line.',
+      answer: 'We\'re here to help! Visit our Contact page to reach our support team, or check out our Help Center for additional resources. You can also email us at support@yprohub.com or call our customer support line.',
       open: false
     }
   ];

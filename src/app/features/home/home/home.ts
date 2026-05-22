@@ -17,6 +17,10 @@ export class HomeComponent {
     return this.auth.getUserType() === 'Pro';
   }
 
+  isAdmin(): boolean {
+    return this.auth.getUserType() === 'Admin';
+  }
+
   isAuthenticated(): boolean {
     return this.auth.isAuthenticated();
   }

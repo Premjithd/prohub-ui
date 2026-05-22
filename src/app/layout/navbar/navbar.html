@@ -1,5 +1,5 @@
 <mat-toolbar color="primary">
-  <button mat-icon-button (click)="onToggleSidenav()">
+  <button mat-icon-button (click)="onToggleSidenav()" aria-label="Open menu">
     <mat-icon>menu</mat-icon>
   </button>
 
@@ -12,14 +12,13 @@
   </ng-container>
 
   <ng-container *ngIf="auth.isAuthenticated()">
-    <p class="nav-paragraph">Welcome {{ auth.getName() }}</p>
-    <button mat-button routerLink="/profile">
+    <!-- Show name only on desktop -->
+    <span class="welcome-text">{{ auth.getName() }}</span>
+    <button mat-icon-button routerLink="/profile" aria-label="Profile">
       <mat-icon>person</mat-icon>
-      Profile
     </button>
-    <button mat-button (click)="onLogout()">
-      <mat-icon>exit_to_app</mat-icon>
-      Logout
+    <button mat-icon-button (click)="onLogout()" aria-label="Sign out">
+      <mat-icon>logout</mat-icon>
     </button>
   </ng-container>
 </mat-toolbar>

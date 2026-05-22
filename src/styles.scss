@@ -2,47 +2,75 @@
 @use '@angular/material' as mat;
 @use '@angular/material/prebuilt-themes/indigo-pink.css';
 
-// Global styles
-html, body {
-  height: 100%;
-  margin: 0;
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+:root {
+  // Typography scale
+  --text-display: 2.25rem;   // 36px  – hero headings
+  --text-h1:      1.75rem;   // 28px  – page headings
+  --text-h2:      1.375rem;  // 22px  – section headings
+  --text-body:    1rem;      // 16px  – body copy
+  --text-small:   0.8125rem; // 13px  – labels, captions
+
+  // Brand colors
+  --color-primary:          #667eea;
+  --color-primary-dark:     #764ba2;
+  --color-primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color-success:          #10b981;
+  --color-error:            #dc2626;
+  --color-warning:          #f59e0b;
+
+  // Neutrals
+  --color-text:       #1f2937;
+  --color-text-muted: #6b7280;
+  --color-border:     #e5e7eb;
+  --color-bg-light:   #f9fafb;
+
+  // Layout
+  --nav-height:        64px;
+  --bottom-nav-height: 0px;  // overridden on mobile
 }
 
-body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@media (max-width: 768px) {
+  :root {
+    --text-display:      1.75rem;  // 28px
+    --text-h1:           1.375rem; // 22px
+    --text-h2:           1.125rem; // 18px
+    --nav-height:        56px;
+    --bottom-nav-height: 60px;
+  }
 }
 
-// Global styles
+// ─── Base ─────────────────────────────────────────────────────────────────────
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: var(--text-body);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
+
+  @media (max-width: 600px) {
+    padding: 0 0.75rem;
+  }
 }
 
-// Utility classes
-.spacer {
-  flex: 1 1 auto;
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+// ─── Utilities ────────────────────────────────────────────────────────────────
+.spacer { flex: 1 1 auto; }
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.mx-auto { margin-left: auto; margin-right: auto; }
 
 .mt-1 { margin-top: 0.25rem; }
 .mt-2 { margin-top: 0.5rem; }
@@ -56,25 +84,29 @@ html, body {
 .mb-4 { margin-bottom: 1.5rem; }
 .mb-5 { margin-bottom: 2rem; }
 
-.mx-auto { margin-left: auto; margin-right: auto; }
+// ─── Shared Components ────────────────────────────────────────────────────────
+.form-field { width: 100%; }
 
-// Form styles
-.form-field {
-  width: 100%;
-}
-
-// Card styles
 .mat-card {
   margin: 1rem;
   padding: 1.5rem;
 }
 
-// Responsive styles
-@media (max-width: 600px) {
-  .container {
-    padding: 0 0.5rem;
-  }
+// ─── Snackbar ─────────────────────────────────────────────────────────────────
+.snack-info .mdc-snackbar__surface {
+  background: #1f2937 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
 }
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+.snack-success .mdc-snackbar__surface {
+  background: var(--color-success) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+.snack-error .mdc-snackbar__surface {
+  background: var(--color-error) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
