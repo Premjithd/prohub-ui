@@ -38,6 +38,13 @@ export class NavbarComponent {
   }
 
   onLogout(): void {
+    this.auth.logoutOnServer().subscribe({
+      complete: () => this._clearAndRedirect(),
+      error: () => this._clearAndRedirect()
+    });
+  }
+
+  private _clearAndRedirect(): void {
     this.auth.logout();
     this.snackBar.open('You have been signed out.', '', {
       duration: 3000,

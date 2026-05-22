@@ -9,7 +9,18 @@
       "Bash(npm start *)",
       "PowerShell(dotnet tool install *)",
       "Bash(Get-ChildItem -Path \"C:\\\\repos\\\\yProHub\\\\prohub-ui\\\\src\\\\app\" -Recurse -Directory)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Select-Object FullName)",
+      "PowerShell(dotnet ef database *)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(dotnet run *)",
+      "PowerShell($response = Invoke-WebRequest -Uri \"http://localhost:5001/api/auth/logout\" -Method POST -Headers @{ \"Authorization\" = \"Bearer invalid\" } -ErrorAction SilentlyContinue; $response.StatusCode)",
+      "PowerShell(netstat *)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"https://localhost:7042/api/auth/logout\" -Method POST -Headers @{ \"Authorization\" = \"Bearer invalid\" } -SkipCertificateCheck -ErrorAction Stop; $r.StatusCode } catch { $_.Exception.Response.StatusCode.value__ })",
+      "PowerShell([Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}; try { $r = Invoke-WebRequest -Uri \"https://localhost:7042/api/auth/logout\" -Method POST -Headers @{ \"Authorization\" = \"Bearer invalid_token\" }; \"Status: $\\($r.StatusCode\\)\" } catch [System.Net.WebException] { \"Status: $\\($_.Exception.Response.StatusCode.value__\\)\" })",
+      "Bash(curl -sk -o /dev/null -w \"%{http_code}\" -X POST https://localhost:7042/api/auth/logout -H \"Authorization: Bearer invalid\")",
+      "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"TS\\\\d+:|✖|Error:|error TS\" } | Select-Object -First 20)"
     ]
   }
 }
