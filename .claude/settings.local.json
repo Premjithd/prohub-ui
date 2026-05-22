@@ -20,7 +20,10 @@
       "PowerShell(try { $r = Invoke-WebRequest -Uri \"https://localhost:7042/api/auth/logout\" -Method POST -Headers @{ \"Authorization\" = \"Bearer invalid\" } -SkipCertificateCheck -ErrorAction Stop; $r.StatusCode } catch { $_.Exception.Response.StatusCode.value__ })",
       "PowerShell([Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}; try { $r = Invoke-WebRequest -Uri \"https://localhost:7042/api/auth/logout\" -Method POST -Headers @{ \"Authorization\" = \"Bearer invalid_token\" }; \"Status: $\\($r.StatusCode\\)\" } catch [System.Net.WebException] { \"Status: $\\($_.Exception.Response.StatusCode.value__\\)\" })",
       "Bash(curl -sk -o /dev/null -w \"%{http_code}\" -X POST https://localhost:7042/api/auth/logout -H \"Authorization: Bearer invalid\")",
-      "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"TS\\\\d+:|✖|Error:|error TS\" } | Select-Object -First 20)"
+      "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"TS\\\\d+:|✖|Error:|error TS\" } | Select-Object -First 20)",
+      "PowerShell(dotnet build *)",
+      "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"error TS|✖ \\\\[ERROR\\\\]|Cannot find|does not exist\" } | Select-Object -First 20)",
+      "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"error TS|✖ \\\\[ERROR\\\\]|Cannot find name|does not exist on type\" } | Select-Object -First 20)"
     ]
   }
 }

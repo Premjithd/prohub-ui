@@ -477,6 +477,49 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
+  verifyCompletion(): void {
+    if (!this.job) return;
+    const jobId = this.job.id;
+
+    const dialogRef = this.dialog.open(VerifyCompletionDialogComponent, { width: '420px' });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.jobService.verifyJobCompletion(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.successMessage = 'Work confirmed! The job is now marked as Completed.';
+          if (this.job) this.job.status = 'Completed';
+          this.cdr.markForCheck();
+          setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 4000);
+        },
+        error: () => {
+          this.errorMessage = 'Failed to verify completion. Please try again.';
+          setTimeout(() => { this.errorMessage = ''; this.cdr.markForCheck(); }, 4000);
+        }
+      });
+    });
+  }
+
+  disputeCompletion(): void {
+    if (!this.job) return;
+    const jobId = this.job.id;
+
+    const dialogRef = this.dialog.open(DisputeCompletionDialogComponent, { width: '480px' });
+    dialogRef.afterClosed().subscribe((reason: string | undefined) => {
+      if (!reason) return;
+      this.jobService.disputeJobCompletion(jobId, reason).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.successMessage = 'Dispute raised. Our team will review and get back to you.';
+          this.cdr.markForCheck();
+          setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 5000);
+        },
+        error: () => {
+          this.errorMessage = 'Failed to raise dispute. Please try again.';
+          setTimeout(() => { this.errorMessage = ''; this.cdr.markForCheck(); }, 4000);
+        }
+      });
+    });
+  }
+
   // Open message dialog for a bid after accept/reject
   openMessageDialogForBid(bid: JobBid): void {
     if (!this.job || !bid.proId) return;
@@ -790,6 +833,63 @@ export class BidActionMessageDialogComponent {
       this.dialogRef.close();
     }
   }
+}
+
+// Verify Completion Dialog
+@Component({
+  selector: 'app-verify-completion-dialog',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule],
+  template: `
+    <div style="padding: 8px">
+      <h2 mat-dialog-title>Confirm Work Completed</h2>
+      <mat-dialog-content>
+        <p>Are you satisfied with the work done by the professional?</p>
+        <p style="color:#666;font-size:.9rem">Confirming releases the job as <strong>Completed</strong>. This action cannot be undone.</p>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end" style="gap:8px">
+        <button mat-button (click)="close(false)">Cancel</button>
+        <button mat-raised-button color="accent" (click)="close(true)">
+          <mat-icon>check_circle</mat-icon> Yes, Confirm
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `
+})
+export class VerifyCompletionDialogComponent {
+  constructor(public dialogRef: MatDialogRef<VerifyCompletionDialogComponent>) {}
+  close(result: boolean): void { this.dialogRef.close(result); }
+}
+
+// Dispute Completion Dialog
+@Component({
+  selector: 'app-dispute-completion-dialog',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule],
+  template: `
+    <div style="padding: 8px">
+      <h2 mat-dialog-title>Raise a Dispute</h2>
+      <mat-dialog-content>
+        <p style="color:#666;font-size:.9rem;margin-bottom:16px">Describe the issue with the work submitted. Our team will review and mediate.</p>
+        <mat-form-field appearance="outline" style="width:100%">
+          <mat-label>Reason for dispute</mat-label>
+          <textarea matInput [(ngModel)]="reason" rows="4" placeholder="e.g. Work was not completed as agreed..."></textarea>
+        </mat-form-field>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end" style="gap:8px">
+        <button mat-button (click)="close()">Cancel</button>
+        <button mat-raised-button color="warn" (click)="submit()" [disabled]="!reason.trim()">
+          <mat-icon>flag</mat-icon> Submit Dispute
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `
+})
+export class DisputeCompletionDialogComponent {
+  reason = '';
+  constructor(public dialogRef: MatDialogRef<DisputeCompletionDialogComponent>) {}
+  close(): void { this.dialogRef.close(); }
+  submit(): void { if (this.reason.trim()) this.dialogRef.close(this.reason); }
 }
 
 

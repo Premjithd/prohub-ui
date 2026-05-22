@@ -52,9 +52,10 @@
       <mat-icon>task_alt</mat-icon>
       <span>My Work</span>
     </a>
-    <a class="nav-item" routerLink="/messages" routerLinkActive="active">
-      <mat-icon>mail</mat-icon>
-      <span>Messages</span>
+    <a class="nav-item" routerLink="/notifications" routerLinkActive="active"
+       [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">
+      <mat-icon>notifications</mat-icon>
+      <span>Alerts</span>
     </a>
     <a class="nav-item" routerLink="/profile" routerLinkActive="active">
       <mat-icon>person</mat-icon>

@@ -266,9 +266,19 @@ export class JobService {
     );
   }
 
-  // Mark a job as completed
-  markJobCompleted(jobId: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${jobId}/complete`, {});
+  // Mark a job as completed (Pro submits — awaits consumer verification)
+  markJobCompleted(jobId: number, notes?: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${jobId}/complete`, { completionNotes: notes ?? null });
+  }
+
+  // Consumer verifies the pro's completion
+  verifyJobCompletion(jobId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/completion/verify`, {});
+  }
+
+  // Consumer disputes the pro's completion
+  disputeJobCompletion(jobId: number, reason: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/completion/dispute`, { reason });
   }
 
   // Update job phases

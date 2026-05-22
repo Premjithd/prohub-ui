@@ -115,6 +115,12 @@ export const routes: Routes = [
         canActivate: [AuthGuard]
       },
       {
+        path: 'notifications',
+        loadComponent: () => import('./features/notifications/notifications')
+          .then(m => m.NotificationsComponent),
+        canActivate: [AuthGuard]
+      },
+      {
         path: 'jobs',
         redirectTo: 'pending-jobs',
         pathMatch: 'full'
