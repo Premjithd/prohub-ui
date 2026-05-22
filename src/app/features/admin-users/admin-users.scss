@@ -912,3 +912,34 @@
   font-size: 1.2rem;
   font-weight: bold;
 }
+
+.rel-add-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  .rel-input { flex: 1; max-width: 200px; }
+}
+
+.rel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rel-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  mat-icon { color: #667eea; flex-shrink: 0; }
+}
+
+.rel-info {
+  flex: 1;
+  min-width: 0;
+  .rel-name { font-weight: 500; font-size: 0.95rem; }
+  .rel-email { font-size: 0.8rem; color: #666; }
+}

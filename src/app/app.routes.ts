@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { MainLayout } from './layout/main-layout/main-layout';
 import { AuthGuard } from './core/guards/auth.guard';
 import { AdminGuard } from './core/guards/admin.guard';
+import { ProGuard } from './core/guards/pro.guard';
 
 export const routes: Routes = [
   {
@@ -59,6 +60,12 @@ export const routes: Routes = [
           .then(m => m.PendingJobsModule)
       },
       {
+        path: 'my-pros',
+        loadComponent: () => import('./features/my-pros/my-pros')
+          .then(m => m.MyProsComponent),
+        canActivate: [AuthGuard]
+      },
+      {
         path: 'pending-jobs/:jobId',
         loadComponent: () => import('./features/pending-jobs/pending-job-details.js')
           .then(m => m.PendingJobDetailsComponent)
@@ -92,6 +99,12 @@ export const routes: Routes = [
         path: 'my-jobs-pro',
         loadComponent: () => import('./features/my-jobs-pro/my-jobs-pro')
           .then(m => m.MyJobsProComponent)
+      },
+      {
+        path: 'my-clients',
+        loadComponent: () => import('./features/my-clients/my-clients')
+          .then(m => m.MyClientsComponent),
+        canActivate: [ProGuard]
       },
       {
         path: 'my-jobs-pro/:jobId',

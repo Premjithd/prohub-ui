@@ -425,6 +425,71 @@
             </div>
           </div>
         </mat-tab>
+        <!-- Relationships Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>people</mat-icon>
+            Relationships
+          </ng-template>
+          <div class="tab-content">
+            <!-- Pro selected: show linked users + add/remove -->
+            <div *ngIf="selectedPro">
+              <div class="rel-add-row">
+                <mat-form-field appearance="outline" class="rel-input">
+                  <mat-label>Add User by ID</mat-label>
+                  <input matInput type="number" [(ngModel)]="addUserId" placeholder="User ID" name="addUserId">
+                </mat-form-field>
+                <button mat-raised-button color="primary" [disabled]="!addUserId" (click)="addUserToPro()">
+                  <mat-icon>person_add</mat-icon> Link User
+                </button>
+              </div>
+
+              <div *ngIf="isLoadingRelationships" class="loading">
+                <mat-spinner diameter="36"></mat-spinner> Loading linked clients...
+              </div>
+
+              <div *ngIf="!isLoadingRelationships && linkedUsers.length === 0" class="no-data">
+                <mat-icon>group_off</mat-icon>
+                <p>No users linked to this pro</p>
+              </div>
+
+              <div *ngIf="!isLoadingRelationships && linkedUsers.length > 0" class="rel-list">
+                <div class="rel-item" *ngFor="let u of linkedUsers">
+                  <mat-icon>person</mat-icon>
+                  <div class="rel-info">
+                    <div class="rel-name">{{ u.name }}</div>
+                    <div class="rel-email">{{ u.email }} &nbsp;·&nbsp; ID: {{ u.id }}</div>
+                  </div>
+                  <button mat-icon-button color="warn" title="Remove" (click)="removeUserFromPro(u.id)">
+                    <mat-icon>link_off</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- User selected: show linked pros (read-only) -->
+            <div *ngIf="selectedUser">
+              <div *ngIf="isLoadingRelationships" class="loading">
+                <mat-spinner diameter="36"></mat-spinner> Loading linked pros...
+              </div>
+
+              <div *ngIf="!isLoadingRelationships && linkedPros.length === 0" class="no-data">
+                <mat-icon>handshake</mat-icon>
+                <p>No pros linked to this user</p>
+              </div>
+
+              <div *ngIf="!isLoadingRelationships && linkedPros.length > 0" class="rel-list">
+                <div class="rel-item" *ngFor="let p of linkedPros">
+                  <mat-icon>engineering</mat-icon>
+                  <div class="rel-info">
+                    <div class="rel-name">{{ p.name }}</div>
+                    <div class="rel-email">{{ p.businessName }} &nbsp;·&nbsp; {{ p.email }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
       </mat-tab-group>
     </div>
 

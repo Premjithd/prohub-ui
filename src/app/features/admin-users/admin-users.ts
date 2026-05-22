@@ -14,6 +14,8 @@ import { User } from '../../core/models/user.model';
 import { Pro } from '../../core/models/pro.model';
 import { Auth } from '../../core/services/auth';
 import { Router } from '@angular/router';
+import { ProUsersService, LinkedUser, LinkedPro } from '../../services/pro-users.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-admin-users',
@@ -28,7 +30,8 @@ import { Router } from '@angular/router';
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatSnackBarModule
   ],
   templateUrl: './admin-users.html',
   styleUrl: './admin-users.scss'
@@ -58,9 +61,15 @@ export class AdminUsersComponent implements OnInit {
   // Invitations tracking
   adminInvitations: any[] = [];
   isLoadingInvitations = false;
-  
+
   isImpersonating = false;
   impersonationDetails: any = null;
+
+  // Pro-User relationships
+  linkedUsers: LinkedUser[] = [];
+  linkedPros: LinkedPro[] = [];
+  isLoadingRelationships = false;
+  addUserId: number | null = null;
 
   constructor(
     private adminUsersService: AdminUsersService,
@@ -68,7 +77,9 @@ export class AdminUsersComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private dialog: MatDialog,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private proUsersService: ProUsersService,
+    private snack: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -144,13 +155,21 @@ export class AdminUsersComponent implements OnInit {
   selectUser(user: User): void {
     this.selectedUser = user;
     this.selectedPro = null;
+    this.linkedUsers = [];
+    this.linkedPros = [];
+    this.addUserId = null;
     this.loadUserDetails(user.id);
+    this.loadRelationships('user', user.id);
   }
 
   selectPro(pro: Pro): void {
     this.selectedPro = pro;
     this.selectedUser = null;
+    this.linkedUsers = [];
+    this.linkedPros = [];
+    this.addUserId = null;
     this.loadProDetails(pro.id);
+    this.loadRelationships('pro', pro.id);
   }
 
   loadUserDetails(userId: number): void {
@@ -291,6 +310,54 @@ export class AdminUsersComponent implements OnInit {
     this.proConversations = [];
     this.selectedConversation = null;
     this.conversationMessages = [];
+    this.linkedUsers = [];
+    this.linkedPros = [];
+    this.addUserId = null;
+  }
+
+  loadRelationships(type: 'pro' | 'user', id: number): void {
+    this.isLoadingRelationships = true;
+    const req = type === 'pro'
+      ? this.proUsersService.getUsersUnderPro(id)
+      : this.proUsersService.getProsForUser(id);
+
+    req.subscribe({
+      next: (res: any) => {
+        const items = Array.isArray(res) ? res : (res?.$values ?? []);
+        if (type === 'pro') this.linkedUsers = items;
+        else this.linkedPros = items;
+        this.isLoadingRelationships = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.isLoadingRelationships = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  addUserToPro(): void {
+    if (!this.selectedPro || !this.addUserId) return;
+    this.proUsersService.addUserToPro(this.selectedPro.id, this.addUserId).subscribe({
+      next: () => {
+        this.snack.open('User linked.', 'OK', { duration: 3000 });
+        this.addUserId = null;
+        this.loadRelationships('pro', this.selectedPro!.id);
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to link user.';
+        this.snack.open(msg, 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  removeUserFromPro(userId: number): void {
+    if (!this.selectedPro) return;
+    this.proUsersService.removeUserFromPro(this.selectedPro.id, userId).subscribe({
+      next: () => {
+        this.linkedUsers = this.linkedUsers.filter(u => u.id !== userId);
+        this.snack.open('User unlinked.', 'OK', { duration: 3000 });
+        this.cdr.markForCheck();
+      },
+      error: () => this.snack.open('Failed to unlink user.', 'OK', { duration: 3000 })
+    });
   }
 
   inviteAdmin(): void {
