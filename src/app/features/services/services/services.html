@@ -54,9 +54,6 @@
           <button class="filter-btn" (click)="sortBy('price-high')" [class.active]="sortOrder === 'price-high'">
             💰 Price: High
           </button>
-          <button class="filter-btn" (click)="sortBy('rating')" [class.active]="sortOrder === 'rating'">
-            ⭐ Top Rated
-          </button>
         </div>
       </div>
 
@@ -76,13 +73,6 @@
             </div>
             <p class="service-desc">{{ s.description || 'Professional service available' }}</p>
 
-            <div class="card-meta">
-              <div class="rating">
-                <span class="stars">⭐</span>
-                <span class="rating-value">{{ s.rating || '4.8' }}</span>
-                <small class="review-count">({{ s.reviews || 0 }} reviews)</small>
-              </div>
-            </div>
 
             <div class="card-actions">
               <button class="btn-secondary" (click)="openService(s); $event.stopPropagation()">Learn More</button>

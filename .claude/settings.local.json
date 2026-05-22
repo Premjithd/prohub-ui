@@ -23,7 +23,8 @@
       "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"TS\\\\d+:|✖|Error:|error TS\" } | Select-Object -First 20)",
       "PowerShell(dotnet build *)",
       "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"error TS|✖ \\\\[ERROR\\\\]|Cannot find|does not exist\" } | Select-Object -First 20)",
-      "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"error TS|✖ \\\\[ERROR\\\\]|Cannot find name|does not exist on type\" } | Select-Object -First 20)"
+      "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"error TS|✖ \\\\[ERROR\\\\]|Cannot find name|does not exist on type\" } | Select-Object -First 20)",
+      "Bash(Get-ChildItem *)"
     ]
   }
 }

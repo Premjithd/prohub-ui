@@ -14,8 +14,6 @@ interface ServiceItem {
   description?: string;
   price?: number;
   image?: string;
-  rating?: number;
-  reviews?: number;
   category?: string;
   featured?: boolean;
 }
@@ -101,8 +99,6 @@ export class ServicesComponent implements OnInit, OnDestroy {
         name: 'Home Cleaning',
         description: 'Professional deep cleaning for homes and apartments. Eco-friendly products used.',
         price: 120,
-        rating: 4.9,
-        reviews: 156,
         category: 'cleaning',
         image: 'assets/images/services.png',
         featured: true
@@ -112,8 +108,6 @@ export class ServicesComponent implements OnInit, OnDestroy {
         name: 'Plumbing Repair',
         description: 'Expert leak fixes, pipe repairs and new installations. 24/7 emergency service available.',
         price: 85,
-        rating: 4.8,
-        reviews: 203,
         category: 'plumbing',
         image: 'assets/images/services.png'
       },
@@ -122,8 +116,6 @@ export class ServicesComponent implements OnInit, OnDestroy {
         name: 'Electrical Installation',
         description: 'Licensed electricians for wiring, fixtures, and panel upgrades. Fully insured.',
         price: 150,
-        rating: 4.9,
-        reviews: 189,
         category: 'electrical',
         image: 'assets/images/services.png',
         featured: true
@@ -133,8 +125,6 @@ export class ServicesComponent implements OnInit, OnDestroy {
         name: 'Interior Painting',
         description: 'Transform your space with professional interior painting. Premium paints and finishes.',
         price: 200,
-        rating: 4.7,
-        reviews: 98,
         category: 'painting',
         image: 'assets/images/services.png'
       },
@@ -143,8 +133,6 @@ export class ServicesComponent implements OnInit, OnDestroy {
         name: 'Yard Landscaping',
         description: 'Design and maintenance of outdoor spaces. Lawn care, planting, and hardscaping.',
         price: 175,
-        rating: 4.8,
-        reviews: 124,
         category: 'landscaping',
         image: 'assets/images/services.png'
       },
@@ -153,8 +141,6 @@ export class ServicesComponent implements OnInit, OnDestroy {
         name: 'General Handyman',
         description: 'Reliable handyman for repairs, maintenance, and small projects around your home.',
         price: 65,
-        rating: 4.6,
-        reviews: 267,
         category: 'handyman',
         image: 'assets/images/services.png'
       }
@@ -197,16 +183,13 @@ export class ServicesComponent implements OnInit, OnDestroy {
     // Apply sorting
     switch (this.sortOrder) {
       case 'popular':
-        filtered.sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
+        // no real popularity data — leave default order
         break;
       case 'price-low':
         filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
         break;
       case 'price-high':
         filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
-        break;
-      case 'rating':
-        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
     }
 

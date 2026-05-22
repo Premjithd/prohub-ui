@@ -1,24 +1,37 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Auth } from '../../../core/services/auth';
+import { ReviewService } from '../../../services/review.service';
+import { PlatformRatingStats } from '../../../models/review.model';
 
 @Component({
   selector: 'app-about',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './about.html',
   styleUrl: './about.scss'
 })
-export class AboutComponent {
-  constructor(private router: Router, private auth: Auth) {}
+export class AboutComponent implements OnInit {
+  platformStats: PlatformRatingStats | null = null;
+
+  constructor(
+    private router: Router,
+    private auth: Auth,
+    private reviewService: ReviewService
+  ) {}
+
+  ngOnInit(): void {
+    this.reviewService.getPlatformStats().subscribe({
+      next: (stats) => { this.platformStats = stats; }
+    });
+  }
 
   navigateTo(path: string): void {
-    // If navigating to find a professional, check authentication
     if (path === '/auth/login') {
       if (this.auth.isAuthenticated()) {
-        // If user is logged in, redirect to services page
         this.router.navigate(['/services']);
       } else {
-        // If user is not logged in, redirect to login
         this.router.navigate(['/auth/login']);
       }
     } else {

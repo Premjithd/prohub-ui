@@ -223,6 +223,35 @@
           </div>
         </div>
 
+        <!-- Review Section (for Completed jobs) -->
+        <div *ngIf="job.status === 'Completed'" class="review-section">
+          <h3><mat-icon>star_rate</mat-icon> Your Review</h3>
+
+          <div *ngIf="loadingReview" class="review-loading">
+            <mat-spinner diameter="28"></mat-spinner>
+          </div>
+
+          <!-- Already reviewed -->
+          <div *ngIf="!loadingReview && existingReview" class="review-submitted">
+            <div class="review-stars">
+              <mat-icon *ngFor="let s of [1,2,3,4,5]"
+                        [style.color]="s <= existingReview.rating ? '#f59e0b' : '#ddd'">star</mat-icon>
+              <span class="review-rating-label">{{ existingReview.rating }}/5</span>
+            </div>
+            <p *ngIf="existingReview.comment" class="review-comment">"{{ existingReview.comment }}"</p>
+            <p class="review-date">Submitted {{ existingReview.createdAt | date:'MMM d, y' }}</p>
+          </div>
+
+          <!-- Not yet reviewed -->
+          <div *ngIf="!loadingReview && !existingReview" class="review-prompt">
+            <p>How was your experience with this professional?</p>
+            <button mat-raised-button color="accent" (click)="openReviewDialog()">
+              <mat-icon>star</mat-icon>
+              Leave a Review
+            </button>
+          </div>
+        </div>
+
         <!-- Bids Section (for Open jobs only) -->
         <div class="bids-section" *ngIf="job.status === 'Open'">
           <h3>

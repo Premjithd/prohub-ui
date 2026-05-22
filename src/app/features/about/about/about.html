@@ -36,8 +36,8 @@
             <p class="stat-label">Jobs Completed</p>
           </div>
           <div class="stat-box">
-            <h3 class="stat-number">4.8★</h3>
-            <p class="stat-label">Average Rating</p>
+            <h3 class="stat-number">{{ platformStats ? (platformStats.averageRating | number:'1.1-1') + '★' : '—' }}</h3>
+            <p class="stat-label">Average Rating <span *ngIf="platformStats">({{ platformStats.totalReviews }} reviews)</span></p>
           </div>
         </div>
       </div>

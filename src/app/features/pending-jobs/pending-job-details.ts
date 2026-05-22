@@ -18,6 +18,9 @@ import { JobService, Job, JobBid, JobPhase, Message } from '../../services/job.s
 import { PaymentService } from '../../services/payment.service';
 import { RazorpayCheckoutComponent } from '../payments/razorpay-checkout.component';
 import { Auth } from '../../core/services/auth';
+import { ReviewService } from '../../services/review.service';
+import { Review } from '../../models/review.model';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, interval } from 'rxjs';
 import { takeUntil, switchMap, filter } from 'rxjs/operators';
 
@@ -39,7 +42,8 @@ import { takeUntil, switchMap, filter } from 'rxjs/operators';
     MatFormFieldModule,
     MatInputModule,
     MatDialogModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ],
   templateUrl: './pending-job-details.html',
   styleUrl: './pending-job-details.scss'
@@ -64,6 +68,9 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   private currentJobId: number | null = null;
   private messagePollInterval = 5000; // 5 seconds
 
+  existingReview: Review | null = null;
+  loadingReview = false;
+
   constructor(
     private jobService: JobService,
     private paymentService: PaymentService,
@@ -71,7 +78,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     private router: Router,
     public auth: Auth,
     private cdr: ChangeDetectorRef,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private reviewService: ReviewService
   ) {}
 
   ngOnInit(): void {
@@ -106,6 +114,10 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         // Load payment status if job is assigned
         if (job.assignedProId) {
           this.loadPaymentStatus(jobId);
+        }
+        // Load review status if job is completed
+        if (job.status === 'Completed') {
+          this.loadReview(jobId);
         }
       },
       error: (error) => {
@@ -487,7 +499,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
       this.jobService.verifyJobCompletion(jobId).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
           this.successMessage = 'Work confirmed! The job is now marked as Completed.';
-          if (this.job) this.job.status = 'Completed';
+          if (this.job) { this.job.status = 'Completed'; this.loadReview(jobId); }
           this.cdr.markForCheck();
           setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 4000);
         },
@@ -497,6 +509,36 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         }
       });
     });
+  }
+
+  loadReview(jobId: number): void {
+    this.loadingReview = true;
+    this.reviewService.getJobReview(jobId).subscribe({
+      next: (r) => { this.existingReview = r; this.loadingReview = false; this.cdr.markForCheck(); },
+      error: () => { this.existingReview = null; this.loadingReview = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  openReviewDialog(): void {
+    if (!this.job) return;
+    const jobId = this.job.id;
+    this.dialog.open(SubmitReviewDialogComponent, { width: '480px' })
+      .afterClosed().subscribe((result: { rating: number; comment?: string } | undefined) => {
+        if (!result) return;
+        this.reviewService.submitReview(jobId, result.rating, result.comment)
+          .pipe(takeUntil(this.destroy$)).subscribe({
+            next: (r) => {
+              this.existingReview = r;
+              this.successMessage = 'Thank you for your review!';
+              this.cdr.markForCheck();
+              setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 4000);
+            },
+            error: (err) => {
+              this.errorMessage = err?.error?.message ?? 'Failed to submit review.';
+              setTimeout(() => { this.errorMessage = ''; this.cdr.markForCheck(); }, 4000);
+            }
+          });
+      });
   }
 
   disputeCompletion(): void {
@@ -893,3 +935,44 @@ export class DisputeCompletionDialogComponent {
 }
 
 
+
+
+@Component({
+  selector: 'app-submit-review-dialog',
+  standalone: true,
+  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatDialogModule, MatFormFieldModule, MatInputModule],
+  template: `
+    <div style="padding:8px">
+      <h2 mat-dialog-title>Leave a Review</h2>
+      <mat-dialog-content>
+        <p style="color:#666;font-size:.9rem;margin-bottom:16px">Rate your experience with this professional.</p>
+        <div class="star-row" style="display:flex;gap:8px;margin-bottom:20px">
+          <button *ngFor="let s of [1,2,3,4,5]" mat-icon-button type="button"
+                  (click)="setRating(s)" [style.color]="s <= hovered || s <= rating ? '#f59e0b' : '#ccc'"
+                  (mouseenter)="hovered=s" (mouseleave)="hovered=0">
+            <mat-icon>star</mat-icon>
+          </button>
+          <span style="margin-left:8px;font-weight:600;align-self:center">{{ rating > 0 ? rating + ' / 5' : 'Select rating' }}</span>
+        </div>
+        <mat-form-field appearance="outline" style="width:100%">
+          <mat-label>Comment (optional)</mat-label>
+          <textarea matInput [(ngModel)]="comment" [ngModelOptions]="{standalone:true}" rows="3" placeholder="Share your experience..."></textarea>
+        </mat-form-field>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end" style="gap:8px">
+        <button mat-button (click)="dialogRef.close()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="submit()" [disabled]="rating === 0">
+          <mat-icon>send</mat-icon> Submit Review
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `
+})
+export class SubmitReviewDialogComponent {
+  rating = 0;
+  hovered = 0;
+  comment = '';
+  constructor(public dialogRef: MatDialogRef<SubmitReviewDialogComponent>) {}
+  setRating(s: number): void { this.rating = s; }
+  submit(): void { if (this.rating > 0) this.dialogRef.close({ rating: this.rating, comment: this.comment || undefined }); }
+}
