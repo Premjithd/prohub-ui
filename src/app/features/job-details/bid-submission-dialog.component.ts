@@ -313,14 +313,14 @@ export class BidSubmissionDialogComponent implements OnInit, OnDestroy {
 
   private loadMaterials(): void {
     if (this.data.serviceCategoryId) {
-      this.materialService.getMaterialsByCategory(this.data.serviceCategoryId)
+      this.materialService.getMaterials(this.data.serviceCategoryId, true)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (materials) => {
+          next: (materials: Material[]) => {
             this.materials = materials;
           },
-          error: (error) => {
-            console.error('Error loading materials:', error);
+          error: (err: unknown) => {
+            console.error('Error loading materials:', err);
           }
         });
     }

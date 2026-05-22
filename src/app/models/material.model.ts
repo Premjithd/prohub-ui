@@ -1,40 +1,28 @@
-// Material Models
 export interface Material {
   id: number;
-  name: string;
-  description: string;
-  unitPrice: number;
   serviceCategoryId: number;
-  unit: string;
+  categoryName?: string;
+  name: string;
+  brand?: string;
+  description?: string;
+  unitPrice: number;
   isActive: boolean;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt?: Date;
 }
 
 export interface CreateMaterialRequest {
-  name: string;
-  description: string;
-  unitPrice: number;
   serviceCategoryId: number;
-  unit: string;
+  name: string;
+  brand?: string;
+  description?: string;
+  unitPrice: number;
 }
 
 export interface UpdateMaterialRequest {
   name?: string;
+  brand?: string;
   description?: string;
   unitPrice?: number;
-  unit?: string;
   isActive?: boolean;
-}
-
-export interface MaterialDto {
-  id: number;
-  name: string;
-  description: string;
-  unitPrice: number;
-  serviceCategoryId: number;
-  unit: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }

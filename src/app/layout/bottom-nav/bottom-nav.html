@@ -67,7 +67,11 @@
   <ng-container *ngIf="auth.isAuthenticated() && isAdmin()">
     <a class="nav-item" routerLink="/admin-users" routerLinkActive="active">
       <mat-icon>admin_panel_settings</mat-icon>
-      <span>Admin</span>
+      <span>Users</span>
+    </a>
+    <a class="nav-item" routerLink="/admin-materials" routerLinkActive="active">
+      <mat-icon>inventory_2</mat-icon>
+      <span>Materials</span>
     </a>
     <a class="nav-item" routerLink="/messages" routerLinkActive="active">
       <mat-icon>mail</mat-icon>

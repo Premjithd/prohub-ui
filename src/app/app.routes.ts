@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { MainLayout } from './layout/main-layout/main-layout';
 import { AuthGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -106,7 +107,13 @@ export const routes: Routes = [
         path: 'admin-users',
         loadComponent: () => import('./features/admin-users/admin-users')
           .then(m => m.AdminUsersComponent),
-        canActivate: [AuthGuard]
+        canActivate: [AdminGuard]
+      },
+      {
+        path: 'admin-materials',
+        loadComponent: () => import('./features/admin-materials/admin-materials')
+          .then(m => m.AdminMaterialsComponent),
+        canActivate: [AdminGuard]
       },
       {
         path: 'messages',
