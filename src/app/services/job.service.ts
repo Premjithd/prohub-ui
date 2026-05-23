@@ -249,6 +249,11 @@ export class JobService {
     return this.http.post(`${this.apiUrl}/${jobId}/bids/${bidId}/reject`, {});
   }
 
+  // Withdraw a bid (Pro only, Pending bids only)
+  withdrawBid(jobId: number, bidId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/bids/${bidId}/withdraw`, {});
+  }
+
   // Get jobs assigned to the current Pro
   getAssignedJobs(): Observable<Job[]> {
     return this.http.get<any>(`${this.apiUrl}/assigned`).pipe(

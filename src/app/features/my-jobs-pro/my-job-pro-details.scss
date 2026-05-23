@@ -563,6 +563,13 @@
         }
       }
 
+      .bid-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
       .message-btn {
         width: 100%;
         padding: 0.9rem;

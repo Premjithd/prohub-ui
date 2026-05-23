@@ -157,10 +157,23 @@
                 <span class="value">{{ proBid.createdAt | date: 'MMM dd, yyyy' }}</span>
               </div>
             </div>
-            <button mat-raised-button color="primary" (click)="goToMessagesPage()" class="message-btn">
-              <mat-icon>message</mat-icon>
-              Message
-            </button>
+            <div class="bid-actions">
+              <button mat-raised-button color="primary" (click)="goToMessagesPage()" class="message-btn">
+                <mat-icon>message</mat-icon>
+                Message
+              </button>
+              <button
+                *ngIf="getProBid()?.status === 'Pending'"
+                mat-stroked-button
+                color="warn"
+                (click)="withdrawBid()"
+                [disabled]="withdrawingBid"
+                class="withdraw-btn"
+                matTooltip="Withdraw your bid">
+                <mat-icon>undo</mat-icon>
+                {{ withdrawingBid ? 'Withdrawing...' : 'Withdraw Bid' }}
+              </button>
+            </div>
           </div>
         </div>
 

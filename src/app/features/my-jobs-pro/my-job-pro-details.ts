@@ -56,7 +56,8 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   messageText: string = '';
   messageSending = false;
   messageStatus: string = '';
-  selectedTabIndex = 0; // Track selected tab: 0 = Messages (default), 1 = Bid Details
+  selectedTabIndex = 0;
+  withdrawingBid = false;
   private destroy$ = new Subject<void>();
   private pollMessages$ = new Subject<void>(); // Subject to control polling
   private currentJobId: number | null = null;
@@ -373,6 +374,30 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   }
 
 
+  withdrawBid(): void {
+    const proBid = this.getProBid();
+    if (!proBid || !this.job) return;
+
+    if (!confirm('Are you sure you want to withdraw your bid? This cannot be undone.')) return;
+
+    this.withdrawingBid = true;
+    this.jobService.withdrawBid(this.job.id, proBid.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          proBid.status = 'Withdrawn';
+          this.withdrawingBid = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error withdrawing bid:', err);
+          this.errorMessage = err?.error?.message || 'Failed to withdraw bid.';
+          this.withdrawingBid = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
   // Navigate to messages page with partner ID
   goToMessagesPage(): void {
     if (!this.job || !this.job.userId) return;
@@ -401,14 +426,11 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   // Format bid status
   getBidStatus(status: string): string {
     switch (status) {
-      case 'Pending':
-        return 'Pending';
-      case 'Accepted':
-        return 'Accepted';
-      case 'Rejected':
-        return 'Rejected';
-      default:
-        return 'Unknown';
+      case 'Pending': return 'Pending';
+      case 'Accepted': return 'Accepted';
+      case 'Rejected': return 'Rejected';
+      case 'Withdrawn': return 'Withdrawn';
+      default: return status ?? 'Unknown';
     }
   }
 }
