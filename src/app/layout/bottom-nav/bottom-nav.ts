@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { Auth } from '../../core/services/auth';
 import { NotificationService } from '../../services/notification.service';
+import { SignalRService } from '../../services/signalr.service';
 import { Subject, interval } from 'rxjs';
 import { takeUntil, startWith, switchMap } from 'rxjs/operators';
 
@@ -19,15 +20,27 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   unreadCount = 0;
   private destroy$ = new Subject<void>();
 
-  constructor(public auth: Auth, private notificationService: NotificationService) {}
+  constructor(
+    public auth: Auth,
+    private notificationService: NotificationService,
+    private signalRService: SignalRService
+  ) {}
 
   ngOnInit(): void {
     if (this.isProUser()) {
-      interval(30000).pipe(
+      interval(60000).pipe(
         startWith(0),
         switchMap(() => this.notificationService.getUnreadCount()),
         takeUntil(this.destroy$)
       ).subscribe({ next: (r) => { this.unreadCount = r.count; } });
+
+      this.signalRService.onNewNotification$.pipe(
+        takeUntil(this.destroy$)
+      ).subscribe(() => {
+        this.notificationService.getUnreadCount().subscribe({
+          next: (r) => { this.unreadCount = r.count; }
+        });
+      });
     }
   }
 

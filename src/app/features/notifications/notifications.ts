@@ -1,11 +1,14 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { NotificationService, JobNotification } from '../../services/notification.service';
+import { SignalRService } from '../../services/signalr.service';
 
 @Component({
   selector: 'app-notifications',
@@ -146,19 +149,29 @@ import { NotificationService, JobNotification } from '../../services/notificatio
     }
   `]
 })
-export class NotificationsComponent implements OnInit {
+export class NotificationsComponent implements OnInit, OnDestroy {
   notifications: JobNotification[] = [];
   loading = true;
   unreadCount = 0;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private notificationService: NotificationService,
+    private signalRService: SignalRService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.load();
+    this.signalRService.onNewNotification$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.load());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   load(): void {
