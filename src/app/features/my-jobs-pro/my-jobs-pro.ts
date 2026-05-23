@@ -45,7 +45,13 @@ export class MyJobsProComponent implements OnInit, OnDestroy {
   errorMessage = '';
   successMessage = '';
   selectedStatus: string = 'All';
-  availableStatuses = ['All', 'In Progress', 'Pending Review', 'On Hold', 'Completed'];
+  readonly availableStatuses: Array<{ label: string; value: string }> = [
+    { label: 'All',               value: 'All' },
+    { label: 'In Progress',       value: 'In Progress' },
+    { label: 'Pending Approval',  value: 'Completion Submitted' },
+    { label: 'Completed',         value: 'Completed' },
+    { label: 'Cancelled',         value: 'Cancelled' }
+  ];
   private destroy$ = new Subject<void>();
 
   constructor(

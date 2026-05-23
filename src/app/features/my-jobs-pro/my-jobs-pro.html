@@ -51,8 +51,8 @@
         [value]="selectedStatus" 
         (change)="onStatusFilterChange($event.value)"
         class="status-toggle-group">
-        <mat-button-toggle *ngFor="let status of availableStatuses" [value]="status">
-          {{ status }}
+        <mat-button-toggle *ngFor="let s of availableStatuses" [value]="s.value">
+          {{ s.label }}
         </mat-button-toggle>
       </mat-button-toggle-group>
     </div>

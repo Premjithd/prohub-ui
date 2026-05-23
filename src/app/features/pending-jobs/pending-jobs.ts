@@ -60,7 +60,7 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
   get totalPages(): number { return Math.max(1, Math.ceil(this.total / this.pageSize)); }
 
   // Filter
-  statusFilters = ['All', 'Open', 'In Progress', 'Completed'];
+  statusFilters = ['All', 'Open', 'In Progress', 'Completion Submitted', 'Completed', 'Cancelled'];
   selectedStatusFilter = 'All';
 
   private destroy$ = new Subject<void>();
