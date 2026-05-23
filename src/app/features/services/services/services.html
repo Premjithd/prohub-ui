@@ -90,6 +90,34 @@
     </div>
   </section>
 
+  <!-- Pros Map Section -->
+  <section class="pros-map-section">
+    <div class="pros-map-header">
+      <h2>Professionals Near You</h2>
+      <p>Browse verified service providers on the map. Click a pin to see their details.</p>
+      <a routerLink="/find-a-pro" class="find-pro-link">
+        <span class="material-icons">engineering</span>
+        Find a Pro
+      </a>
+    </div>
+    <div class="pros-map-body">
+      <div *ngIf="prosLoading" class="pros-map-loading">
+        <div class="map-spinner"></div>
+        <span>Loading professionals...</span>
+      </div>
+      <div *ngIf="!prosLoading && prosMapMarkers.length === 0" class="pros-map-empty">
+        <span class="material-icons">location_off</span>
+        <p>No professionals with location data found yet.</p>
+      </div>
+      <app-map-view
+        *ngIf="!prosLoading && prosMapMarkers.length > 0"
+        [markers]="prosMapMarkers"
+        [loading]="prosLoading"
+        style="display:block;height:420px"
+      ></app-map-view>
+    </div>
+  </section>
+
   <!-- CTA Section -->
   <section class="services-cta">
     <div class="cta-content">

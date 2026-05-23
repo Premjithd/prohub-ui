@@ -138,24 +138,6 @@
   }
 }
 
-.price-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-
-  .currency {
-    position: absolute;
-    left: 0.75rem;
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: #667eea;
-  }
-
-  .price-input {
-    padding-left: 2rem;
-  }
-}
-
 .checkbox-group {
   .checkbox-label {
     display: flex;

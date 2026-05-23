@@ -1,0 +1,112 @@
+<div class="find-pro-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-inner">
+      <div>
+        <h1><span class="material-icons">engineering</span> Find a Professional</h1>
+        <p class="subtitle">Browse verified service providers near you</p>
+      </div>
+      <button class="map-toggle-btn" (click)="toggleMap()">
+        <span class="material-icons">{{ showMap ? 'view_list' : 'map' }}</span>
+        {{ showMap ? 'List only' : 'Show map' }}
+      </button>
+    </div>
+
+    <!-- Search & Filter bar -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="material-icons search-icon">search</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search by name, business or service..."
+          [(ngModel)]="searchText"
+          (ngModelChange)="onSearchChange()"
+        />
+        <button *ngIf="searchText" class="clear-btn" (click)="searchText=''; onSearchChange()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <select class="cat-select" [(ngModel)]="selectedCategoryId" (change)="onCategoryChange()">
+        <option [ngValue]="null">All categories</option>
+        <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert-error">
+    <span class="material-icons">error</span> {{ errorMessage }}
+  </div>
+
+  <!-- Body -->
+  <div class="body-split" [class.map-hidden]="!showMap">
+    <!-- Left: list -->
+    <div class="list-panel">
+      <div *ngIf="loading" class="loading-wrap">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading professionals...</p>
+      </div>
+
+      <div *ngIf="!loading && pros.length === 0" class="empty-state">
+        <span class="material-icons">search_off</span>
+        <p>No professionals found. Try a different search.</p>
+      </div>
+
+      <div *ngIf="!loading && pros.length > 0" class="results-meta">
+        {{ pros.length }} professional{{ pros.length !== 1 ? 's' : '' }} found
+        <span *ngIf="mapMarkers.length < pros.length" class="no-loc-note">
+          ({{ pros.length - mapMarkers.length }} without location — not shown on map)
+        </span>
+      </div>
+
+      <div class="pro-list">
+        <div
+          *ngFor="let pro of pros"
+          id="pro-card-{{ pro.id }}"
+          class="pro-card"
+          [class.highlighted]="highlightedProId === pro.id"
+          [class.no-location]="!pro.latitude || !pro.longitude"
+          (mouseenter)="hoverPro(pro.id)"
+          (mouseleave)="hoverPro(null)"
+          (click)="clickPro(pro)"
+        >
+          <div class="pro-avatar">
+            {{ (pro.proName || '?')[0].toUpperCase() }}
+          </div>
+          <div class="pro-info">
+            <div class="pro-name">{{ pro.proName }}</div>
+            <div class="pro-business">{{ pro.businessName }}</div>
+            <div class="pro-location">
+              <span class="material-icons loc-icon">place</span>
+              {{ getLocation(pro) }}
+            </div>
+            <div *ngIf="pro.serviceRadiusKm" class="pro-radius">
+              Service radius: {{ pro.serviceRadiusKm }} km
+            </div>
+            <div *ngIf="pro.services && pro.services.length > 0" class="pro-services">
+              <span *ngFor="let s of pro.services | slice:0:3" class="service-chip">{{ s.name }}</span>
+              <span *ngIf="pro.services.length > 3" class="service-chip more">+{{ pro.services.length - 3 }} more</span>
+            </div>
+          </div>
+          <div class="pro-badge" *ngIf="pro.isEmailVerified">
+            <span class="material-icons verified-icon">verified</span>
+          </div>
+          <div *ngIf="!pro.latitude || !pro.longitude" class="no-loc-badge" title="No location set">
+            <span class="material-icons">location_off</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: map -->
+    <div class="map-panel" *ngIf="showMap">
+      <app-map-view
+        [markers]="mapMarkers"
+        [loading]="loading"
+        [highlightedId]="highlightedProId"
+        (markerClick)="onMapMarkerClick($event)"
+      ></app-map-view>
+    </div>
+  </div>
+</div>

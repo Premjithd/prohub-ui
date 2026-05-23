@@ -141,6 +141,11 @@ export const routes: Routes = [
         canActivate: [AuthGuard]
       },
       {
+        path: 'find-a-pro',
+        loadComponent: () => import('./features/find-a-pro/find-a-pro')
+          .then(m => m.FindAProComponent)
+      },
+      {
         path: 'jobs',
         redirectTo: 'pending-jobs',
         pathMatch: 'full'

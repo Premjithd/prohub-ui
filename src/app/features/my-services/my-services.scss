@@ -196,26 +196,6 @@
   word-break: break-word;
 }
 
-.service-price {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #667eea;
-  white-space: nowrap;
-
-  mat-icon {
-    font-size: 1.3rem;
-    width: 1.3rem;
-    height: 1.3rem;
-  }
-
-  .price {
-    color: #667eea;
-  }
-}
-
 .service-section {
   margin-bottom: 1.5rem;
 

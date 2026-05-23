@@ -24,7 +24,13 @@
       "PowerShell(dotnet build *)",
       "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"error TS|✖ \\\\[ERROR\\\\]|Cannot find|does not exist\" } | Select-Object -First 20)",
       "PowerShell(cd C:\\\\repos\\\\yProHub\\\\prohub-ui; npx ng build --configuration development 2>&1 | Where-Object { $_ -match \"error TS|✖ \\\\[ERROR\\\\]|Cannot find name|does not exist on type\" } | Select-Object -First 20)",
-      "Bash(Get-ChildItem *)"
+      "Bash(Get-ChildItem *)",
+      "PowerShell(New-Item *)",
+      "PowerShell(npm run *)",
+      "PowerShell(Get-Content \"C:\\\\Users\\\\premj\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--repos-yProHub-prohub-ui\\\\6f4f1ab8-eff3-4366-8843-992cadd1f181\\\\tasks\\\\btxbu1357.output\" | Where-Object { $_ -match \"error|Error|fail|Fail|listen|address|port|now listening\" } | Select-Object -Last 15)",
+      "PowerShell(Stop-Process *)",
+      "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c cd /d C:\\\\repos\\\\yProHub\\\\prohub-ui && npm start\" -WindowStyle Normal; Write-Output \"UI starting in new window...\")",
+      "Bash(curl -s http://localhost:4200 -o /dev/null -w \"%{http_code}\")"
     ]
   }
 }

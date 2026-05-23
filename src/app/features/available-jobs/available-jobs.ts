@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -17,6 +17,7 @@ import { ServiceCategoryService } from '../../core/services/service-category.ser
 import { ServiceCategory } from '../../core/models/service-category.model';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { MapViewComponent, MapMarker } from '../../shared/map-view/map-view';
 
 @Component({
   selector: 'app-available-jobs',
@@ -33,7 +34,8 @@ import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
     MatChipsModule,
     MatExpansionModule,
     MatTooltipModule,
-    FormsModule
+    FormsModule,
+    MapViewComponent
   ],
   templateUrl: './available-jobs.html',
   styleUrls: ['./available-jobs.scss']
@@ -43,7 +45,12 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
   filteredJobs: Job[] = [];
   loading = true;
   errorMessage = '';
+  showMap = true;
+  mapMarkers: MapMarker[] = [];
+  highlightedJobId: number | null = null;
   private destroy$ = new Subject<void>();
+
+  @ViewChild(MapViewComponent) mapView?: MapViewComponent;
 
   // Pagination
   page = 1;
@@ -138,6 +145,36 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
       });
   }
 
+  toggleMap(): void {
+    this.showMap = !this.showMap;
+    this.cdr.markForCheck();
+  }
+
+  hoverJob(id: number | null): void {
+    this.highlightedJobId = id;
+    this.cdr.markForCheck();
+  }
+
+  onMapMarkerClick(id: number): void {
+    this.highlightedJobId = id;
+    this.cdr.markForCheck();
+    const el = document.getElementById(`job-card-${id}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  private buildMapMarkers(): void {
+    this.mapMarkers = this.filteredJobs
+      .filter(j => j.latitude != null && j.longitude != null)
+      .map(j => ({
+        id: j.id,
+        lat: j.latitude!,
+        lng: j.longitude!,
+        title: j.title,
+        subtitle: [j.serviceAddressCity, j.serviceAddressState].filter(Boolean).join(', ') || j.location,
+        type: 'job' as const
+      }));
+  }
+
   applyBudgetFilter(): void {
     this.filteredJobs = this.jobs.filter(job => {
       const v = this.parseBudgetValue(job.budget);
@@ -145,6 +182,7 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
       if (this.maxBudget != null && v > this.maxBudget) return false;
       return true;
     });
+    this.buildMapMarkers();
   }
 
   private parseBudgetValue(budget: any): number {

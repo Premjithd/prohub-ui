@@ -1,12 +1,14 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Auth } from '../../../core/services/auth';
 import { ServiceCategoryService } from '../../../core/services/service-category.service';
 import { ServiceCategory } from '../../../core/models/service-category.model';
+import { ProBrowseService, BrowsePro } from '../../../services/pro-browse.service';
+import { MapViewComponent, MapMarker } from '../../../shared/map-view/map-view';
 
 interface ServiceItem {
   id: number;
@@ -28,7 +30,7 @@ interface Category {
 @Component({
   selector: 'app-services',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, MapViewComponent],
   templateUrl: './services.html',
   styleUrls: ['./services.scss']
 })
@@ -41,18 +43,26 @@ export class ServicesComponent implements OnInit, OnDestroy {
 
   categories: ServiceCategory[] = [];
   categoriesLoading = true;
+
+  // Pros map
+  pros: BrowsePro[] = [];
+  prosMapMarkers: MapMarker[] = [];
+  prosLoading = false;
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
     private auth: Auth,
     private serviceCategoryService: ServiceCategoryService,
+    private proBrowseService: ProBrowseService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadCategories();
     this.loadServices();
+    this.loadProsMap();
   }
 
   ngOnDestroy(): void {
@@ -90,6 +100,29 @@ export class ServicesComponent implements OnInit, OnDestroy {
           console.log('Category subscription completed');
         }
       });
+  }
+
+  loadProsMap(): void {
+    this.prosLoading = true;
+    this.proBrowseService.browse().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (pros) => {
+        this.pros = pros;
+        this.prosMapMarkers = pros
+          .filter(p => p.latitude != null && p.longitude != null)
+          .map(p => ({
+            id: p.id,
+            lat: p.latitude!,
+            lng: p.longitude!,
+            title: p.businessName || p.proName,
+            subtitle: [p.city, p.state].filter(Boolean).join(', '),
+            type: 'pro' as const,
+            radiusKm: p.serviceRadiusKm
+          }));
+        this.prosLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.prosLoading = false; this.cdr.detectChanges(); }
+    });
   }
 
   loadServices(): void {

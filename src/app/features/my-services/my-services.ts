@@ -139,10 +139,4 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     this.router.navigate(['/edit-service', serviceId]);
   }
 
-  formatPrice(price: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(price);
-  }
 }

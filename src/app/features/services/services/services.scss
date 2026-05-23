@@ -500,3 +500,84 @@
     font-size: 28px;
   }
 }
+
+/* ── Pros Map Section ──────────────────────────────── */
+.pros-map-section {
+  background: #f5f6fa;
+  padding: 3rem 2rem;
+}
+
+.pros-map-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    color: #333;
+    flex: 1;
+  }
+
+  p {
+    margin: 0;
+    color: #666;
+    font-size: .95rem;
+    flex-basis: 100%;
+    order: 3;
+  }
+}
+
+.find-pro-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  background: #667eea;
+  color: white;
+  border-radius: 6px;
+  padding: .5rem 1.1rem;
+  font-size: .9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .2s;
+
+  .material-icons { font-size: 1.1rem; }
+
+  &:hover { background: #5a6fd6; }
+}
+
+.pros-map-body {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+  min-height: 420px;
+  background: #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pros-map-loading,
+.pros-map-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #999;
+  padding: 3rem;
+
+  .material-icons { font-size: 3rem; }
+}
+
+.map-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

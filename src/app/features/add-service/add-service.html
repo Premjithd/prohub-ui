@@ -82,29 +82,6 @@
             </small>
           </div>
 
-          <!-- Service Price -->
-          <div class="form-group">
-            <label for="price">Price (USD) *</label>
-            <div class="price-input-wrapper">
-              <span class="currency">$</span>
-              <input
-                type="number"
-                id="price"
-                formControlName="price"
-                placeholder="0.00"
-                class="form-control price-input"
-                step="0.01"
-                min="0.01"
-                [class.is-invalid]="(submitted || f['price'].touched) && f['price'].errors"
-              />
-            </div>
-            <small *ngIf="(submitted || f['price'].touched) && f['price'].errors" class="error-text">
-              <span *ngIf="f['price'].errors['required']">Price is required</span>
-              <span *ngIf="f['price'].errors['min']">Price must be greater than 0</span>
-              <span *ngIf="f['price'].errors['max']">Price must not exceed 999,999.99</span>
-            </small>
-          </div>
-
           <!-- Terms & Conditions -->
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
@@ -148,7 +125,6 @@
             <li>Use a clear, descriptive service name that clients will easily understand</li>
             <li>Provide detailed information about what's included in your service</li>
             <li>Be specific about your experience and qualifications</li>
-            <li>Set a competitive price based on your market and expertise</li>
             <li>Update your service regularly with new information or changes</li>
           </ul>
         </div>
