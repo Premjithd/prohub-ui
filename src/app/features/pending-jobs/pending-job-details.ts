@@ -70,6 +70,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
 
   existingReview: Review | null = null;
   loadingReview = false;
+  cancellingJob = false;
 
   constructor(
     private jobService: JobService,
@@ -162,6 +163,32 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/pending-jobs']);
+  }
+
+  cancelJob(): void {
+    if (!this.job) return;
+
+    if (!confirm(`Cancel "${this.job.title}"? All pending bids will be automatically withdrawn. This cannot be undone.`)) return;
+
+    this.cancellingJob = true;
+    this.errorMessage = '';
+
+    this.jobService.cancelJob(this.job.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.job!.status = 'Cancelled';
+          this.jobBids = this.jobBids.map(b => b.status === 'Pending' ? { ...b, status: 'Withdrawn' } : b);
+          this.successMessage = 'Job cancelled successfully.';
+          this.cancellingJob = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || 'Failed to cancel job.';
+          this.cancellingJob = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   getStatusColor(status: string): string {

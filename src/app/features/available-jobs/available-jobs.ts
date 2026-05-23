@@ -16,7 +16,7 @@ import { Auth } from '../../core/services/auth';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { ServiceCategory } from '../../core/models/service-category.model';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-available-jobs',
@@ -51,10 +51,13 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
   total = 0;
   get totalPages(): number { return Math.max(1, Math.ceil(this.total / this.pageSize)); }
 
-  // Filters (category is server-side; budget is client-side within page)
+  // Filters — category & search are server-side; budget is client-side within current page
   selectedCategoryId: number | null = null;
-  budgetRange: [number, number] = [0, 50000];
+  searchText = '';
+  minBudget: number | null = null;
+  maxBudget: number | null = null;
   categories: ServiceCategory[] = [];
+  private search$ = new Subject<string>();
 
   // Proximity radius filter (null = all jobs)
   selectedRadiusKm: number | null = 25;
@@ -87,19 +90,31 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
     this.serviceCategoryService.getCategories().pipe(takeUntil(this.destroy$)).subscribe({
       next: cats => { this.categories = cats; this.cdr.markForCheck(); }
     });
+
+    // Debounce search input — fires API call 400ms after user stops typing
+    this.search$.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.page = 1;
+      this.loadAvailableJobs();
+    });
+
     this.loadAvailableJobs();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.search$.complete();
   }
 
   loadAvailableJobs(): void {
     this.loading = true;
     this.cdr.markForCheck();
 
-    this.jobService.getAvailableJobs(this.page, this.pageSize, this.selectedCategoryId, this.selectedRadiusKm)
+    this.jobService.getAvailableJobs(this.page, this.pageSize, this.selectedCategoryId, this.selectedRadiusKm, this.searchText.trim() || undefined)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result: AvailableJobsResult) => {
@@ -125,8 +140,10 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
 
   applyBudgetFilter(): void {
     this.filteredJobs = this.jobs.filter(job => {
-      const numericBudget = this.parseBudgetValue(job.budget);
-      return numericBudget >= this.budgetRange[0] && numericBudget <= this.budgetRange[1];
+      const v = this.parseBudgetValue(job.budget);
+      if (this.minBudget != null && v < this.minBudget) return false;
+      if (this.maxBudget != null && v > this.maxBudget) return false;
+      return true;
     });
   }
 
@@ -134,12 +151,14 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
     if (!budget) return 0;
     const parsed = parseFloat(budget);
     if (!isNaN(parsed)) return parsed;
-    
     if (typeof budget === 'string' && budget.includes('-')) {
-      const parts = budget.split('-');
-      return parseFloat(parts[0]) || 0;
+      return parseFloat(budget.split('-')[0]) || 0;
     }
     return 0;
+  }
+
+  onSearchChange(): void {
+    this.search$.next(this.searchText);
   }
 
   onFilterChange(): void {
@@ -160,7 +179,9 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
 
   resetFilters(): void {
     this.selectedCategoryId = null;
-    this.budgetRange = [0, 50000];
+    this.searchText = '';
+    this.minBudget = null;
+    this.maxBudget = null;
     this.selectedRadiusKm = 25;
     this.page = 1;
     this.loadAvailableJobs();

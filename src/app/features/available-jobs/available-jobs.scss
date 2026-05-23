@@ -258,6 +258,31 @@
   }
 }
 
+.filters-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+
+  .filter-field {
+    min-width: 160px;
+  }
+
+  .search-field {
+    flex: 2;
+    min-width: 220px;
+  }
+
+  .budget-field {
+    width: 140px;
+  }
+
+  .reset-btn {
+    height: 56px;
+    align-self: flex-start;
+  }
+}
+
 .radius-row {
   display: flex;
   align-items: center;

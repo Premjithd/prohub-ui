@@ -254,6 +254,11 @@ export class JobService {
     return this.http.post(`${this.apiUrl}/${jobId}/bids/${bidId}/withdraw`, {});
   }
 
+  // Cancel a job (User only, Open/Pending status)
+  cancelJob(jobId: number, reason?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/cancel`, { reason: reason ?? null });
+  }
+
   // Get jobs assigned to the current Pro
   getAssignedJobs(): Observable<Job[]> {
     return this.http.get<any>(`${this.apiUrl}/assigned`).pipe(

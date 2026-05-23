@@ -56,6 +56,18 @@
                 {{ job.status }}
               </mat-chip>
             </mat-chip-set>
+            <!-- Cancel Job — available while job is Open or Completion Submitted -->
+            <button
+              *ngIf="job.status === 'Open' || job.status === 'Completion Submitted'"
+              mat-stroked-button
+              color="warn"
+              (click)="cancelJob()"
+              [disabled]="cancellingJob"
+              class="cancel-job-btn"
+              matTooltip="Cancel this job">
+              <mat-icon>cancel</mat-icon>
+              {{ cancellingJob ? 'Cancelling...' : 'Cancel Job' }}
+            </button>
           </div>
         </div>
       </mat-card-header>
