@@ -62,6 +62,14 @@ export class AdminUsersComponent implements OnInit {
   adminInvitations: any[] = [];
   isLoadingInvitations = false;
 
+  // Geocode backfill
+  isBackfilling = false;
+  backfillResult: { message: string; updated: number; failed: number; total: number } | null = null;
+
+  // Service radius inline edit
+  isEditingRadius = false;
+  editRadiusValue = 25;
+
   isImpersonating = false;
   impersonationDetails: any = null;
 
@@ -357,6 +365,50 @@ export class AdminUsersComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => this.snack.open('Failed to unlink user.', 'OK', { duration: 3000 })
+    });
+  }
+
+  startEditRadius(): void {
+    this.editRadiusValue = this.selectedPro?.serviceRadiusKm ?? 25;
+    this.isEditingRadius = true;
+  }
+
+  cancelEditRadius(): void {
+    this.isEditingRadius = false;
+  }
+
+  saveRadius(): void {
+    if (!this.selectedPro || !this.editRadiusValue) return;
+    this.adminUsersService.updateProServiceRadius(this.selectedPro.id, this.editRadiusValue).subscribe({
+      next: (result) => {
+        this.selectedPro!.serviceRadiusKm = result.serviceRadiusKm;
+        this.isEditingRadius = false;
+        this.snack.open(`Service radius updated to ${result.serviceRadiusKm} km.`, 'OK', { duration: 3000, panelClass: 'snack-success' });
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to update service radius.';
+        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+      }
+    });
+  }
+
+  runGeocodeBackfill(): void {
+    this.isBackfilling = true;
+    this.backfillResult = null;
+    this.adminUsersService.geocodeBackfill().subscribe({
+      next: (result) => {
+        this.isBackfilling = false;
+        this.backfillResult = result;
+        this.snack.open(result.message, 'OK', { duration: 8000, panelClass: 'snack-info' });
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.isBackfilling = false;
+        const msg = err?.error?.message ?? 'Geocode backfill failed.';
+        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+        this.cdr.markForCheck();
+      }
     });
   }
 

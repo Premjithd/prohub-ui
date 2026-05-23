@@ -119,6 +119,84 @@
   }
 }
 
+.backfill-result {
+  margin-top: 1.25rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+
+  .backfill-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+
+    .backfill-result-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: white;
+
+      mat-icon {
+        font-size: 1.2rem;
+        width: 1.2rem;
+        height: 1.2rem;
+      }
+    }
+
+    .backfill-dismiss {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+
+      &:hover { color: white; }
+
+      mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+    }
+  }
+
+  .backfill-stats {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .backfill-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    color: white;
+
+    mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+
+    .stat-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+
+    &.backfill-stat-updated mat-icon { color: #a5d6a7; }
+    &.backfill-stat-failed mat-icon { color: #ffcc80; }
+  }
+}
+
 .admin-content {
   flex: 1;
   overflow-y: auto;

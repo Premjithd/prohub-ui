@@ -139,6 +139,10 @@
               <span *ngIf="pro.zipPostalCode"> - {{ pro.zipPostalCode }}</span>
             </span>
           </div>
+          <div class="info-item">
+            <span class="info-label">Service Radius</span>
+            <span class="info-value">{{ pro.serviceRadiusKm ?? 25 }} km</span>
+          </div>
         </div>
 
         <div class="action-buttons" *ngIf="!isEditing">
@@ -461,6 +465,18 @@
               placeholder="Enter zip/postal code"
             />
           </div>
+        </div>
+
+        <div class="form-group">
+          <label>Service Radius (km)</label>
+          <input
+            type="number"
+            name="serviceRadiusKm"
+            [(ngModel)]="pro.serviceRadiusKm"
+            min="1"
+            max="500"
+            placeholder="e.g. 25"
+          />
         </div>
 
         <div class="form-actions">

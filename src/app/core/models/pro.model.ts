@@ -15,6 +15,9 @@ export interface Pro {
     state?: string;
     country?: string;
     zipPostalCode?: string;
+    serviceRadiusKm?: number;
+    latitude?: number;
+    longitude?: number;
 }
 
 export interface RegisterProRequest {
@@ -30,4 +33,6 @@ export interface RegisterProRequest {
     state?: string;
     country?: string;
     zipPostalCode?: string;
+    latitude?: number | null;
+    longitude?: number | null;
 }

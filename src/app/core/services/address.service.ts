@@ -19,6 +19,8 @@ export interface AddressDetails {
   state: string;
   country: string;
   zipPostalCode: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface NominatimResult {
@@ -89,12 +91,15 @@ export class AddressService {
    * Get detailed address information from place ID
    */
   getAddressDetails(placeId: string): Observable<AddressDetails> {
-    return this.http.get<NominatimResult>(`${this.API_URL}/details`, {
+    return this.http.get<NominatimResult | NominatimResult[]>(`${this.API_URL}/details`, {
       params: {
         placeId: placeId
       }
     }).pipe(
-      map(result => this.parseNominatimAddress(result)),
+      map(result => {
+        const r = Array.isArray(result) ? result[0] : result;
+        return r ? this.parseNominatimAddress(r) : this.getEmptyAddressDetails();
+      }),
       catchError(error => {
         console.warn('Error fetching address details:', error);
         return of(this.getEmptyAddressDetails());
@@ -136,6 +141,8 @@ export class AddressService {
    */
   private parseNominatimAddress(result: NominatimResult): AddressDetails {
     const { house_number, road, suburb, city, state, postcode, country_code } = result.address;
+    const lat = result.lat ? parseFloat(result.lat) : undefined;
+    const lon = result.lon ? parseFloat(result.lon) : undefined;
 
     return {
       houseNameNumber: house_number || '',
@@ -144,7 +151,9 @@ export class AddressService {
       city: city || '',
       state: state || '',
       country: country_code?.toUpperCase() || '',
-      zipPostalCode: postcode || ''
+      zipPostalCode: postcode || '',
+      latitude: isNaN(lat!) ? undefined : lat,
+      longitude: isNaN(lon!) ? undefined : lon,
     };
   }
 

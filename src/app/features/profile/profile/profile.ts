@@ -175,7 +175,8 @@ export class ProfileComponent implements OnInit {
       city: this.pro.city,
       state: this.pro.state,
       country: this.pro.country,
-      zipPostalCode: this.pro.zipPostalCode
+      zipPostalCode: this.pro.zipPostalCode,
+      serviceRadiusKm: this.pro.serviceRadiusKm ?? 25,
     };
 
     this.proService.updatePro(updateData).subscribe({

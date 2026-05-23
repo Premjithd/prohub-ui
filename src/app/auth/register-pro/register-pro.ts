@@ -19,6 +19,9 @@ export class RegisterProComponent {
   showAddressList = false;
   addressLoading = false;
 
+  private latitude: number | null = null;
+  private longitude: number | null = null;
+
   constructor(private auth: Auth, private router: Router, private addressService: AddressService) {}
 
   onAddressInput(event: any, form: any): void {
@@ -48,16 +51,19 @@ export class RegisterProComponent {
 
     this.addressService.getAddressDetails(prediction.placeId).subscribe({
       next: (details: AddressDetails) => {
-        // Update form fields with parsed address details
-        form.value.houseNameNumber = details.houseNameNumber;
-        form.value.street1 = details.street1;
-        form.value.street2 = details.street2;
-        form.value.city = details.city;
-        form.value.state = details.state;
-        form.value.country = details.country;
-        form.value.zipPostalCode = details.zipPostalCode;
+        form.form.patchValue({
+          houseNameNumber: details.houseNameNumber,
+          street1: details.street1,
+          street2: details.street2,
+          city: details.city,
+          state: details.state,
+          country: details.country,
+          zipPostalCode: details.zipPostalCode,
+        });
 
-        // Update the input field
+        this.latitude = details.latitude ?? null;
+        this.longitude = details.longitude ?? null;
+
         if (this.addressInput) {
           this.addressInput.nativeElement.value = prediction.description;
         }
@@ -79,7 +85,8 @@ export class RegisterProComponent {
 
   onSubmit(form: any): void {
     if (form.valid) {
-      this.auth.registerPro(form.value).subscribe({
+      const payload = { ...form.value, latitude: this.latitude, longitude: this.longitude };
+      this.auth.registerPro(payload).subscribe({
         next: (response) => {
           console.log('Pro registration successful:', response);
           alert('Pro registered successfully!');

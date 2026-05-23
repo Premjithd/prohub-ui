@@ -15,6 +15,37 @@
           <mat-icon>person_add</mat-icon>
           Invite Admin
         </button>
+        <button (click)="runGeocodeBackfill()" class="create-btn" [disabled]="isBackfilling" title="Set lat/lon for pros that are missing map coordinates">
+          <mat-icon>{{ isBackfilling ? 'hourglass_empty' : 'my_location' }}</mat-icon>
+          {{ isBackfilling ? 'Geocoding...' : 'Geocode Pros' }}
+        </button>
+      </div>
+    </div>
+    <div *ngIf="backfillResult" class="backfill-result">
+      <div class="backfill-result-header">
+        <div class="backfill-result-title">
+          <mat-icon>my_location</mat-icon>
+          Geocode Backfill Complete
+        </div>
+        <button class="backfill-dismiss" (click)="backfillResult = null" title="Dismiss">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="backfill-stats">
+        <div class="backfill-stat backfill-stat-total">
+          <span class="stat-value">{{ backfillResult.total }}</span>
+          <span class="stat-label">Pros found</span>
+        </div>
+        <div class="backfill-stat backfill-stat-updated">
+          <mat-icon>check_circle</mat-icon>
+          <span class="stat-value">{{ backfillResult.updated }}</span>
+          <span class="stat-label">Updated</span>
+        </div>
+        <div class="backfill-stat backfill-stat-failed" *ngIf="backfillResult.failed > 0">
+          <mat-icon>warning</mat-icon>
+          <span class="stat-value">{{ backfillResult.failed }}</span>
+          <span class="stat-label">Could not geocode</span>
+        </div>
       </div>
     </div>
   </div>
@@ -175,6 +206,21 @@
               <div class="detail-row">
                 <label>Joined:</label>
                 <span>{{ formatDate(selectedPro.createdAt) }}</span>
+              </div>
+              <div class="detail-row">
+                <label>Service Radius:</label>
+                <ng-container *ngIf="!isEditingRadius">
+                  <span>{{ selectedPro.serviceRadiusKm ?? 25 }} km</span>
+                  <button class="inline-edit-btn" (click)="startEditRadius()" title="Edit service radius">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </ng-container>
+                <ng-container *ngIf="isEditingRadius">
+                  <input type="number" [(ngModel)]="editRadiusValue" min="1" max="500" class="radius-input" />
+                  <span class="radius-unit">km</span>
+                  <button class="inline-save-btn" (click)="saveRadius()"><mat-icon>check</mat-icon></button>
+                  <button class="inline-cancel-btn" (click)="cancelEditRadius()"><mat-icon>close</mat-icon></button>
+                </ng-container>
               </div>
             </div>
           </div>
