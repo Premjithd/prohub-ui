@@ -130,4 +130,12 @@ export class AdminUsersService {
   resendAdminInvitation(invitationId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/admin/invitations/${invitationId}/resend`, {});
   }
+
+  createUser(payload: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/users`, payload);
+  }
+
+  createPro(payload: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pros`, payload);
+  }
 }

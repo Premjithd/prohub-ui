@@ -33,6 +33,59 @@
     }
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .create-btn {
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+
+    mat-icon {
+      font-size: 1.2rem;
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .create-user-btn {
+    background: rgba(76, 175, 80, 0.25);
+    color: white;
+    border-color: rgba(76, 175, 80, 0.6);
+
+    &:hover {
+      background: rgba(76, 175, 80, 0.4);
+      border-color: rgba(76, 175, 80, 0.8);
+    }
+  }
+
+  .create-pro-btn {
+    background: rgba(255, 152, 0, 0.25);
+    color: white;
+    border-color: rgba(255, 152, 0, 0.6);
+
+    &:hover {
+      background: rgba(255, 152, 0, 0.4);
+      border-color: rgba(255, 152, 0, 0.8);
+    }
+  }
+
   .invite-admin-btn {
     background: rgba(255, 255, 255, 0.2);
     color: white;
