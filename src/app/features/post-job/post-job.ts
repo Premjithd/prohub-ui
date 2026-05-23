@@ -34,11 +34,11 @@ export class PostJobComponent implements OnInit, OnDestroy {
   categoriesLoading = true;
 
   budgetRanges = [
-    { value: 'under-100', label: 'Under ₹5,000', icon: '💰' },
-    { value: '100-250', label: '₹5,000 - ₹12,500', icon: '💰💰' },
-    { value: '250-500', label: '₹12,500 - ₹25,000', icon: '💰💰💰' },
-    { value: '500-1000', label: '₹25,000 - ₹50,000', icon: '💰💰💰💰' },
-    { value: 'over-1000', label: 'Over ₹50,000', icon: '💰💰💰💰💰' }
+    { value: 'under-100',  label: 'Under ₹5,000',         icon: '💰',          estimatedBudget: 2500  },
+    { value: '100-250',    label: '₹5,000 - ₹12,500',     icon: '💰💰',        estimatedBudget: 8750  },
+    { value: '250-500',    label: '₹12,500 - ₹25,000',    icon: '💰💰💰',      estimatedBudget: 18750 },
+    { value: '500-1000',   label: '₹25,000 - ₹50,000',    icon: '💰💰💰💰',    estimatedBudget: 37500 },
+    { value: 'over-1000',  label: 'Over ₹50,000',         icon: '💰💰💰💰💰',  estimatedBudget: 75000 }
   ];
 
   timelineOptions = [
@@ -226,12 +226,14 @@ export class PostJobComponent implements OnInit, OnDestroy {
     // Set submitted to true only after all validations pass
     this.submitted = true;
 
+    const selectedRange = this.budgetRanges.find(r => r.value === this.jobForm.value.budget);
     const jobData = {
       title: this.jobForm.value.title,
-      categoryId: this.jobForm.value.category, // Send category ID
+      categoryId: this.jobForm.value.category,
       description: this.jobForm.value.description,
       location: this.jobForm.value.location,
       budget: this.jobForm.value.budget,
+      estimatedBudget: selectedRange?.estimatedBudget,
       timeline: this.jobForm.value.timeline,
       attachments: this.jobForm.value.attachments || ''
     };

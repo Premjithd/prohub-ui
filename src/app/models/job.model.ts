@@ -56,6 +56,7 @@ export interface CreateJobRequest {
   categoryId: number;
   priority: string;
   budget: string;
+  estimatedBudget?: number;
   timeline: string;
   location: string;
   // Structured Address
@@ -76,6 +77,7 @@ export interface UpdateJobRequest {
   description?: string;
   priority?: string;
   budget?: string;
+  estimatedBudget?: number;
   timeline?: string;
   location?: string;
   status?: string;

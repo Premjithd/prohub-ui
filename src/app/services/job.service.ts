@@ -26,6 +26,7 @@ export interface Job {
   description: string;
   location: string;
   budget: string;
+  estimatedBudget?: number;
   timeline: string;
   attachments?: string;
   status: string;
