@@ -12,6 +12,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
 import { JobService, Job } from '../../services/job.service';
 import { Auth } from '../../core/services/auth';
+import { ServiceCategoryService } from '../../core/services/service-category.service';
+import { ServiceCategory } from '../../core/models/service-category.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -41,27 +43,34 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
   errorMessage = '';
   private destroy$ = new Subject<void>();
 
-  // Filters
-  selectedCategory: string | null = null;
-  selectedPriority: string | null = null;
+  // Pagination
+  page = 1;
+  pageSize = 20;
+  total = 0;
+  get totalPages(): number { return Math.max(1, Math.ceil(this.total / this.pageSize)); }
+
+  // Filters (category is server-side; budget is client-side within page)
+  selectedCategoryId: number | null = null;
   budgetRange: [number, number] = [0, 50000];
-  sortBy: string = 'recent';
-  categories: any[] = [];
+  categories: ServiceCategory[] = [];
 
   constructor(
     private jobService: JobService,
     private auth: Auth,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private serviceCategoryService: ServiceCategoryService
   ) {}
 
   ngOnInit(): void {
-    // Check if user is authenticated and is a Pro
     if (!this.auth.isAuthenticated() || this.auth.getUserType() !== 'Pro') {
       this.errorMessage = 'You must be logged in as a professional to view available jobs.';
       this.router.navigate(['/']);
       return;
     }
+    this.serviceCategoryService.getCategories().pipe(takeUntil(this.destroy$)).subscribe({
+      next: cats => { this.categories = cats; this.cdr.markForCheck(); }
+    });
     this.loadAvailableJobs();
   }
 
@@ -74,14 +83,13 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.cdr.markForCheck();
 
-    this.jobService.getAvailableJobs()
+    this.jobService.getAvailableJobs(this.page, this.pageSize, this.selectedCategoryId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (jobs) => {
-          console.log('Available jobs loaded:', jobs);
-          this.jobs = jobs;
-          this.extractCategories();
-          this.applyFilters();
+        next: (result) => {
+          this.jobs = result.items;
+          this.total = result.total;
+          this.applyBudgetFilter();
           this.loading = false;
           this.cdr.markForCheck();
         },
@@ -89,79 +97,18 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
           console.error('Error loading available jobs:', error);
           this.errorMessage = 'Failed to load available jobs. Please try again later.';
           this.jobs = [];
+          this.total = 0;
           this.loading = false;
           this.cdr.markForCheck();
         }
       });
   }
 
-  private extractCategories(): void {
-    const categorySet = new Set<string>();
-    this.jobs.forEach(job => {
-      if (job.category?.name) {
-        categorySet.add(job.category.name);
-      }
-    });
-    this.categories = Array.from(categorySet).map(name => ({ name }));
-  }
-
-  applyFilters(): void {
-    let filtered = [...this.jobs];
-
-    // Filter by category
-    if (this.selectedCategory) {
-      filtered = filtered.filter(job => job.category?.name === this.selectedCategory);
-    }
-
-    // Filter by priority
-    if (this.selectedPriority) {
-      filtered = filtered.filter(job => job.priority === this.selectedPriority);
-    }
-
-    // Filter by budget range
-    // Handle both numeric budgets and budget category strings like "under-100"
-    filtered = filtered.filter(job => {
-      const budgetValue = job.budget || '0';
-      let numericBudget = 0;
-      
-      // Try to parse as number first
-      const parsed = parseFloat(budgetValue);
-      if (!isNaN(parsed)) {
-        numericBudget = parsed;
-      } else {
-        // Handle budget categories like "under-100", "1000-5000", etc.
-        if (budgetValue.includes('-')) {
-          const parts = budgetValue.split('-');
-          // Use the lower bound for comparison
-          numericBudget = parseFloat(parts[0]) || 0;
-        }
-      }
-      
+  applyBudgetFilter(): void {
+    this.filteredJobs = this.jobs.filter(job => {
+      const numericBudget = this.parseBudgetValue(job.budget);
       return numericBudget >= this.budgetRange[0] && numericBudget <= this.budgetRange[1];
     });
-
-    // Sort
-    switch (this.sortBy) {
-      case 'recent':
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-      case 'budget-low':
-        filtered.sort((a, b) => {
-          const budgetA = this.parseBudgetValue(a.budget);
-          const budgetB = this.parseBudgetValue(b.budget);
-          return budgetA - budgetB;
-        });
-        break;
-      case 'budget-high':
-        filtered.sort((a, b) => {
-          const budgetA = this.parseBudgetValue(a.budget);
-          const budgetB = this.parseBudgetValue(b.budget);
-          return budgetB - budgetA;
-        });
-        break;
-    }
-
-    this.filteredJobs = filtered;
   }
 
   private parseBudgetValue(budget: any): number {
@@ -177,15 +124,28 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
   }
 
   onFilterChange(): void {
-    this.applyFilters();
+    this.page = 1;
+    this.loadAvailableJobs();
+  }
+
+  onBudgetFilterChange(): void {
+    this.applyBudgetFilter();
+    this.cdr.markForCheck();
   }
 
   resetFilters(): void {
-    this.selectedCategory = null;
-    this.selectedPriority = null;
+    this.selectedCategoryId = null;
     this.budgetRange = [0, 50000];
-    this.sortBy = 'recent';
-    this.applyFilters();
+    this.page = 1;
+    this.loadAvailableJobs();
+  }
+
+  prevPage(): void {
+    if (this.page > 1) { this.page--; this.loadAvailableJobs(); }
+  }
+
+  nextPage(): void {
+    if (this.page < this.totalPages) { this.page++; this.loadAvailableJobs(); }
   }
 
   formatPrice(price: any): string {

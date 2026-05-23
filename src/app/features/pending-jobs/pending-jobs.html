@@ -26,7 +26,7 @@
   </div>
 
   <!-- Status Filter -->
-  <div *ngIf="!loading && allPendingJobs.length > 0" class="status-filter">
+  <div *ngIf="!loading" class="status-filter">
     <span class="filter-label">Filter by Status:</span>
     <mat-button-toggle-group 
       [value]="selectedStatusFilter" 
@@ -59,7 +59,7 @@
   <div *ngIf="!loading && pendingJobs.length > 0" class="jobs-list-container">
     <mat-card class="jobs-list-card">
       <mat-card-header>
-        <h2>My Jobs ({{ pendingJobs.length }})</h2>
+        <h2>My Jobs ({{ total }})</h2>
       </mat-card-header>
       <mat-card-content>
         <table class="jobs-table">
@@ -260,6 +260,17 @@
           </tbody>
         </table>
       </mat-card-content>
+
+      <!-- Pagination -->
+      <div class="pagination-controls" *ngIf="totalPages > 1">
+        <button mat-icon-button (click)="prevPage()" [disabled]="page === 1" aria-label="Previous page">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="page-info">Page {{ page }} of {{ totalPages }}</span>
+        <button mat-icon-button (click)="nextPage()" [disabled]="page >= totalPages" aria-label="Next page">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
     </mat-card>
   </div>
 </div>

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';import { map, switchMap } from 'rxjs/operators';import { environment } from '../../environments/environment';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface JobPhase {
   id: string;
@@ -128,6 +130,13 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+export interface PagedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -136,25 +145,18 @@ export class JobService {
 
   constructor(private http: HttpClient) {}
 
-  // Get all jobs posted by the current user
-  getMyJobs(): Observable<Job[]> {
-    return this.http.get<any>(`${this.apiUrl}/my-jobs`).pipe(
-      map(response => {
-        // Handle wrapped response format with $values property (from ReferenceHandler.Preserve)
-        if (response && response.$values && Array.isArray(response.$values)) {
-          return response.$values;
-        }
-        // Handle direct array response
-        if (Array.isArray(response)) {
-          return response;
-        }
-        // Handle response.data wrapped format
-        if (response && response.data && Array.isArray(response.data)) {
-          return response.data;
-        }
-        // Return empty array if format not recognized
-        return [];
-      })
+  private unwrapPagedResult<T>(response: any, page: number, pageSize: number): PagedResult<T> {
+    const raw = response?.items;
+    const items: T[] = Array.isArray(raw) ? raw : (raw?.$values ?? []);
+    return { items, total: response?.total ?? 0, page: response?.page ?? page, pageSize: response?.pageSize ?? pageSize };
+  }
+
+  // Get all jobs posted by the current user (paginated)
+  getMyJobs(page = 1, pageSize = 20, status?: string): Observable<PagedResult<Job>> {
+    let params = new HttpParams().set('page', page).set('pageSize', pageSize);
+    if (status) params = params.set('status', status);
+    return this.http.get<any>(`${this.apiUrl}/my-jobs`, { params }).pipe(
+      map(r => this.unwrapPagedResult<Job>(r, page, pageSize))
     );
   }
 
@@ -185,25 +187,13 @@ export class JobService {
     return this.http.get<Job[]>(`${this.apiUrl}/category/${category}`);
   }
 
-  // Get all available jobs (not assigned to any pro)
-  getAvailableJobs(): Observable<Job[]> {
-    return this.http.get<any>(`${this.apiUrl}/available`).pipe(
-      map(response => {
-        // Handle wrapped response format with $values property (from ReferenceHandler.Preserve)
-        if (response && response.$values && Array.isArray(response.$values)) {
-          return response.$values;
-        }
-        // Handle direct array response
-        if (Array.isArray(response)) {
-          return response;
-        }
-        // Handle response.data wrapped format
-        if (response && response.data && Array.isArray(response.data)) {
-          return response.data;
-        }
-        // Return empty array if format not recognized
-        return [];
-      })
+  // Get available jobs (paginated)
+  getAvailableJobs(page = 1, pageSize = 20, categoryId?: number | null, search?: string): Observable<PagedResult<Job>> {
+    let params = new HttpParams().set('page', page).set('pageSize', pageSize);
+    if (categoryId) params = params.set('categoryId', categoryId);
+    if (search) params = params.set('search', search);
+    return this.http.get<any>(`${this.apiUrl}/available`, { params }).pipe(
+      map(r => this.unwrapPagedResult<Job>(r, page, pageSize))
     );
   }
 
@@ -349,25 +339,11 @@ export class JobService {
     );
   }
 
-  // Get conversation partners with user details
-  getConversationPartners(userType: string): Observable<any[]> {
-    return this.http.get<any>(`${environment.apiUrl}/messages/conversations?userType=${userType}`).pipe(
-      map(response => {
-        // Handle wrapped response format
-        if (response && response.$values && Array.isArray(response.$values)) {
-          return response.$values;
-        }
-        // Handle direct array response
-        if (Array.isArray(response)) {
-          return response;
-        }
-        // Handle response.data wrapped format
-        if (response && response.data && Array.isArray(response.data)) {
-          return response.data;
-        }
-        // Return empty array if format not recognized
-        return [];
-      })
+  // Get conversation partners (paginated)
+  getConversationPartners(userType: string, page = 1, pageSize = 20): Observable<PagedResult<any>> {
+    const params = new HttpParams().set('userType', userType).set('page', page).set('pageSize', pageSize);
+    return this.http.get<any>(`${environment.apiUrl}/messages/conversations`, { params }).pipe(
+      map(r => this.unwrapPagedResult<any>(r, page, pageSize))
     );
   }
 

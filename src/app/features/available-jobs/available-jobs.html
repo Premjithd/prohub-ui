@@ -37,49 +37,22 @@
       </mat-expansion-panel-header>
 
       <div class="filters-grid">
-        <!-- Category Filter -->
+        <!-- Category Filter (server-side) -->
         <mat-form-field appearance="outline" class="filter-field">
           <mat-label>Category</mat-label>
-          <mat-select [(value)]="selectedCategory" (selectionChange)="onFilterChange()">
+          <mat-select [(ngModel)]="selectedCategoryId" (selectionChange)="onFilterChange()">
             <mat-option [value]="null">All Categories</mat-option>
-            <mat-option *ngFor="let cat of categories" [value]="cat.name">
+            <mat-option *ngFor="let cat of categories" [value]="cat.id">
               {{ cat.name }}
             </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <!-- Priority Filter -->
-        <mat-form-field appearance="outline" class="filter-field">
-          <mat-label>Priority</mat-label>
-          <mat-select [(value)]="selectedPriority" (selectionChange)="onFilterChange()">
-            <mat-option [value]="null">All Priorities</mat-option>
-            <mat-option value="Urgent">Urgent</mat-option>
-            <mat-option value="High">High</mat-option>
-            <mat-option value="Medium">Medium</mat-option>
-            <mat-option value="Low">Low</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <!-- Sort Filter -->
-        <mat-form-field appearance="outline" class="filter-field">
-          <mat-label>Sort By</mat-label>
-          <mat-select [(value)]="sortBy" (selectionChange)="onFilterChange()">
-            <mat-option value="recent">Most Recent</mat-option>
-            <mat-option value="budget-low">Budget: Low to High</mat-option>
-            <mat-option value="budget-high">Budget: High to Low</mat-option>
           </mat-select>
         </mat-form-field>
 
         <!-- Reset Filters -->
         <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
           <mat-icon>restart_alt</mat-icon>
-          Reset Filters
+          Reset
         </button>
-      </div>
-
-      <!-- Budget Range Info -->
-      <div class="budget-info">
-        <p>Budget Range: <strong>₹{{ budgetRange[0].toLocaleString('en-IN') }} - ₹{{ budgetRange[1].toLocaleString('en-IN') }}</strong></p>
       </div>
     </mat-expansion-panel>
 
@@ -161,9 +134,18 @@
       </div>
     </div>
 
-    <!-- Job Count -->
-    <div *ngIf="!loading && filteredJobs.length > 0" class="job-count">
-      Showing {{ filteredJobs.length }} of {{ jobs.length }} jobs
+    <!-- Pagination + Count -->
+    <div *ngIf="!loading && total > 0" class="pagination-row">
+      <span class="job-count">Showing {{ filteredJobs.length }} of {{ total }} jobs</span>
+      <div class="pagination-controls" *ngIf="totalPages > 1">
+        <button mat-icon-button (click)="prevPage()" [disabled]="page === 1" aria-label="Previous page">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="page-info">Page {{ page }} of {{ totalPages }}</span>
+        <button mat-icon-button (click)="nextPage()" [disabled]="page >= totalPages" aria-label="Next page">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
     </div>
   </div>
 </div>

@@ -52,17 +52,22 @@ export class MessagesComponent implements OnInit, OnDestroy {
   conversations: ConversationSummary[] = [];
   selectedConversation: ConversationSummary | null = null;
   messages: Message[] = [];
-  
+
   loading = true;
   loadingMessages = false;
   errorMessage = '';
   successMessage = '';
   messageText = '';
   messageSending = false;
-  
+
+  // Pagination for conversations list
+  page = 1;
+  pageSize = 20;
+  total = 0;
+  get totalPages(): number { return Math.max(1, Math.ceil(this.total / this.pageSize)); }
+
   currentUserId: number = 0;
   private destroy$ = new Subject<void>();
-  private messagePollInterval = 3000; // Poll every 3 seconds
   private highlightPartnerId: number | null = null;
 
   constructor(
@@ -113,18 +118,17 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
     const userType = this.auth.getUserType() || 'User';
 
-    // Get conversation partners with user details
-    this.jobService.getConversationPartners(userType)
+    this.jobService.getConversationPartners(userType, this.page, this.pageSize)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (partners) => {
-          this.conversations = partners;
+        next: (result) => {
+          this.conversations = result.items;
+          this.total = result.total;
           this.loading = false;
           this.cdr.markForCheck();
 
-          // Auto-select and highlight the conversation if partnerId was provided
           if (this.highlightPartnerId) {
-            const targetConversation = partners.find(p => p.userId === this.highlightPartnerId);
+            const targetConversation = result.items.find((p: any) => p.userId === this.highlightPartnerId);
             if (targetConversation) {
               this.selectConversation(targetConversation);
             }
@@ -250,6 +254,14 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
   isSentByCurrentUser(message: Message): boolean {
     return message.senderId === this.currentUserId;
+  }
+
+  prevPage(): void {
+    if (this.page > 1) { this.page--; this.loadConversations(); }
+  }
+
+  nextPage(): void {
+    if (this.page < this.totalPages) { this.page++; this.loadConversations(); }
   }
 
   closeConversation(): void {

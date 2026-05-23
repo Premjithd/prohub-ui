@@ -40,8 +40,7 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class PendingJobsComponent implements OnInit, OnDestroy {
   @ViewChildren(MatExpansionPanel) expansionPanels?: QueryList<MatExpansionPanel>;
-  
-  allPendingJobs: Job[] = [];
+
   pendingJobs: Job[] = [];
   jobBidsMap: Map<number, JobBid[]> = new Map();
   loadingBidsMap: Map<number, boolean> = new Map();
@@ -53,11 +52,17 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
   errorMessage = '';
   successMessage = '';
   assignedProMap: Map<number, { name: string; email: string }> = new Map();
-  
-  // Filter properties
+
+  // Pagination
+  page = 1;
+  pageSize = 20;
+  total = 0;
+  get totalPages(): number { return Math.max(1, Math.ceil(this.total / this.pageSize)); }
+
+  // Filter
   statusFilters = ['All', 'Open', 'In Progress', 'Completed'];
-  selectedStatusFilter: string = 'All';
-  
+  selectedStatusFilter = 'All';
+
   private destroy$ = new Subject<void>();
 
   constructor(private jobService: JobService, public auth: Auth, private cdr: ChangeDetectorRef, private router: Router, private dialog: MatDialog, private paymentService: PaymentService) {}
@@ -80,20 +85,14 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
   loadPendingJobs(): void {
     this.loading = true;
     this.errorMessage = '';
-    console.log('Loading pending jobs for user...');
-    console.log('Auth token:', this.auth.getToken());
-    
-    this.jobService.getMyJobs().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (jobs) => {
-        console.log('Jobs loaded successfully:', jobs);
-        // Filter jobs with status "Open", "In Progress", or "Completed" to show user's jobs
-        this.allPendingJobs = jobs.filter(job => 
-          job.status.toLowerCase() === 'open' || 
-          job.status.toLowerCase() === 'in progress' ||
-          job.status.toLowerCase() === 'completed'
-        );
-        // Build map of assigned pros for jobs with "In Progress" status
-        this.allPendingJobs.forEach(job => {
+    const statusParam = this.selectedStatusFilter === 'All' ? undefined : this.selectedStatusFilter;
+
+    this.jobService.getMyJobs(this.page, this.pageSize, statusParam).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (result) => {
+        this.pendingJobs = result.items;
+        this.total = result.total;
+        // Build map of assigned pros for in-progress jobs on this page
+        this.pendingJobs.forEach(job => {
           if ((job.status.toLowerCase() === 'in progress' || job.assignedProId) && job.assignedPro) {
             const proName = job.assignedPro.firstName && job.assignedPro.lastName
               ? `${job.assignedPro.firstName} ${job.assignedPro.lastName}`
@@ -102,15 +101,10 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
               name: proName,
               email: job.assignedPro.email || ''
             });
-            // Load bids for in-progress jobs to find accepted bid
             this.loadBidsForJob(job.id);
-            // Load payment status for assigned jobs
             this.loadPaymentStatusForJob(job.id);
           }
         });
-        console.log('All pending jobs loaded:', this.allPendingJobs);
-        // Apply initial filters
-        this.applyFilters();
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -504,20 +498,18 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
     return Math.round((completed / phases.length) * 100);
   }
 
-  applyFilters(): void {
-    if (this.selectedStatusFilter === 'All') {
-      this.pendingJobs = this.allPendingJobs;
-    } else {
-      this.pendingJobs = this.allPendingJobs.filter(job => {
-        return job.status === this.selectedStatusFilter;
-      });
-    }
-    this.cdr.markForCheck();
-  }
-
   onFilterChange(status: string): void {
     this.selectedStatusFilter = status;
-    this.applyFilters();
+    this.page = 1;
+    this.loadPendingJobs();
+  }
+
+  prevPage(): void {
+    if (this.page > 1) { this.page--; this.loadPendingJobs(); }
+  }
+
+  nextPage(): void {
+    if (this.page < this.totalPages) { this.page++; this.loadPendingJobs(); }
   }
 
   viewJobDetails(jobId: number): void {
