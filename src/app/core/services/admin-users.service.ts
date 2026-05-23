@@ -139,8 +139,12 @@ export class AdminUsersService {
     return this.http.post(`${this.apiUrl}/pros`, payload);
   }
 
-  geocodeBackfill(): Observable<any> {
+  geocodeBackfillPros(): Observable<any> {
     return this.http.post(`${this.apiUrl}/admin/pros/geocode-backfill`, {});
+  }
+
+  geocodeBackfillUsers(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/users/geocode-backfill`, {});
   }
 
   updateProServiceRadius(proId: number, serviceRadiusKm: number): Observable<any> {

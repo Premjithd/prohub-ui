@@ -119,8 +119,16 @@
   }
 }
 
-.backfill-result {
+.backfill-results-row {
+  display: flex;
+  gap: 1rem;
   margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.backfill-result {
+  flex: 1;
+  min-width: 260px;
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;

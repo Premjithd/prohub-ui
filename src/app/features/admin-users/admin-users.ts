@@ -63,8 +63,10 @@ export class AdminUsersComponent implements OnInit {
   isLoadingInvitations = false;
 
   // Geocode backfill
-  isBackfilling = false;
-  backfillResult: { message: string; updated: number; failed: number; total: number } | null = null;
+  isBackfillingPros = false;
+  isBackfillingUsers = false;
+  proBackfillResult: { message: string; updated: number; failed: number; total: number } | null = null;
+  userBackfillResult: { message: string; updated: number; failed: number; total: number } | null = null;
 
   // Service radius inline edit
   isEditingRadius = false;
@@ -393,19 +395,36 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  runGeocodeBackfill(): void {
-    this.isBackfilling = true;
-    this.backfillResult = null;
-    this.adminUsersService.geocodeBackfill().subscribe({
+  runGeocodeBackfillPros(): void {
+    this.isBackfillingPros = true;
+    this.proBackfillResult = null;
+    this.adminUsersService.geocodeBackfillPros().subscribe({
       next: (result) => {
-        this.isBackfilling = false;
-        this.backfillResult = result;
-        this.snack.open(result.message, 'OK', { duration: 8000, panelClass: 'snack-info' });
+        this.isBackfillingPros = false;
+        this.proBackfillResult = result;
         this.cdr.markForCheck();
       },
       error: (err: any) => {
-        this.isBackfilling = false;
-        const msg = err?.error?.message ?? 'Geocode backfill failed.';
+        this.isBackfillingPros = false;
+        const msg = err?.error?.message ?? 'Pro geocode backfill failed.';
+        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  runGeocodeBackfillUsers(): void {
+    this.isBackfillingUsers = true;
+    this.userBackfillResult = null;
+    this.adminUsersService.geocodeBackfillUsers().subscribe({
+      next: (result) => {
+        this.isBackfillingUsers = false;
+        this.userBackfillResult = result;
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.isBackfillingUsers = false;
+        const msg = err?.error?.message ?? 'User geocode backfill failed.';
         this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
         this.cdr.markForCheck();
       }

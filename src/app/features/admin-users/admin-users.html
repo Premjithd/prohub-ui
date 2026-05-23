@@ -15,36 +15,70 @@
           <mat-icon>person_add</mat-icon>
           Invite Admin
         </button>
-        <button (click)="runGeocodeBackfill()" class="create-btn" [disabled]="isBackfilling" title="Set lat/lon for pros that are missing map coordinates">
-          <mat-icon>{{ isBackfilling ? 'hourglass_empty' : 'my_location' }}</mat-icon>
-          {{ isBackfilling ? 'Geocoding...' : 'Geocode Pros' }}
+        <button (click)="runGeocodeBackfillPros()" class="create-btn" [disabled]="isBackfillingPros" title="Set lat/lon for pros missing map coordinates">
+          <mat-icon>{{ isBackfillingPros ? 'hourglass_empty' : 'my_location' }}</mat-icon>
+          {{ isBackfillingPros ? 'Geocoding...' : 'Geocode Pros' }}
+        </button>
+        <button (click)="runGeocodeBackfillUsers()" class="create-btn" [disabled]="isBackfillingUsers" title="Set lat/lon for users missing map coordinates">
+          <mat-icon>{{ isBackfillingUsers ? 'hourglass_empty' : 'person_pin_circle' }}</mat-icon>
+          {{ isBackfillingUsers ? 'Geocoding...' : 'Geocode Users' }}
         </button>
       </div>
     </div>
-    <div *ngIf="backfillResult" class="backfill-result">
-      <div class="backfill-result-header">
-        <div class="backfill-result-title">
-          <mat-icon>my_location</mat-icon>
-          Geocode Backfill Complete
+    <div class="backfill-results-row" *ngIf="proBackfillResult || userBackfillResult">
+      <div *ngIf="proBackfillResult" class="backfill-result">
+        <div class="backfill-result-header">
+          <div class="backfill-result-title">
+            <mat-icon>my_location</mat-icon>
+            Pros Geocode Complete
+          </div>
+          <button class="backfill-dismiss" (click)="proBackfillResult = null" title="Dismiss">
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
-        <button class="backfill-dismiss" (click)="backfillResult = null" title="Dismiss">
-          <mat-icon>close</mat-icon>
-        </button>
+        <div class="backfill-stats">
+          <div class="backfill-stat backfill-stat-total">
+            <span class="stat-value">{{ proBackfillResult.total }}</span>
+            <span class="stat-label">Pros found</span>
+          </div>
+          <div class="backfill-stat backfill-stat-updated">
+            <mat-icon>check_circle</mat-icon>
+            <span class="stat-value">{{ proBackfillResult.updated }}</span>
+            <span class="stat-label">Updated</span>
+          </div>
+          <div class="backfill-stat backfill-stat-failed" *ngIf="proBackfillResult.failed > 0">
+            <mat-icon>warning</mat-icon>
+            <span class="stat-value">{{ proBackfillResult.failed }}</span>
+            <span class="stat-label">Could not geocode</span>
+          </div>
+        </div>
       </div>
-      <div class="backfill-stats">
-        <div class="backfill-stat backfill-stat-total">
-          <span class="stat-value">{{ backfillResult.total }}</span>
-          <span class="stat-label">Pros found</span>
+
+      <div *ngIf="userBackfillResult" class="backfill-result">
+        <div class="backfill-result-header">
+          <div class="backfill-result-title">
+            <mat-icon>person_pin_circle</mat-icon>
+            Users Geocode Complete
+          </div>
+          <button class="backfill-dismiss" (click)="userBackfillResult = null" title="Dismiss">
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
-        <div class="backfill-stat backfill-stat-updated">
-          <mat-icon>check_circle</mat-icon>
-          <span class="stat-value">{{ backfillResult.updated }}</span>
-          <span class="stat-label">Updated</span>
-        </div>
-        <div class="backfill-stat backfill-stat-failed" *ngIf="backfillResult.failed > 0">
-          <mat-icon>warning</mat-icon>
-          <span class="stat-value">{{ backfillResult.failed }}</span>
-          <span class="stat-label">Could not geocode</span>
+        <div class="backfill-stats">
+          <div class="backfill-stat backfill-stat-total">
+            <span class="stat-value">{{ userBackfillResult.total }}</span>
+            <span class="stat-label">Users found</span>
+          </div>
+          <div class="backfill-stat backfill-stat-updated">
+            <mat-icon>check_circle</mat-icon>
+            <span class="stat-value">{{ userBackfillResult.updated }}</span>
+            <span class="stat-label">Updated</span>
+          </div>
+          <div class="backfill-stat backfill-stat-failed" *ngIf="userBackfillResult.failed > 0">
+            <mat-icon>warning</mat-icon>
+            <span class="stat-value">{{ userBackfillResult.failed }}</span>
+            <span class="stat-label">Could not geocode</span>
+          </div>
         </div>
       </div>
     </div>

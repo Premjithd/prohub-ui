@@ -16,6 +16,8 @@ export interface User {
     state?: string;
     country?: string;
     zipPostalCode?: string;
+    latitude?: number;
+    longitude?: number;
 }
 
 export interface LoginRequest {
@@ -36,6 +38,8 @@ export interface RegisterUserRequest {
     state?: string;
     country?: string;
     zipPostalCode?: string;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 export interface GetUserRequest {
