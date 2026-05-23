@@ -49,6 +49,7 @@ export interface Job {
   // Geolocation
   latitude?: number;
   longitude?: number;
+  distanceKm?: number | null;
   user?: {
     id: number;
     firstName?: string;
@@ -137,6 +138,12 @@ export interface PagedResult<T> {
   pageSize: number;
 }
 
+export interface AvailableJobsResult extends PagedResult<Job> {
+  proximityFilterApplied: boolean;
+  proLocationSet: boolean;
+  radiusKm: number | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -187,13 +194,21 @@ export class JobService {
     return this.http.get<Job[]>(`${this.apiUrl}/category/${category}`);
   }
 
-  // Get available jobs (paginated)
-  getAvailableJobs(page = 1, pageSize = 20, categoryId?: number | null, search?: string): Observable<PagedResult<Job>> {
-    let params = new HttpParams().set('page', page).set('pageSize', pageSize);
+  // Get available jobs (paginated, proximity-aware)
+  getAvailableJobs(page = 1, pageSize = 20, categoryId?: number | null, filterRadiusKm?: number | null, search?: string): Observable<AvailableJobsResult> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('pageSize', pageSize);
+    if (filterRadiusKm != null) params = params.set('filterRadiusKm', filterRadiusKm);
     if (categoryId) params = params.set('categoryId', categoryId);
     if (search) params = params.set('search', search);
     return this.http.get<any>(`${this.apiUrl}/available`, { params }).pipe(
-      map(r => this.unwrapPagedResult<Job>(r, page, pageSize))
+      map(r => ({
+        ...this.unwrapPagedResult<Job>(r, page, pageSize),
+        proximityFilterApplied: r?.proximityFilterApplied ?? false,
+        proLocationSet: r?.proLocationSet ?? false,
+        radiusKm: r?.radiusKm ?? null
+      }))
     );
   }
 

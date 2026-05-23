@@ -9,8 +9,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
-import { JobService, Job } from '../../services/job.service';
+import { JobService, Job, AvailableJobsResult } from '../../services/job.service';
 import { Auth } from '../../core/services/auth';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { ServiceCategory } from '../../core/models/service-category.model';
@@ -31,6 +32,7 @@ import { takeUntil } from 'rxjs/operators';
     MatSliderModule,
     MatChipsModule,
     MatExpansionModule,
+    MatTooltipModule,
     FormsModule
   ],
   templateUrl: './available-jobs.html',
@@ -53,6 +55,20 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
   selectedCategoryId: number | null = null;
   budgetRange: [number, number] = [0, 50000];
   categories: ServiceCategory[] = [];
+
+  // Proximity radius filter (null = all jobs)
+  selectedRadiusKm: number | null = 25;
+  proximityFilterApplied = false;
+  proLocationSet = false;
+  activeRadiusKm: number | null = null;
+  readonly radiusOptions: Array<{ label: string; value: number | null }> = [
+    { label: 'All', value: null },
+    { label: '5 km', value: 5 },
+    { label: '15 km', value: 15 },
+    { label: '25 km', value: 25 },
+    { label: '50 km', value: 50 },
+    { label: '100 km', value: 100 }
+  ];
 
   constructor(
     private jobService: JobService,
@@ -83,12 +99,15 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.cdr.markForCheck();
 
-    this.jobService.getAvailableJobs(this.page, this.pageSize, this.selectedCategoryId)
+    this.jobService.getAvailableJobs(this.page, this.pageSize, this.selectedCategoryId, this.selectedRadiusKm)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (result) => {
+        next: (result: AvailableJobsResult) => {
           this.jobs = result.items;
           this.total = result.total;
+          this.proximityFilterApplied = result.proximityFilterApplied;
+          this.proLocationSet = result.proLocationSet;
+          this.activeRadiusKm = result.radiusKm;
           this.applyBudgetFilter();
           this.loading = false;
           this.cdr.markForCheck();
@@ -133,9 +152,16 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  selectRadius(value: number | null): void {
+    this.selectedRadiusKm = value;
+    this.page = 1;
+    this.loadAvailableJobs();
+  }
+
   resetFilters(): void {
     this.selectedCategoryId = null;
     this.budgetRange = [0, 50000];
+    this.selectedRadiusKm = 25;
     this.page = 1;
     this.loadAvailableJobs();
   }

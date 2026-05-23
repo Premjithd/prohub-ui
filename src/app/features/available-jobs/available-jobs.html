@@ -54,6 +54,32 @@
           Reset
         </button>
       </div>
+
+      <!-- Radius Selector -->
+      <div class="radius-row">
+        <mat-icon class="radius-icon">my_location</mat-icon>
+        <span class="radius-label">Distance:</span>
+        <div class="radius-chips">
+          <button
+            *ngFor="let opt of radiusOptions"
+            mat-stroked-button
+            [class.radius-active]="selectedRadiusKm === opt.value"
+            (click)="selectRadius(opt.value)"
+            class="radius-chip">
+            {{ opt.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Proximity Info Banner -->
+      <div *ngIf="proximityFilterApplied && activeRadiusKm" class="proximity-banner">
+        <mat-icon>my_location</mat-icon>
+        <span>Showing jobs within <strong>{{ activeRadiusKm }} km</strong> of your location</span>
+      </div>
+      <div *ngIf="selectedRadiusKm != null && !proLocationSet" class="proximity-warning">
+        <mat-icon>location_off</mat-icon>
+        <span>Set your location in your profile to enable distance filtering</span>
+      </div>
     </mat-expansion-panel>
 
     <!-- Empty State -->
@@ -108,6 +134,12 @@
             <div class="detail-item" *ngIf="!job.serviceAddressCity">
               <mat-icon>location_on</mat-icon>
               <span>{{ job.location }}</span>
+            </div>
+
+            <!-- Distance badge -->
+            <div class="detail-item distance-item" *ngIf="job.distanceKm != null">
+              <mat-icon>directions</mat-icon>
+              <span class="distance-badge">{{ job.distanceKm | number:'1.1-1' }} km away</span>
             </div>
 
             <!-- Timeline -->
