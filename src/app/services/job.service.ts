@@ -92,6 +92,7 @@ export interface JobBid {
   materialsDescription?: string;
   expiresAt?: string | Date;
   status: string;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt?: string;
   isMessageExchange?: boolean;
@@ -246,8 +247,8 @@ export class JobService {
   }
 
   // Reject a bid
-  rejectBid(jobId: number, bidId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${jobId}/bids/${bidId}/reject`, {});
+  rejectBid(jobId: number, bidId: number, reason?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/bids/${bidId}/reject`, reason ? { reason } : {});
   }
 
   // Withdraw a bid (Pro only, Pending bids only)

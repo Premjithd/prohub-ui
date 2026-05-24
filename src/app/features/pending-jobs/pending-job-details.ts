@@ -370,9 +370,11 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
       data: { action: 'reject', bidAmount: bid.bidAmount, businessName: bid.pro?.businessName }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.jobService.rejectBid(jobId, bid.id).pipe(takeUntil(this.destroy$)).subscribe({
+    dialogRef.afterClosed().subscribe((result: boolean | { confirmed: boolean; reason: string }) => {
+      const confirmed = result === true || (typeof result === 'object' && result?.confirmed);
+      const reason = typeof result === 'object' ? result.reason : undefined;
+      if (confirmed) {
+        this.jobService.rejectBid(jobId, bid.id, reason).pipe(takeUntil(this.destroy$)).subscribe({
           next: () => {
             this.successMessage = 'Bid rejected successfully!';
             setTimeout(() => {
@@ -749,7 +751,7 @@ export class BidMessageDialogComponent {
 @Component({
   selector: 'app-bid-confirmation-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule, MatFormFieldModule, MatInputModule, FormsModule],
   template: `
     <div class="bid-confirmation-dialog">
       <div class="dialog-header">
@@ -768,11 +770,16 @@ export class BidMessageDialogComponent {
             Bid Amount: <strong>{{ '\$' + (data.bidAmount | number: '1.2-2') }}</strong>
           </p>
           <p class="confirmation-message">
-            {{ data.action === 'accept' 
-              ? 'Are you sure you want to accept this bid? ' + data.businessName + ' will be assigned to this job.' 
+            {{ data.action === 'accept'
+              ? 'Are you sure you want to accept this bid? ' + data.businessName + ' will be assigned to this job.'
               : 'Are you sure you want to reject this bid? This action cannot be undone.' }}
           </p>
         </div>
+        <mat-form-field *ngIf="data.action === 'reject'" appearance="outline" class="reason-field">
+          <mat-label>Reason for rejection (optional)</mat-label>
+          <textarea matInput [(ngModel)]="reason" placeholder="Let the professional know why you're declining..." rows="3" maxlength="500"></textarea>
+          <mat-hint align="end">{{ reason.length }}/500</mat-hint>
+        </mat-form-field>
       </mat-dialog-content>
 
       <mat-dialog-actions align="end">
@@ -780,8 +787,8 @@ export class BidMessageDialogComponent {
           <mat-icon>close</mat-icon>
           Cancel
         </button>
-        <button mat-raised-button 
-          [color]="data.action === 'accept' ? 'accent' : 'warn'" 
+        <button mat-raised-button
+          [color]="data.action === 'accept' ? 'accent' : 'warn'"
           (click)="onConfirm()">
           <mat-icon>{{ data.action === 'accept' ? 'check' : 'block' }}</mat-icon>
           {{ data.action === 'accept' ? 'Accept' : 'Reject' }}
@@ -791,7 +798,7 @@ export class BidMessageDialogComponent {
   `,
   styles: [`
     .bid-confirmation-dialog {
-      min-width: 300px;
+      min-width: 320px;
     }
 
     .dialog-header {
@@ -806,7 +813,7 @@ export class BidMessageDialogComponent {
       font-size: 32px;
       width: 32px;
       height: 32px;
-      
+
       &.accept {
         color: #4caf50;
       }
@@ -839,9 +846,13 @@ export class BidMessageDialogComponent {
     }
 
     .confirmation-message {
-      margin: 0;
+      margin: 0 0 16px 0;
       color: #555;
       line-height: 1.5;
+    }
+
+    .reason-field {
+      width: 100%;
     }
 
     mat-dialog-actions {
@@ -850,6 +861,8 @@ export class BidMessageDialogComponent {
   `]
 })
 export class BidConfirmationDialogComponent {
+  reason = '';
+
   constructor(
     public dialogRef: MatDialogRef<BidConfirmationDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -860,7 +873,7 @@ export class BidConfirmationDialogComponent {
   }
 
   onConfirm(): void {
-    this.dialogRef.close(true);
+    this.dialogRef.close(this.data.action === 'reject' ? { confirmed: true, reason: this.reason.trim() } : true);
   }
 }
 

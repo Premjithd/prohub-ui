@@ -39,6 +39,7 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
   userBidExpectedDuration: number | null = null;
   userBidMaterials: string | null = null;
   userBidExpiresAt: Date | null = null;
+  userBidRejectionReason: string | null = null;
   jobMessages: any[] = [];
   loadingMessages = false;
   currentUserId!: number;
@@ -138,6 +139,7 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
             this.userBidExpectedDuration = userBid.expectedDurationDays || null;
             this.userBidMaterials = userBid.materialsDescription || null;
             this.userBidExpiresAt = userBid.expiresAt ? new Date(userBid.expiresAt) : null;
+            this.userBidRejectionReason = userBid.rejectionReason || null;
             console.log(`User ${this.currentUserId} bid:`, { 
               message: this.userBidMessage, 
               amount: this.userBidAmount, 
@@ -163,6 +165,7 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
           this.userBidExpectedDuration = null;
           this.userBidMaterials = null;
           this.userBidExpiresAt = null;
+          this.userBidRejectionReason = null;
           this.cdr.markForCheck();
         }
       });

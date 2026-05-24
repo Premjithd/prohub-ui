@@ -131,6 +131,13 @@
                   <mat-icon [class.rejected-icon]="userBidStatus === 'Rejected'">{{ userBidStatus === 'Rejected' ? 'cancel' : 'check_circle' }}</mat-icon>
                   <span class="bid-status-text">{{ userBidStatus === 'Rejected' ? 'Bid Rejected' : 'Bid Submitted' }}</span>
                 </div>
+                <div *ngIf="userBidStatus === 'Rejected' && userBidRejectionReason" class="rejection-reason-box">
+                  <mat-icon class="reason-icon">info</mat-icon>
+                  <div>
+                    <span class="reason-label">Reason:</span>
+                    <span class="reason-text">{{ userBidRejectionReason }}</span>
+                  </div>
+                </div>
                 <div class="bid-details">
                   <!-- Always show Bid Amount if exists -->
                   <div *ngIf="userBidAmount" class="bid-detail-item">
