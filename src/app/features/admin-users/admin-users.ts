@@ -77,8 +77,6 @@ export class AdminUsersComponent implements OnInit {
   isLoadingDisputes = false;
   resolvingDisputeId: number | null = null;
 
-  isImpersonating = false;
-  impersonationDetails: any = null;
 
   // Pro-User relationships
   linkedUsers: LinkedUser[] = [];
@@ -307,28 +305,24 @@ export class AdminUsersComponent implements OnInit {
   }
 
   impersonate(): void {
-    if (!this.selectedUser && !this.selectedPro) {
-      return;
-    }
+    if (!this.selectedUser && !this.selectedPro) return;
 
     const userId = this.selectedUser ? this.selectedUser.id : this.selectedPro!.id;
     const userType = this.selectedUser ? 'User' : 'Pro';
+    const displayName = this.selectedUser
+      ? `${this.selectedUser.firstName} ${this.selectedUser.lastName}`
+      : this.selectedPro!.proName;
+
+    if (!confirm(`Impersonate ${displayName} (${userType})?\n\nYou will browse the app as this ${userType.toLowerCase()}. An "Exit Impersonation" banner will appear at the top of every page.`)) return;
 
     this.adminUsersService.impersonateUser(userId, userType).subscribe({
       next: (data) => {
-        this.isImpersonating = true;
-        this.impersonationDetails = data;
-        
-        // Store impersonation data
-        localStorage.setItem('impersonation_token', data.token);
-        localStorage.setItem('impersonation_userId', data.userId.toString());
-        localStorage.setItem('impersonation_userType', data.userType);
-        
-        // Redirect to dashboard
+        this.auth.startImpersonation(data.token, data.userId, data.userType, displayName);
         this.router.navigate(['/']);
-        this.cdr.markForCheck();
       },
-      error: (error) => {
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Impersonation failed.';
+        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
       }
     });
   }

@@ -1,3 +1,12 @@
+<div *ngIf="auth.isImpersonating()" class="impersonation-banner">
+  <mat-icon>engineering</mat-icon>
+  <span>Admin mode — browsing as <strong>{{ auth.getName() }}</strong> ({{ auth.getUserType() }})</span>
+  <button class="exit-impersonation-btn" (click)="exitImpersonation()">
+    <mat-icon>logout</mat-icon>
+    Exit Impersonation
+  </button>
+</div>
+
 <mat-sidenav-container>
   <mat-sidenav #sidenav mode="over">
     <app-sidebar (menuItemClicked)="sidenav.close()"></app-sidebar>
