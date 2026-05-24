@@ -292,6 +292,16 @@ export class JobService {
     return this.http.put(`${this.apiUrl}/${jobId}/complete`, { completionNotes: notes ?? null });
   }
 
+  // Get the completion record for a job
+  getJobCompletion(jobId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${jobId}/completion`);
+  }
+
+  // Pro resubmits completion after a dispute
+  resubmitCompletion(jobId: number, notes?: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${jobId}/complete`, { completionNotes: notes ?? null });
+  }
+
   // Consumer verifies the pro's completion
   verifyJobCompletion(jobId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/${jobId}/completion/verify`, {});

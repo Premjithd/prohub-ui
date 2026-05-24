@@ -181,14 +181,32 @@
 
         <!-- Completion Submitted — awaiting consumer action -->
         <div *ngIf="job.status === 'Completion Submitted'" class="completion-submitted-section">
-          <div class="completion-notice">
+
+          <!-- Dispute is active — waiting for admin or pro to respond -->
+          <div *ngIf="completionStatus === 'Disputed'" class="dispute-active-notice">
+            <mat-icon class="dispute-icon">warning</mat-icon>
+            <div class="dispute-notice-text">
+              <h3>Dispute Under Review</h3>
+              <p>Your dispute has been raised and is being reviewed. The professional may resubmit after addressing your concerns.</p>
+              <p *ngIf="disputeReason" class="dispute-reason"><strong>Your reason:</strong> {{ disputeReason }}</p>
+            </div>
+          </div>
+          <div *ngIf="completionStatus === 'Disputed'" class="completion-actions">
+            <button mat-stroked-button color="accent" (click)="verifyCompletion()">
+              <mat-icon>check_circle</mat-icon>
+              Accept Work Anyway
+            </button>
+          </div>
+
+          <!-- Fresh submission — awaiting decision -->
+          <div *ngIf="completionStatus !== 'Disputed'" class="completion-notice">
             <mat-icon class="completion-icon">assignment_turned_in</mat-icon>
             <div class="completion-notice-text">
               <h3>The professional has submitted completion</h3>
               <p>Please review the work and confirm whether it meets your expectations.</p>
             </div>
           </div>
-          <div class="completion-actions">
+          <div *ngIf="completionStatus !== 'Disputed'" class="completion-actions">
             <button mat-raised-button color="accent" (click)="verifyCompletion()">
               <mat-icon>check_circle</mat-icon>
               Confirm Work Done

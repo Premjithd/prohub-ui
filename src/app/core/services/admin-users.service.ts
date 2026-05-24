@@ -150,4 +150,12 @@ export class AdminUsersService {
   updateProServiceRadius(proId: number, serviceRadiusKm: number): Observable<any> {
     return this.http.patch(`${this.apiUrl}/admin/pros/${proId}/service-radius`, { serviceRadiusKm });
   }
+
+  getDisputes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/admin/disputes`);
+  }
+
+  resolveDispute(jobId: number, resolution: 'complete' | 'refund', notes?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/jobs/${jobId}/completion/resolve`, { resolution, notes });
+  }
 }

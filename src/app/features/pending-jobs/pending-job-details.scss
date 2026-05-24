@@ -651,6 +651,38 @@
       gap: 1rem;
       flex-wrap: wrap;
     }
+
+    .dispute-active-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #fce4ec;
+      border: 1px solid #f48fb1;
+      border-radius: 6px;
+
+      .dispute-icon {
+        font-size: 2rem;
+        width: 2rem;
+        height: 2rem;
+        color: #c62828;
+        flex-shrink: 0;
+      }
+
+      h3 { margin: 0 0 0.25rem; font-size: 1.1rem; color: #c62828; }
+      p  { margin: 0 0 0.25rem; font-size: 0.9rem; color: #555; }
+      .dispute-reason { font-style: italic; }
+    }
+
+    .payment-made-notice {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #2e7d32;
+      mat-icon { font-size: 18px; }
+    }
   }
 
   // Assigned Professional Section with Tabs

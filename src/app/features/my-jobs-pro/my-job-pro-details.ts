@@ -59,6 +59,9 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   selectedTabIndex = 0;
   withdrawingBid = false;
   confirmingJob = false;
+  resubmittingCompletion = false;
+  completionStatus: string | null = null;
+  disputeReason: string | null = null;
   private destroy$ = new Subject<void>();
   private pollMessages$ = new Subject<void>(); // Subject to control polling
   private currentJobId: number | null = null;
@@ -118,8 +121,10 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
         this.initializePhases(job);
         this.loading = false;
         this.cdr.markForCheck();
-        // Load bids for the job
         this.loadBidsForJob(jobId);
+        if (job.status === 'Completion Submitted') {
+          this.loadCompletionStatus(jobId);
+        }
       },
       error: (error) => {
         console.error('Error loading job details:', error);
@@ -374,6 +379,39 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
     return proBid || null;
   }
 
+
+  loadCompletionStatus(jobId: number): void {
+    this.jobService.getJobCompletion(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (c) => {
+        this.completionStatus = c?.status ?? null;
+        this.disputeReason = c?.disputeReason ?? null;
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  resubmitCompletion(): void {
+    if (!this.job) return;
+    this.resubmittingCompletion = true;
+    this.jobService.resubmitCompletion(this.job.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.completionStatus = 'Submitted';
+          this.disputeReason = null;
+          this.resubmittingCompletion = false;
+          this.successMessage = 'Completion resubmitted. Waiting for customer review.';
+          this.cdr.markForCheck();
+          setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 4000);
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || 'Failed to resubmit completion.';
+          this.resubmittingCompletion = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
 
   confirmJob(): void {
     if (!this.job) return;

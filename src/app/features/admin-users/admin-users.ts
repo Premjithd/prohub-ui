@@ -72,6 +72,11 @@ export class AdminUsersComponent implements OnInit {
   isEditingRadius = false;
   editRadiusValue = 25;
 
+  // Disputes
+  disputes: any[] = [];
+  isLoadingDisputes = false;
+  resolvingDisputeId: number | null = null;
+
   isImpersonating = false;
   impersonationDetails: any = null;
 
@@ -100,7 +105,41 @@ export class AdminUsersComponent implements OnInit {
       this.router.navigate(['/']);
     } else {
       this.loadInvitations();
+      this.loadDisputes();
     }
+  }
+
+  loadDisputes(): void {
+    this.isLoadingDisputes = true;
+    this.adminUsersService.getDisputes().subscribe({
+      next: (disputes) => {
+        this.disputes = disputes ?? [];
+        this.isLoadingDisputes = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoadingDisputes = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  resolveDispute(jobId: number, resolution: 'complete' | 'refund'): void {
+    this.resolvingDisputeId = jobId;
+    this.adminUsersService.resolveDispute(jobId, resolution).subscribe({
+      next: (result) => {
+        this.disputes = this.disputes.filter(d => d.jobId !== jobId);
+        this.resolvingDisputeId = null;
+        this.snack.open(result.message, 'OK', { duration: 4000, panelClass: 'snack-success' });
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.resolvingDisputeId = null;
+        const msg = err?.error?.message ?? 'Failed to resolve dispute.';
+        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   loadInvitations(): void {

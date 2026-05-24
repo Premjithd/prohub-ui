@@ -85,6 +85,54 @@
   </div>
 
   <div class="admin-content">
+
+    <!-- Disputes Section -->
+    <div class="disputes-section" *ngIf="disputes.length > 0 || isLoadingDisputes">
+      <h2 class="disputes-title">
+        <mat-icon>flag</mat-icon>
+        Open Disputes
+        <span class="dispute-count" *ngIf="disputes.length > 0">{{ disputes.length }}</span>
+      </h2>
+
+      <div *ngIf="isLoadingDisputes" class="disputes-loading">
+        <mat-spinner diameter="28"></mat-spinner>
+        <span>Loading disputes...</span>
+      </div>
+
+      <div *ngFor="let d of disputes" class="dispute-card">
+        <div class="dispute-card-header">
+          <span class="dispute-job-title">{{ d.jobTitle }}</span>
+          <span class="dispute-date">{{ d.disputedAt | date:'MMM d, y' }}</span>
+        </div>
+        <div class="dispute-parties">
+          <span><mat-icon>person</mat-icon> Consumer: {{ d.consumer?.name }} ({{ d.consumer?.email }})</span>
+          <span><mat-icon>engineering</mat-icon> Pro: {{ d.pro?.businessName || d.pro?.name }} ({{ d.pro?.email }})</span>
+        </div>
+        <p class="dispute-reason"><strong>Reason:</strong> {{ d.disputeReason }}</p>
+        <p *ngIf="d.completionNotes" class="dispute-completion-notes"><strong>Pro notes:</strong> {{ d.completionNotes }}</p>
+        <div class="dispute-actions">
+          <button
+            mat-raised-button
+            color="accent"
+            (click)="resolveDispute(d.jobId, 'complete')"
+            [disabled]="resolvingDisputeId === d.jobId"
+            title="Mark the job as Completed in favour of the professional">
+            <mat-icon>check_circle</mat-icon>
+            Complete for Pro
+          </button>
+          <button
+            mat-raised-button
+            color="warn"
+            (click)="resolveDispute(d.jobId, 'refund')"
+            [disabled]="resolvingDisputeId === d.jobId"
+            title="Reopen the job for rebidding in favour of the consumer">
+            <mat-icon>replay</mat-icon>
+            Refund &amp; Reopen
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Search Section -->
     <div class="search-section">
       <form (ngSubmit)="search()" class="search-form">

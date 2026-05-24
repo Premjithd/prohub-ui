@@ -71,6 +71,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   existingReview: Review | null = null;
   loadingReview = false;
   cancellingJob = false;
+  completionStatus: string | null = null;
+  disputeReason: string | null = null;
 
   constructor(
     private jobService: JobService,
@@ -115,6 +117,10 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         // Load payment status if job is assigned
         if (job.assignedProId) {
           this.loadPaymentStatus(jobId);
+        }
+        // Load completion record if in a post-submission status
+        if (job.status === 'Completion Submitted' || job.status === 'Completed') {
+          this.loadCompletionStatus(jobId);
         }
         // Load review status if job is completed
         if (job.status === 'Completed') {
@@ -262,6 +268,20 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         };
         this.loadingPayment = false;
         this.cdr.markForCheck();
+      }
+    });
+  }
+
+  loadCompletionStatus(jobId: number): void {
+    this.jobService.getJobCompletion(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (completion) => {
+        this.completionStatus = completion?.status ?? null;
+        this.disputeReason = completion?.disputeReason ?? null;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.completionStatus = null;
+        this.disputeReason = null;
       }
     });
   }
@@ -577,6 +597,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
       if (!reason) return;
       this.jobService.disputeJobCompletion(jobId, reason).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
+          this.completionStatus = 'Disputed';
+          this.disputeReason = reason;
           this.successMessage = 'Dispute raised. Our team will review and get back to you.';
           this.cdr.markForCheck();
           setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 5000);

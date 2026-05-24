@@ -123,6 +123,26 @@
           </div>
         </div>
 
+        <!-- Dispute notice — shown when customer has disputed the submitted completion -->
+        <div *ngIf="job.status === 'Completion Submitted' && completionStatus === 'Disputed'" class="dispute-notice-section">
+          <div class="dispute-notice">
+            <mat-icon class="dispute-icon">warning</mat-icon>
+            <div>
+              <h3>Customer Raised a Dispute</h3>
+              <p *ngIf="disputeReason"><strong>Reason:</strong> {{ disputeReason }}</p>
+              <p>Address the customer's concerns and resubmit your completion.</p>
+            </div>
+          </div>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="resubmitCompletion()"
+            [disabled]="resubmittingCompletion">
+            <mat-icon>refresh</mat-icon>
+            {{ resubmittingCompletion ? 'Resubmitting...' : 'Resubmit Completion' }}
+          </button>
+        </div>
+
         <!-- Confirm & Start — shown when payment is received and awaiting pro confirmation -->
         <div *ngIf="job.status === 'Payment Made'" class="confirm-job-section">
           <div class="confirm-notice">

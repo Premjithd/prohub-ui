@@ -469,6 +469,53 @@
     }
   }
 
+  .dispute-notice-section {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: #fce4ec;
+    border: 1px solid #f48fb1;
+    border-left: 4px solid #c62828;
+    border-radius: 8px;
+
+    .dispute-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      .dispute-icon {
+        font-size: 2rem;
+        width: 2rem;
+        height: 2rem;
+        color: #c62828;
+        flex-shrink: 0;
+      }
+
+      h3 { margin: 0 0 0.25rem; font-size: 1.1rem; color: #c62828; }
+      p  { margin: 0 0 0.25rem; font-size: 0.9rem; color: #555; }
+    }
+  }
+
+  .confirm-job-section {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-left: 4px solid #2e7d32;
+    border-radius: 8px;
+
+    .confirm-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      mat-icon { font-size: 2rem; width: 2rem; height: 2rem; color: #2e7d32; flex-shrink: 0; }
+      h3 { margin: 0 0 0.25rem; font-size: 1.1rem; color: #2e7d32; }
+      p  { margin: 0; font-size: 0.9rem; color: #555; }
+    }
+  }
+
   // Customer Communication Section
   .customer-communication-section {
     margin-bottom: 2rem;
