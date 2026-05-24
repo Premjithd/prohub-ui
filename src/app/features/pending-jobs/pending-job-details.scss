@@ -685,6 +685,56 @@
     }
   }
 
+  .refund-eligible-section {
+    margin-bottom: 1.5rem;
+    border: 1.5px solid #1565c0;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .refund-eligible-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.25rem;
+      background: #e3f2fd;
+
+      .refund-icon {
+        font-size: 2rem;
+        width: 2rem;
+        height: 2rem;
+        color: #1565c0;
+        flex-shrink: 0;
+      }
+
+      .refund-notice-text {
+        h3 { margin: 0 0 0.4rem; font-size: 1rem; font-weight: 700; color: #0d47a1; }
+        p  { margin: 0; font-size: 0.9rem; color: #1565c0; }
+      }
+    }
+
+    .refund-actions {
+      padding: 1rem 1.25rem;
+      background: #fafafa;
+      border-top: 1px solid #bbdefb;
+      display: flex;
+      gap: 0.75rem;
+    }
+  }
+
+  .refund-processed-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #2e7d32;
+    mat-icon { font-size: 18px; }
+  }
+
   // Assigned Professional Section with Tabs
   .assigned-pro-section {
     margin-bottom: 2rem;

@@ -218,6 +218,29 @@
           </div>
         </div>
 
+        <!-- Refund Eligible — admin approved refund, awaiting consumer to claim -->
+        <div *ngIf="completionStatus === 'Refunded' && paymentStatus?.status === 'Completed'" class="refund-eligible-section">
+          <div class="refund-eligible-notice">
+            <mat-icon class="refund-icon">account_balance_wallet</mat-icon>
+            <div class="refund-notice-text">
+              <h3>Refund Approved</h3>
+              <p>The dispute has been resolved in your favour. You are eligible to receive a refund for the payment made on this job.</p>
+            </div>
+          </div>
+          <div class="refund-actions">
+            <button mat-raised-button color="primary" (click)="requestRefund()" [disabled]="requestingRefund">
+              <mat-icon>{{ requestingRefund ? 'hourglass_empty' : 'currency_rupee' }}</mat-icon>
+              {{ requestingRefund ? 'Processing...' : 'Request Refund' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Refund Processed confirmation -->
+        <div *ngIf="completionStatus === 'Refunded' && paymentStatus?.status === 'Refunded'" class="refund-processed-notice">
+          <mat-icon>check_circle</mat-icon>
+          Refund processed — the payment has been returned to your account.
+        </div>
+
         <!-- Project Phases Progress (for active and completed jobs) -->
         <div *ngIf="job.status === 'Pro Confirmed' || job.status === 'In Progress' || job.status === 'Completion Submitted' || job.status === 'Completed'" >
 

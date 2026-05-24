@@ -73,6 +73,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   cancellingJob = false;
   completionStatus: string | null = null;
   disputeReason: string | null = null;
+  paymentId: number | null = null;
+  requestingRefund = false;
 
   constructor(
     private jobService: JobService,
@@ -114,14 +116,9 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
         // Load bids for the job
         this.loadBidsForJob(jobId);
-        // Load payment status if job is assigned
-        if (job.assignedProId) {
-          this.loadPaymentStatus(jobId);
-        }
-        // Load completion record if in a post-submission status
-        if (job.status === 'Completion Submitted' || job.status === 'Completed') {
-          this.loadCompletionStatus(jobId);
-        }
+        // Always attempt to load payment and completion — both handle 404 gracefully
+        this.loadPaymentStatus(jobId);
+        this.loadCompletionStatus(jobId);
         // Load review status if job is completed
         if (job.status === 'Completed') {
           this.loadReview(jobId);
@@ -250,22 +247,17 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     this.loadingPayment = true;
     this.paymentService.getPaymentByJob(jobId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (payment) => {
-        console.log(`Payment status loaded for job ${jobId}:`, payment);
-        const completed = payment.status === 'Completed';
+        this.paymentId = payment.id;
         this.paymentStatus = {
           status: payment.status,
-          completed: completed
+          completed: payment.status === 'Completed'
         };
         this.loadingPayment = false;
         this.cdr.markForCheck();
       },
-      error: (error) => {
-        console.error(`Error loading payment status for job ${jobId}:`, error);
-        // If payment not found, mark as not found (no payment yet)
-        this.paymentStatus = {
-          status: 'Not Found',
-          completed: false
-        };
+      error: () => {
+        this.paymentStatus = { status: 'Not Found', completed: false };
+        this.paymentId = null;
         this.loadingPayment = false;
         this.cdr.markForCheck();
       }
@@ -609,6 +601,35 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         }
       });
     });
+  }
+
+  requestRefund(): void {
+    if (!this.paymentId) return;
+
+    if (!confirm('Request a refund for this job? The payment will be returned to your account. This cannot be undone.')) return;
+
+    this.requestingRefund = true;
+    this.errorMessage = '';
+
+    this.paymentService.requestRefund(this.paymentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.successMessage = 'Refund requested successfully. The payment will be returned to your account.';
+          if (this.paymentStatus) {
+            this.paymentStatus = { status: 'Refunded', completed: false };
+          }
+          this.requestingRefund = false;
+          this.cdr.markForCheck();
+          setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 6000);
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || 'Failed to process refund. Please contact support.';
+          this.requestingRefund = false;
+          this.cdr.markForCheck();
+          setTimeout(() => { this.errorMessage = ''; this.cdr.markForCheck(); }, 5000);
+        }
+      });
   }
 
   // Open message dialog for a bid after accept/reject
