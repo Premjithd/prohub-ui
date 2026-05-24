@@ -17,6 +17,7 @@ export interface ApiResponse<T> {
 
 export interface LoginResponse {
     token: string;
+    refreshToken?: string;
     email: string;
     id?: number;
     firstName: string;

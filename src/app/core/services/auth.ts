@@ -10,16 +10,18 @@ import { StorageService } from './storage';
   providedIn: 'root'
 })
 export class Auth {
-  private readonly AUTH_TOKEN_KEY = 'auth_token';
-  private readonly USER_TYPE_KEY = 'user_type';
-  private readonly USER_NAME_KEY = 'user_name';
-  private readonly USER_ID_KEY = 'user_id';
+  private readonly AUTH_TOKEN_KEY    = 'auth_token';
+  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
+  private readonly USER_TYPE_KEY     = 'user_type';
+  private readonly USER_NAME_KEY     = 'user_name';
+  private readonly USER_ID_KEY       = 'user_id';
 
   // Keys used to preserve admin session while impersonating
-  private readonly ADMIN_TOKEN_KEY = 'admin_restore_token';
-  private readonly ADMIN_TYPE_KEY = 'admin_restore_type';
-  private readonly ADMIN_NAME_KEY = 'admin_restore_name';
-  private readonly ADMIN_ID_KEY = 'admin_restore_id';
+  private readonly ADMIN_TOKEN_KEY   = 'admin_restore_token';
+  private readonly ADMIN_REFRESH_KEY = 'admin_restore_refresh_token';
+  private readonly ADMIN_TYPE_KEY    = 'admin_restore_type';
+  private readonly ADMIN_NAME_KEY    = 'admin_restore_name';
+  private readonly ADMIN_ID_KEY      = 'admin_restore_id';
 
   constructor(
     private api: ApiService,
@@ -28,27 +30,13 @@ export class Auth {
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.api.loginUser('auth/user/login', credentials).pipe(
-      tap(response => {
-        if (response) {
-          this.storage.setItem(this.AUTH_TOKEN_KEY, response.token);
-          this.storage.setItem(this.USER_TYPE_KEY, response.role);
-          this.storage.setItem(this.USER_NAME_KEY, response.firstName);
-          this.storage.setItem(this.USER_ID_KEY, response?.id?.toString() || '');
-        }
-      })
+      tap(response => { if (response) this.storeSession(response); })
     );
   }
 
   loginPro(credentials: LoginRequest): Observable<LoginResponse> {
     return this.api.loginUser('auth/pro/login', credentials).pipe(
-      tap(response => {
-        if (response) {
-          this.storage.setItem(this.AUTH_TOKEN_KEY, response.token);
-          this.storage.setItem(this.USER_TYPE_KEY, response.role);
-          this.storage.setItem(this.USER_NAME_KEY, response.firstName);
-          this.storage.setItem(this.USER_ID_KEY, response?.id?.toString() || '');
-        }
-      })
+      tap(response => { if (response) this.storeSession(response); })
     );
   }
 
@@ -62,20 +50,27 @@ export class Auth {
 
   logout(): void {
     this.storage.removeItem(this.AUTH_TOKEN_KEY);
+    this.storage.removeItem(this.REFRESH_TOKEN_KEY);
     this.storage.removeItem(this.USER_TYPE_KEY);
     this.storage.removeItem(this.USER_NAME_KEY);
     this.storage.removeItem(this.USER_ID_KEY);
+    // Clear any stale impersonation state
+    this.storage.removeItem(this.ADMIN_TOKEN_KEY);
+    this.storage.removeItem(this.ADMIN_REFRESH_KEY);
+    this.storage.removeItem(this.ADMIN_TYPE_KEY);
+    this.storage.removeItem(this.ADMIN_NAME_KEY);
+    this.storage.removeItem(this.ADMIN_ID_KEY);
   }
 
   logoutOnServer(): Observable<any> {
-    return this.api.post<any>('auth/logout', {});
+    const refreshToken = this.storage.getItem(this.REFRESH_TOKEN_KEY);
+    return this.api.post<any>('auth/logout', refreshToken ? { refreshToken } : {});
   }
 
   isAuthenticated(): boolean {
     try {
       return !!this.storage.getItem(this.AUTH_TOKEN_KEY);
     } catch {
-      console.log('Error accessing AUTH_TOKEN_KEY');
       return false;
     }
   }
@@ -84,8 +79,7 @@ export class Auth {
     try {
       return this.storage.getItem(this.USER_NAME_KEY);
     } catch {
-      console.log('Error accessing USER_NAME_KEY');
-      return "null";
+      return null;
     }
   }
 
@@ -95,6 +89,10 @@ export class Auth {
 
   getToken(): string | null {
     return this.storage.getItem(this.AUTH_TOKEN_KEY);
+  }
+
+  getRefreshToken(): string | null {
+    return this.storage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   getUserType(): string | null {
@@ -107,41 +105,32 @@ export class Auth {
     lastName: string,
     password: string
   ): Observable<LoginResponse> {
-    const payload = {
-      token,
-      firstName,
-      lastName,
-      password
-    };
-
-    return this.api.loginUser('auth/accept-admin-invite', payload).pipe(
-      tap(response => {
-        if (response) {
-          this.storage.setItem(this.AUTH_TOKEN_KEY, response.token);
-          this.storage.setItem(this.USER_TYPE_KEY, response.role);
-          this.storage.setItem(this.USER_NAME_KEY, response.firstName);
-          this.storage.setItem(this.USER_ID_KEY, response?.id?.toString() || '');
-        }
-      })
+    return this.api.loginUser('auth/accept-admin-invite', { token, firstName, lastName, password }).pipe(
+      tap(response => { if (response) this.storeSession(response); })
     );
   }
 
   startImpersonation(token: string, userId: number, userType: string, displayName: string): void {
-    // Save current admin session so we can restore it later
-    const currentToken = this.storage.getItem(this.AUTH_TOKEN_KEY);
-    const currentType  = this.storage.getItem(this.USER_TYPE_KEY);
-    const currentName  = this.storage.getItem(this.USER_NAME_KEY);
-    const currentId    = this.storage.getItem(this.USER_ID_KEY);
-    if (currentToken) this.storage.setItem(this.ADMIN_TOKEN_KEY, currentToken);
-    if (currentType)  this.storage.setItem(this.ADMIN_TYPE_KEY,  currentType);
-    if (currentName)  this.storage.setItem(this.ADMIN_NAME_KEY,  currentName);
-    if (currentId)    this.storage.setItem(this.ADMIN_ID_KEY,    currentId);
+    // Back up admin session (including refresh token)
+    const curr = {
+      token:   this.storage.getItem(this.AUTH_TOKEN_KEY),
+      refresh: this.storage.getItem(this.REFRESH_TOKEN_KEY),
+      type:    this.storage.getItem(this.USER_TYPE_KEY),
+      name:    this.storage.getItem(this.USER_NAME_KEY),
+      id:      this.storage.getItem(this.USER_ID_KEY),
+    };
+    if (curr.token)   this.storage.setItem(this.ADMIN_TOKEN_KEY,   curr.token);
+    if (curr.refresh) this.storage.setItem(this.ADMIN_REFRESH_KEY, curr.refresh);
+    if (curr.type)    this.storage.setItem(this.ADMIN_TYPE_KEY,    curr.type);
+    if (curr.name)    this.storage.setItem(this.ADMIN_NAME_KEY,    curr.name);
+    if (curr.id)      this.storage.setItem(this.ADMIN_ID_KEY,      curr.id);
 
-    // Switch to impersonated user
+    // Switch to impersonated user — no refresh token for impersonation sessions
     this.storage.setItem(this.AUTH_TOKEN_KEY, token);
     this.storage.setItem(this.USER_TYPE_KEY,  userType);
     this.storage.setItem(this.USER_NAME_KEY,  displayName);
     this.storage.setItem(this.USER_ID_KEY,    userId.toString());
+    this.storage.removeItem(this.REFRESH_TOKEN_KEY);
   }
 
   exitImpersonation(): void {
@@ -153,7 +142,12 @@ export class Auth {
     this.storage.setItem(this.USER_NAME_KEY,  this.storage.getItem(this.ADMIN_NAME_KEY) ?? '');
     this.storage.setItem(this.USER_ID_KEY,    this.storage.getItem(this.ADMIN_ID_KEY)   ?? '');
 
+    const adminRefresh = this.storage.getItem(this.ADMIN_REFRESH_KEY);
+    if (adminRefresh) this.storage.setItem(this.REFRESH_TOKEN_KEY, adminRefresh);
+    else this.storage.removeItem(this.REFRESH_TOKEN_KEY);
+
     this.storage.removeItem(this.ADMIN_TOKEN_KEY);
+    this.storage.removeItem(this.ADMIN_REFRESH_KEY);
     this.storage.removeItem(this.ADMIN_TYPE_KEY);
     this.storage.removeItem(this.ADMIN_NAME_KEY);
     this.storage.removeItem(this.ADMIN_ID_KEY);
@@ -161,5 +155,15 @@ export class Auth {
 
   isImpersonating(): boolean {
     return !!this.storage.getItem(this.ADMIN_TOKEN_KEY);
+  }
+
+  private storeSession(response: LoginResponse): void {
+    this.storage.setItem(this.AUTH_TOKEN_KEY, response.token);
+    this.storage.setItem(this.USER_TYPE_KEY,  response.role);
+    this.storage.setItem(this.USER_NAME_KEY,  response.firstName);
+    this.storage.setItem(this.USER_ID_KEY,    response.id?.toString() ?? '');
+    if (response.refreshToken) {
+      this.storage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+    }
   }
 }
