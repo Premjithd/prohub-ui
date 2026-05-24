@@ -123,8 +123,27 @@
           </div>
         </div>
 
+        <!-- Confirm & Start — shown when payment is received and awaiting pro confirmation -->
+        <div *ngIf="job.status === 'Payment Made'" class="confirm-job-section">
+          <div class="confirm-notice">
+            <mat-icon>payment</mat-icon>
+            <div>
+              <h3>Payment Received</h3>
+              <p>The customer has completed payment. Confirm to start work on this job.</p>
+            </div>
+          </div>
+          <button
+            mat-raised-button
+            color="accent"
+            (click)="confirmJob()"
+            [disabled]="confirmingJob">
+            <mat-icon>play_circle</mat-icon>
+            {{ confirmingJob ? 'Confirming...' : 'Confirm & Start Job' }}
+          </button>
+        </div>
+
         <!-- Customer Communication Section -->
-        <div *ngIf="job.status === 'In Progress' || job.status === 'Completed'" class="customer-communication-section">
+        <div *ngIf="job.status === 'Payment Made' || job.status === 'Pro Confirmed' || job.status === 'In Progress' || job.status === 'Completion Submitted' || job.status === 'Completed'" class="customer-communication-section">
           <h3>
             <mat-icon>mail</mat-icon>
             Communication
@@ -249,10 +268,10 @@
 
       <!-- Job Actions -->
       <mat-card-actions>
-        <button 
-          mat-button 
-          color="accent" 
-          *ngIf="job.status !== 'Completed' && getPhaseProgress(job) === 100 && !unsavedJobIds.has(job.id)"
+        <button
+          mat-button
+          color="accent"
+          *ngIf="(job.status === 'In Progress' || job.status === 'Pro Confirmed') && getPhaseProgress(job) === 100 && !unsavedJobIds.has(job.id)"
           (click)="markAsCompleted(job.id)">
           <mat-icon>check_circle</mat-icon>
           Mark Completed

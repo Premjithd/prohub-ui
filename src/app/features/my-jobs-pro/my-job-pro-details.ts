@@ -58,6 +58,7 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   messageStatus: string = '';
   selectedTabIndex = 0;
   withdrawingBid = false;
+  confirmingJob = false;
   private destroy$ = new Subject<void>();
   private pollMessages$ = new Subject<void>(); // Subject to control polling
   private currentJobId: number | null = null;
@@ -210,15 +211,15 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   }
 
   getStatusColor(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'open':
-        return 'accent';
-      case 'in progress':
-        return 'warn';
-      case 'completed':
-        return 'primary';
-      default:
-        return '';
+    switch (status) {
+      case 'Open': return 'primary';
+      case 'Bid Accepted': return 'primary';
+      case 'Payment Made': return 'accent';
+      case 'Pro Confirmed': return 'accent';
+      case 'In Progress': return 'accent';
+      case 'Completion Submitted': return 'warn';
+      case 'Completed': return 'warn';
+      default: return '';
     }
   }
 
@@ -373,6 +374,27 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
     return proBid || null;
   }
 
+
+  confirmJob(): void {
+    if (!this.job) return;
+    this.confirmingJob = true;
+    this.jobService.confirmJob(this.job.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.job!.status = 'In Progress';
+          this.confirmingJob = false;
+          this.successMessage = 'Job confirmed! Work is now in progress.';
+          this.cdr.markForCheck();
+          setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 3000);
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || 'Failed to confirm job.';
+          this.confirmingJob = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
 
   withdrawBid(): void {
     const proBid = this.getProBid();

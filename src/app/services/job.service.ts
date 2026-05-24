@@ -282,6 +282,11 @@ export class JobService {
     );
   }
 
+  // Pro confirms job after payment — transitions to In Progress
+  confirmJob(jobId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/pro-confirm`, {});
+  }
+
   // Mark a job as completed (Pro submits — awaits consumer verification)
   markJobCompleted(jobId: number, notes?: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/${jobId}/complete`, { completionNotes: notes ?? null });

@@ -193,14 +193,14 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'Open':
-        return 'primary';
-      case 'In Progress':
-        return 'accent';
-      case 'Completed':
-        return 'warn';
-      default:
-        return '';
+      case 'Open': return 'primary';
+      case 'Bid Accepted': return 'primary';
+      case 'Payment Made': return 'accent';
+      case 'Pro Confirmed': return 'accent';
+      case 'In Progress': return 'accent';
+      case 'Completion Submitted': return 'warn';
+      case 'Completed': return 'warn';
+      default: return '';
     }
   }
 
