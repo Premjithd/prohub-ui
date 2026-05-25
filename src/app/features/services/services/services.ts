@@ -125,6 +125,27 @@ export class ServicesComponent implements OnInit, OnDestroy {
     });
   }
 
+  private readonly SERVICE_IMAGES: Record<string, string> = {
+    cleaning:    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
+    plumbing:    'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=600&q=80',
+    electrical:  'https://images.unsplash.com/photo-1621905252472-943afaa20e20?auto=format&fit=crop&w=600&q=80',
+    painting:    'https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?auto=format&fit=crop&w=600&q=80',
+    landscaping: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80',
+    carpentry:   'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
+    handyman:    'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80',
+    tutoring:    'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80',
+    it:          'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80',
+  };
+
+  getCategoryImage(name: string): string {
+    const key = name.toLowerCase().replace(/\s+/g, '').replace('support', '');
+    return this.SERVICE_IMAGES[key] ?? 'assets/images/services.png';
+  }
+
+  onImgError(event: Event): void {
+    (event.target as HTMLImageElement).src = 'assets/images/services.png';
+  }
+
   loadServices(): void {
     this.services = [
       {
@@ -133,7 +154,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         description: 'Professional deep cleaning for homes and apartments. Eco-friendly products used.',
         price: 120,
         category: 'cleaning',
-        image: 'assets/images/services.png',
+        image: this.SERVICE_IMAGES['cleaning'],
         featured: true
       },
       {
@@ -142,7 +163,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         description: 'Expert leak fixes, pipe repairs and new installations. 24/7 emergency service available.',
         price: 85,
         category: 'plumbing',
-        image: 'assets/images/services.png'
+        image: this.SERVICE_IMAGES['plumbing']
       },
       {
         id: 3,
@@ -150,7 +171,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         description: 'Licensed electricians for wiring, fixtures, and panel upgrades. Fully insured.',
         price: 150,
         category: 'electrical',
-        image: 'assets/images/services.png',
+        image: this.SERVICE_IMAGES['electrical'],
         featured: true
       },
       {
@@ -159,7 +180,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         description: 'Transform your space with professional interior painting. Premium paints and finishes.',
         price: 200,
         category: 'painting',
-        image: 'assets/images/services.png'
+        image: this.SERVICE_IMAGES['painting']
       },
       {
         id: 5,
@@ -167,7 +188,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         description: 'Design and maintenance of outdoor spaces. Lawn care, planting, and hardscaping.',
         price: 175,
         category: 'landscaping',
-        image: 'assets/images/services.png'
+        image: this.SERVICE_IMAGES['landscaping']
       },
       {
         id: 6,
@@ -175,7 +196,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         description: 'Reliable handyman for repairs, maintenance, and small projects around your home.',
         price: 65,
         category: 'handyman',
-        image: 'assets/images/services.png'
+        image: this.SERVICE_IMAGES['handyman']
       }
     ];
     this.applyFiltersAndSort();

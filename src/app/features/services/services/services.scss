@@ -113,30 +113,60 @@
 
 .category-card {
   background: #fff;
-  padding: 24px;
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s;
   border: 2px solid transparent;
+  overflow: hidden;
+  padding-bottom: 16px;
 
   &:hover {
     transform: translateY(-4px);
     border-color: #667eea;
     box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+
+    .category-img-wrap img {
+      transform: scale(1.08);
+    }
   }
 
   h3 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-    margin: 0 0 4px 0;
+    margin: 10px 0 2px 0;
+    padding: 0 8px;
     color: #1f2937;
   }
 
   p {
-    font-size: 13px;
+    font-size: 12px;
     color: #6b7280;
     margin: 0;
+    padding: 0 8px;
+  }
+}
+
+.category-img-wrap {
+  position: relative;
+  height: 90px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #e0e7ff, #f3f4f6);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+  }
+
+  .category-emoji {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    font-size: 22px;
+    line-height: 1;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
   }
 }
 

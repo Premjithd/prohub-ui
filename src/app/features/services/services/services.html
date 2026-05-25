@@ -31,7 +31,10 @@
           <p>Loading categories...</p>
         </div>
         <div class="category-card" *ngFor="let cat of categories" (click)="filterByCategory(cat.name)">
-          <div class="category-icon">{{ cat.icon }}</div>
+          <div class="category-img-wrap">
+            <img [src]="getCategoryImage(cat.name)" [alt]="cat.name" (error)="onImgError($event)" />
+            <span class="category-emoji">{{ cat.icon }}</span>
+          </div>
           <h3>{{ cat.name }}</h3>
           <p>{{ cat.serviceCount }} professionals</p>
         </div>
@@ -61,7 +64,7 @@
         <article class="service-card" *ngFor="let s of filteredServices" [attr.data-id]="s.id">
           <div class="card-badge" *ngIf="s.featured">Featured</div>
           <div class="media">
-            <img [src]="s.image || 'assets/images/services.png'" [alt]="s.name + ' image'" />
+            <img [src]="s.image || 'assets/images/services.png'" [alt]="s.name + ' service'" (error)="onImgError($event)" />
             <div class="image-overlay">
               <button class="quick-view-btn" (click)="openService(s); $event.stopPropagation()">View Details</button>
             </div>
