@@ -50,6 +50,11 @@ export const routes: Routes = [
           .then(m => m.FAQModule)
       },
       {
+        path: 'terms',
+        loadComponent: () => import('./features/terms/terms')
+          .then(m => m.TermsComponent)
+      },
+      {
         path: 'post-job',
         loadChildren: () => import('./features/post-job/post-job-module')
           .then(m => m.PostJobModule)
