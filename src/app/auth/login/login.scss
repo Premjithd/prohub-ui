@@ -122,3 +122,26 @@ button:disabled {
 .register-link a:hover {
   text-decoration: underline;
 }
+
+.forgot-link {
+  text-align: right;
+  margin-top: 6px;
+
+  a {
+    font-size: 13px;
+    color: #667eea;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  text-align: left;
+}

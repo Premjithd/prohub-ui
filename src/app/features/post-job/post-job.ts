@@ -268,6 +268,8 @@ export class PostJobComponent implements OnInit, OnDestroy {
         
         if (error?.status === 401) {
           this.errorMessage = 'You must be logged in to post a job. Please login and try again.';
+        } else if (error?.status === 403) {
+          this.errorMessage = error?.error?.message || 'Please verify your email address before posting a job.';
         } else if (error?.status === 400) {
           this.errorMessage = error?.error?.message || 'Invalid job data. Please check your inputs.';
         } else {

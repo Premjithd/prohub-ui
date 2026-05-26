@@ -1,4 +1,4 @@
-﻿<div class="login-wrapper">
+<div class="login-wrapper">
   <div class="login-card">
     <h2>Login</h2>
 
@@ -25,6 +25,8 @@
       </div>
     </div>
 
+    <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+
     <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
       <!-- Email -->
       <div class="form-group">
@@ -50,10 +52,15 @@
           required
           placeholder="Enter your password"
         />
+        <div class="forgot-link">
+          <a [routerLink]="['/auth/forgot-password']">Forgot password?</a>
+        </div>
       </div>
 
       <!-- Submit Button -->
-      <button type="submit" [disabled]="!loginForm.valid">Login</button>
+      <button type="submit" [disabled]="!loginForm.valid || isLoading">
+        {{ isLoading ? 'Logging in…' : 'Login' }}
+      </button>
     </form>
   </div>
 </div>
