@@ -55,6 +55,11 @@ export const routes: Routes = [
           .then(m => m.TermsComponent)
       },
       {
+        path: 'privacy',
+        loadComponent: () => import('./features/privacy/privacy')
+          .then(m => m.PrivacyComponent)
+      },
+      {
         path: 'post-job',
         loadChildren: () => import('./features/post-job/post-job-module')
           .then(m => m.PostJobModule)
