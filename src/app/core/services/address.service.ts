@@ -63,7 +63,7 @@ export class AddressService {
     return this.http.get<NominatimResult[]>(`${this.API_URL}/search`, {
       params: {
         query: input,
-        countryCode: 'us' // Restrict to US, change as needed
+        countryCode: 'in'
       }
     }).pipe(
       debounceTime(300),

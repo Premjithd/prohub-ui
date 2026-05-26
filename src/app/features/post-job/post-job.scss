@@ -529,3 +529,84 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Address autofill */
+.autocomplete-container {
+  position: relative;
+}
+
+.address-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 1000;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.address-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #f9fafb; }
+
+  .address-main { font-size: 14px; font-weight: 500; color: #1f2937; }
+  .address-secondary { font-size: 12px; color: #6b7280; margin-top: 2px; }
+}
+
+.address-loading {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #6b7280;
+  z-index: 1000;
+}
+
+.selected-address-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #166534;
+
+  .address-pin-icon { font-size: 18px; color: #16a34a; }
+
+  .selected-address-text { flex: 1; font-weight: 500; }
+
+  .btn-clear-address {
+    background: none;
+    border: 1px solid #86efac;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 12px;
+    color: #166534;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover { background: #dcfce7; }
+  }
+}
+
+.text-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9ca3af;
+}

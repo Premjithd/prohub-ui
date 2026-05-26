@@ -113,20 +113,49 @@
           <div *ngIf="currentStep === 2" class="form-step">
             <h2>Budget and timeline</h2>
 
-            <!-- Location -->
+            <!-- Service Location (address autofill) -->
             <div class="form-group">
-              <label for="location">Location *</label>
-              <input
-                type="text"
-                id="location"
-                formControlName="location"
-                placeholder="e.g., New York, NY or Remote"
-                class="form-control"
-                [class.is-invalid]="(submitted || f['location'].touched) && f['location'].errors"
-              />
-              <small *ngIf="(submitted || f['location'].touched) && f['location'].errors" class="error-text">
-                Location is required
-              </small>
+              <label>Service Location *</label>
+
+              <!-- Address not yet selected -->
+              <ng-container *ngIf="!f['serviceAddressCity'].value">
+                <div class="autocomplete-container">
+                  <input
+                    #addressSearchInput
+                    type="text"
+                    class="form-control"
+                    [class.is-invalid]="(submitted || f['serviceAddressCity'].touched) && f['serviceAddressCity'].errors"
+                    placeholder="Start typing your address or city..."
+                    (input)="onAddressInput($event)"
+                    (blur)="hideAddressList()"
+                    autocomplete="off"
+                  />
+                  <div *ngIf="addressLoading" class="address-loading">Searching...</div>
+                  <div class="address-dropdown" *ngIf="showAddressList && addressPredictions.length > 0">
+                    <div
+                      *ngFor="let prediction of addressPredictions"
+                      class="address-item"
+                      (mousedown)="onAddressSelected(prediction)"
+                    >
+                      <div class="address-main">{{ prediction.mainText }}</div>
+                      <div class="address-secondary">{{ prediction.secondaryText }}</div>
+                    </div>
+                  </div>
+                </div>
+                <small class="text-hint">Type at least 3 characters to search — select from the list to pin on the map</small>
+                <small *ngIf="(submitted || f['serviceAddressCity'].touched) && f['serviceAddressCity'].errors" class="error-text">
+                  Please select a location from the suggestions
+                </small>
+              </ng-container>
+
+              <!-- Address selected — show summary with change option -->
+              <ng-container *ngIf="f['serviceAddressCity'].value">
+                <div class="selected-address-box">
+                  <span class="material-icons address-pin-icon">location_on</span>
+                  <span class="selected-address-text">{{ getLocationSummary() }}</span>
+                  <button type="button" class="btn-clear-address" (click)="clearAddress()">Change</button>
+                </div>
+              </ng-container>
             </div>
 
             <!-- Budget -->
@@ -192,7 +221,7 @@
               </div>
               <div class="review-item">
                 <h4>Location</h4>
-                <p>{{ f['location'].value }}</p>
+                <p>{{ getLocationSummary() || f['location'].value }}</p>
               </div>
               <div class="review-item">
                 <h4>Budget</h4>

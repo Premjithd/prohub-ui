@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { JobService } from '../../services/job.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
+import { AddressService, AddressPrediction } from '../../core/services/address.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
@@ -23,6 +24,8 @@ interface ServiceCategory {
   styleUrls: ['./post-job.scss']
 })
 export class PostJobComponent implements OnInit, OnDestroy {
+  @ViewChild('addressSearchInput') addressSearchInput?: ElementRef;
+
   jobForm!: FormGroup;
   submitted = false;
   successMessage = '';
@@ -32,6 +35,13 @@ export class PostJobComponent implements OnInit, OnDestroy {
 
   serviceCategories: ServiceCategory[] = [];
   categoriesLoading = true;
+
+  // Address autofill state
+  addressPredictions: AddressPrediction[] = [];
+  showAddressList = false;
+  addressLoading = false;
+  private jobLatitude: number | null = null;
+  private jobLongitude: number | null = null;
 
   budgetRanges = [
     { value: 'under-100',  label: 'Under ₹5,000',         icon: '💰',          estimatedBudget: 2500  },
@@ -48,17 +58,12 @@ export class PostJobComponent implements OnInit, OnDestroy {
     { value: 'flexible', label: 'No specific deadline', icon: '🔄', description: 'Very flexible' }
   ];
 
-  locationTypes = [
-    { value: 'local', label: 'Local (In-person)', description: 'Work will be done at my location' },
-    { value: 'remote', label: 'Remote', description: 'Work can be done remotely' },
-    { value: 'both', label: 'Both (Local & Remote)', description: 'Either location works' }
-  ];
-
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private jobService: JobService,
     private serviceCategoryService: ServiceCategoryService,
+    private addressService: AddressService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) {}
@@ -80,8 +85,14 @@ export class PostJobComponent implements OnInit, OnDestroy {
       category: ['', Validators.required],
       description: ['', [Validators.required, Validators.minLength(50)]],
 
-      // Step 2
-      location: ['', Validators.required],
+      // Step 2 — address (city required; others auto-filled)
+      location: [''],
+      serviceAddressHouse: [''],
+      serviceAddressStreet1: [''],
+      serviceAddressCity: ['', Validators.required],
+      serviceAddressState: [''],
+      serviceAddressCountry: [''],
+      serviceAddressPIN: [''],
       budget: ['', Validators.required],
       timeline: ['', Validators.required],
 
@@ -98,7 +109,6 @@ export class PostJobComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (categories) => {
-          console.log('✅ Categories loaded for post-job:', categories);
           this.serviceCategories = categories.map(cat => ({
             id: cat.id,
             name: cat.name,
@@ -107,10 +117,8 @@ export class PostJobComponent implements OnInit, OnDestroy {
           }));
           this.categoriesLoading = false;
           this.cdr.detectChanges();
-          console.log('Categories display:', this.serviceCategories.length, 'items loaded');
         },
-        error: (error) => {
-          console.error('❌ Error loading categories:', error);
+        error: () => {
           this.categoriesLoading = false;
           this.cdr.detectChanges();
         }
@@ -121,11 +129,86 @@ export class PostJobComponent implements OnInit, OnDestroy {
     return this.jobForm.controls;
   }
 
+  // ── Address autofill ──────────────────────────────────────────────────────
+
+  onAddressInput(event: any): void {
+    const input = event.target.value;
+    if (input && input.length >= 3) {
+      this.addressLoading = true;
+      this.addressService.getAddressPredictions(input).subscribe({
+        next: (predictions) => {
+          this.addressPredictions = predictions;
+          this.showAddressList = predictions.length > 0;
+          this.addressLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.addressLoading = false;
+          this.addressPredictions = [];
+        }
+      });
+    } else {
+      this.showAddressList = false;
+      this.addressPredictions = [];
+    }
+  }
+
+  onAddressSelected(prediction: AddressPrediction): void {
+    this.showAddressList = false;
+    this.addressLoading = true;
+
+    this.addressService.getAddressDetails(prediction.placeId).subscribe({
+      next: (details) => {
+        this.jobForm.patchValue({
+          location: prediction.description,
+          serviceAddressHouse: details.houseNameNumber,
+          serviceAddressStreet1: details.street1,
+          serviceAddressCity: details.city,
+          serviceAddressState: details.state,
+          serviceAddressCountry: details.country,
+          serviceAddressPIN: details.zipPostalCode
+        });
+        this.jobLatitude = details.latitude ?? null;
+        this.jobLongitude = details.longitude ?? null;
+        if (this.addressSearchInput) {
+          this.addressSearchInput.nativeElement.value = prediction.description;
+        }
+        this.addressLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.addressLoading = false; }
+    });
+  }
+
+  clearAddress(): void {
+    this.jobForm.patchValue({
+      location: '',
+      serviceAddressHouse: '',
+      serviceAddressStreet1: '',
+      serviceAddressCity: '',
+      serviceAddressState: '',
+      serviceAddressCountry: '',
+      serviceAddressPIN: ''
+    });
+    this.jobLatitude = null;
+    this.jobLongitude = null;
+    if (this.addressSearchInput) {
+      this.addressSearchInput.nativeElement.value = '';
+    }
+    this.cdr.markForCheck();
+  }
+
+  hideAddressList(): void {
+    setTimeout(() => { this.showAddressList = false; }, 200);
+  }
+
+  // ── Step navigation ───────────────────────────────────────────────────────
+
   isStepValid(step: number): boolean {
     if (step === 1) {
       return this.f['title'].valid && this.f['category'].valid && this.f['description'].valid;
     } else if (step === 2) {
-      return this.f['location'].valid && this.f['budget'].valid && this.f['timeline'].valid;
+      return this.f['serviceAddressCity'].valid && this.f['budget'].valid && this.f['timeline'].valid;
     } else if (step === 3) {
       return this.f['agreeToTerms'].valid;
     }
@@ -133,18 +216,14 @@ export class PostJobComponent implements OnInit, OnDestroy {
   }
 
   nextStep(): void {
-    // Mark all fields in current step as touched to show validation errors
     this.markStepFieldsAsTouched(this.currentStep);
-    
     if (this.isStepValid(this.currentStep)) {
       this.currentStep++;
-    } else {
-      console.warn('Step validation failed', {
-        step: this.currentStep,
-        formStatus: this.jobForm.status,
-        errors: this.getStepErrors(this.currentStep)
-      });
     }
+  }
+
+  previousStep(): void {
+    if (this.currentStep > 1) this.currentStep--;
   }
 
   private markStepFieldsAsTouched(step: number): void {
@@ -153,7 +232,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
       this.f['category'].markAsTouched();
       this.f['description'].markAsTouched();
     } else if (step === 2) {
-      this.f['location'].markAsTouched();
+      this.f['serviceAddressCity'].markAsTouched();
       this.f['budget'].markAsTouched();
       this.f['timeline'].markAsTouched();
     } else if (step === 3) {
@@ -161,32 +240,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getStepErrors(step: number): any {
-    if (step === 1) {
-      return {
-        title: this.f['title'].errors,
-        category: this.f['category'].errors,
-        description: this.f['description'].errors
-      };
-    } else if (step === 2) {
-      return {
-        location: this.f['location'].errors,
-        budget: this.f['budget'].errors,
-        timeline: this.f['timeline'].errors
-      };
-    } else if (step === 3) {
-      return {
-        agreeToTerms: this.f['agreeToTerms'].errors
-      };
-    }
-    return {};
-  }
-
-  previousStep(): void {
-    if (this.currentStep > 1) {
-      this.currentStep--;
-    }
-  }
+  // ── Form actions ──────────────────────────────────────────────────────────
 
   selectCategory(categoryId: string | number): void {
     this.jobForm.patchValue({ category: categoryId });
@@ -204,12 +258,10 @@ export class PostJobComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Mark all fields as touched to show validation errors
     this.markStepFieldsAsTouched(1);
     this.markStepFieldsAsTouched(2);
     this.markStepFieldsAsTouched(3);
 
-    // Explicitly check terms and conditions
     if (!this.f['agreeToTerms'].value) {
       this.errorMessage = 'You must agree to the Terms of Service to post a job.';
       this.f['agreeToTerms'].markAsTouched();
@@ -223,7 +275,6 @@ export class PostJobComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Set submitted to true only after all validations pass
     this.submitted = true;
 
     const selectedRange = this.budgetRanges.find(r => r.value === this.jobForm.value.budget);
@@ -231,28 +282,24 @@ export class PostJobComponent implements OnInit, OnDestroy {
       title: this.jobForm.value.title,
       categoryId: this.jobForm.value.category,
       description: this.jobForm.value.description,
-      location: this.jobForm.value.location,
+      location: this.jobForm.value.location || this.jobForm.value.serviceAddressCity,
       budget: this.jobForm.value.budget,
       estimatedBudget: selectedRange?.estimatedBudget,
       timeline: this.jobForm.value.timeline,
-      attachments: this.jobForm.value.attachments || ''
+      attachments: this.jobForm.value.attachments || '',
+      serviceAddressHouse: this.jobForm.value.serviceAddressHouse || null,
+      serviceAddressStreet1: this.jobForm.value.serviceAddressStreet1 || null,
+      serviceAddressCity: this.jobForm.value.serviceAddressCity,
+      serviceAddressState: this.jobForm.value.serviceAddressState || null,
+      serviceAddressCountry: this.jobForm.value.serviceAddressCountry || null,
+      serviceAddressPIN: this.jobForm.value.serviceAddressPIN || null,
+      latitude: this.jobLatitude,
+      longitude: this.jobLongitude
     };
 
-    console.log('Posting Job:', jobData);
-    
-    // Debug: Check if token exists
-    const token = localStorage.getItem('auth_token');
-    console.log('Auth token present:', !!token);
-    if (token) {
-      console.log('Token preview:', token.substring(0, 20) + '...');
-    }
-    
     this.jobService.createJob(jobData).subscribe({
-      next: (response) => {
-        console.log('✅ Job posted successfully:', response);
+      next: () => {
         this.successMessage = 'Your job has been posted successfully! Professionals will start bidding on your job.';
-        
-        // Reset form after 2 seconds and redirect
         setTimeout(() => {
           this.jobForm.reset();
           this.submitted = false;
@@ -261,11 +308,6 @@ export class PostJobComponent implements OnInit, OnDestroy {
         }, 2000);
       },
       error: (error) => {
-        console.error('❌ Error posting job:', error);
-        console.error('Error status:', error?.status);
-        console.error('Error message:', error?.error?.message);
-        console.error('Full error:', JSON.stringify(error, null, 2));
-        
         if (error?.status === 401) {
           this.errorMessage = 'You must be logged in to post a job. Please login and try again.';
         } else if (error?.status === 403) {
@@ -281,15 +323,12 @@ export class PostJobComponent implements OnInit, OnDestroy {
   }
 
   dismissMessage(type: 'success' | 'error'): void {
-    if (type === 'success') {
-      this.successMessage = '';
-    } else {
-      this.errorMessage = '';
-    }
+    if (type === 'success') this.successMessage = '';
+    else this.errorMessage = '';
   }
 
   getCategoryName(categoryId: string | number): string {
-    const category = this.serviceCategories.find(c => 
+    const category = this.serviceCategories.find(c =>
       c.id === categoryId || c.id?.toString() === categoryId?.toString()
     );
     return category ? category.name : '';
@@ -303,5 +342,12 @@ export class PostJobComponent implements OnInit, OnDestroy {
   getTimelineLabel(timelineValue: string): string {
     const timeline = this.timelineOptions.find(t => t.value === timelineValue);
     return timeline ? timeline.label : '';
+  }
+
+  getLocationSummary(): string {
+    const city = this.f['serviceAddressCity'].value;
+    const state = this.f['serviceAddressState'].value;
+    const country = this.f['serviceAddressCountry'].value;
+    return [city, state, country].filter(Boolean).join(', ');
   }
 }
