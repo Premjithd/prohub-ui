@@ -5,8 +5,8 @@ import { RouterModule, Router } from '@angular/router';
 import { JobService } from '../../services/job.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { AddressService, AddressPrediction } from '../../core/services/address.service';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 
 interface ServiceCategory {
@@ -42,6 +42,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
   addressLoading = false;
   private jobLatitude: number | null = null;
   private jobLongitude: number | null = null;
+  private addressSearch$ = new Subject<string>();
 
   budgetRanges = [
     { value: 'under-100',  label: 'Under ₹5,000',         icon: '💰',          estimatedBudget: 2500  },
@@ -71,6 +72,29 @@ export class PostJobComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeForm();
     this.loadCategories();
+    this.addressSearch$.pipe(
+      debounceTime(450),
+      distinctUntilChanged(),
+      switchMap(input => {
+        if (!input || input.length < 3) {
+          this.addressLoading = false;
+          this.addressPredictions = [];
+          this.showAddressList = false;
+          return of([]);
+        }
+        this.addressLoading = true;
+        this.cdr.markForCheck();
+        return this.addressService.getAddressPredictions(input).pipe(
+          catchError(() => of([]))
+        );
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(predictions => {
+      this.addressPredictions = predictions as AddressPrediction[];
+      this.showAddressList = this.addressPredictions.length > 0;
+      this.addressLoading = false;
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnDestroy(): void {
@@ -132,52 +156,30 @@ export class PostJobComponent implements OnInit, OnDestroy {
   // ── Address autofill ──────────────────────────────────────────────────────
 
   onAddressInput(event: any): void {
-    const input = event.target.value;
-    if (input && input.length >= 3) {
-      this.addressLoading = true;
-      this.addressService.getAddressPredictions(input).subscribe({
-        next: (predictions) => {
-          this.addressPredictions = predictions;
-          this.showAddressList = predictions.length > 0;
-          this.addressLoading = false;
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.addressLoading = false;
-          this.addressPredictions = [];
-        }
-      });
-    } else {
-      this.showAddressList = false;
-      this.addressPredictions = [];
-    }
+    this.addressSearch$.next(event.target.value ?? '');
   }
 
   onAddressSelected(prediction: AddressPrediction): void {
     this.showAddressList = false;
-    this.addressLoading = true;
 
-    this.addressService.getAddressDetails(prediction.placeId).subscribe({
-      next: (details) => {
-        this.jobForm.patchValue({
-          location: prediction.description,
-          serviceAddressHouse: details.houseNameNumber,
-          serviceAddressStreet1: details.street1,
-          serviceAddressCity: details.city,
-          serviceAddressState: details.state,
-          serviceAddressCountry: details.country,
-          serviceAddressPIN: details.zipPostalCode
-        });
-        this.jobLatitude = details.latitude ?? null;
-        this.jobLongitude = details.longitude ?? null;
-        if (this.addressSearchInput) {
-          this.addressSearchInput.nativeElement.value = prediction.description;
-        }
-        this.addressLoading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => { this.addressLoading = false; }
+    // Address details are already bundled in the search result — no second API call needed
+    const details = prediction.details;
+    this.jobLatitude = prediction.latitude ?? null;
+    this.jobLongitude = prediction.longitude ?? null;
+
+    this.jobForm.patchValue({
+      location: prediction.description,
+      serviceAddressHouse: details?.houseNameNumber || '',
+      serviceAddressStreet1: details?.street1 || '',
+      serviceAddressCity: details?.city || prediction.mainText,
+      serviceAddressState: details?.state || '',
+      serviceAddressCountry: details?.country || '',
+      serviceAddressPIN: details?.zipPostalCode || ''
     });
+    if (this.addressSearchInput) {
+      this.addressSearchInput.nativeElement.value = prediction.description;
+    }
+    this.cdr.markForCheck();
   }
 
   clearAddress(): void {
@@ -299,10 +301,11 @@ export class PostJobComponent implements OnInit, OnDestroy {
 
     this.jobService.createJob(jobData).subscribe({
       next: () => {
+        this.submitted = false;
         this.successMessage = 'Your job has been posted successfully! Professionals will start bidding on your job.';
+        this.cdr.markForCheck();
         setTimeout(() => {
           this.jobForm.reset();
-          this.submitted = false;
           this.currentStep = 1;
           this.router.navigate(['/jobs']);
         }, 2000);
@@ -318,6 +321,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
           this.errorMessage = error?.error?.message || 'Error posting job. Please try again.';
         }
         this.submitted = false;
+        this.cdr.markForCheck();
       }
     });
   }

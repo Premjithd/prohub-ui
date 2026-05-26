@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -26,6 +26,7 @@ export interface BidDialogData {
 @Component({
   selector: 'app-bid-submission-dialog',
   standalone: true,
+  providers: [provideNativeDateAdapter()],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -35,7 +36,6 @@ export interface BidDialogData {
     MatButtonModule,
     MatIconModule,
     MatDatepickerModule,
-    MatNativeDateModule,
     MatSelectModule,
     MatChipsModule,
     MatProgressSpinnerModule
@@ -81,6 +81,7 @@ export interface BidDialogData {
               matInput
               formControlName="commenceDate"
               [matDatepicker]="picker"
+              [min]="minDate"
               placeholder="Select start date"
             />
             <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
@@ -278,6 +279,7 @@ export class BidSubmissionDialogComponent implements OnInit, OnDestroy {
   bidForm!: FormGroup;
   materials: Material[] = [];
   submitting = false;
+  readonly minDate = new Date();
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -329,12 +331,15 @@ export class BidSubmissionDialogComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.bidForm.valid) {
       this.submitting = true;
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 5);
       this.dialogRef.close({
         quotedPrice: parseFloat(this.bidForm.get('quotedPrice')?.value || '0'),
         commenceDate: this.bidForm.get('commenceDate')?.value,
         expectedDurationDays: parseInt(this.bidForm.get('expectedDurationDays')?.value || '0', 10),
         materialsDescription: this.bidForm.get('materialsDescription')?.value || '',
-        message: this.bidForm.get('message')?.value || ''
+        message: this.bidForm.get('message')?.value || '',
+        expiresAt
       });
     }
   }

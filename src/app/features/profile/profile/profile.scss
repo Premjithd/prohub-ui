@@ -193,6 +193,114 @@
   }
 }
 
+/* Email Verification */
+.btn-verify-inline {
+  margin-top: 4px;
+  padding: 4px 12px;
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.2s;
+
+  &:hover { background: #5a6fd6; }
+}
+
+.verif-status-text {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.email-verif-panel {
+  margin-top: 12px;
+  background: #f8faff;
+  border: 1px solid #c7d4f5;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.verif-hint {
+  font-size: 13px;
+  color: #374151;
+  margin: 0 0 10px;
+}
+
+.verif-code-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.verif-code-input {
+  width: 110px;
+  padding: 7px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 16px;
+  letter-spacing: 4px;
+  text-align: center;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  }
+}
+
+.btn-verify-confirm {
+  padding: 7px 16px;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) { background: #059669; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.btn-verify-cancel {
+  padding: 7px 12px;
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: #d1d5db; }
+}
+
+.verif-error {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #dc2626;
+}
+
+.btn-resend {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover { color: #5a6fd6; }
+}
+
 .status-indicator {
   display: inline-block;
   padding: 4px 12px;

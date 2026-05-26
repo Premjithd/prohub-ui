@@ -74,10 +74,21 @@ export interface CreateJobRequest {
   title: string;
   categoryId?: number;
   description: string;
-  location: string;
-  budget: string;
+  location?: string;
+  budget?: string;
+  estimatedBudget?: number;
   timeline: string;
   attachments?: string;
+  serviceAddressHouse?: string | null;
+  serviceAddressStreet1?: string | null;
+  serviceAddressCity?: string;
+  serviceAddressState?: string | null;
+  serviceAddressCountry?: string | null;
+  serviceAddressPIN?: string | null;
+  contactPersonName?: string | null;
+  contactPersonPhone?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface JobBid {

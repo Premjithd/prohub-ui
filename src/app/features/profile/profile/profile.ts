@@ -4,6 +4,7 @@ import { ProService } from '../../../core/services/pro';
 import { User, GetUserRequest} from '../../../core/models/user.model';
 import { Pro } from '../../../core/models/pro.model';
 import { Auth } from '../../../core/services/auth';
+import { VerificationService } from '../../../core/services/verification.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -26,11 +27,17 @@ export class ProfileComponent implements OnInit {
   errorMessage = '';
   userType: string | null = null;
 
+  // Email verification flow
+  emailVerifStep: 'idle' | 'sending' | 'code-sent' | 'verifying' = 'idle';
+  emailVerifCode = '';
+  emailVerifError = '';
+
   constructor(
     private userService: UserService,
     private proService: ProService,
     public auth: Auth,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private verificationService: VerificationService
   ) {}
 
   ngOnInit(): void {
@@ -160,6 +167,62 @@ export class ProfileComponent implements OnInit {
         }, 5000);
       }
     });
+  }
+
+  // ── Email verification ────────────────────────────────────────────────────
+
+  sendEmailVerification(): void {
+    const email = this.userType === 'Pro' ? this.pro.email : this.user.email;
+    const userType = this.userType === 'Pro' ? 'Pro' : 'User';
+    this.emailVerifStep = 'sending';
+    this.emailVerifError = '';
+    this.emailVerifCode = '';
+    this.verificationService.sendEmailCode(email, userType).subscribe({
+      next: () => {
+        this.emailVerifStep = 'code-sent';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.emailVerifError = err?.error?.message || 'Failed to send verification email. Please try again.';
+        this.emailVerifStep = 'idle';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  confirmEmailCode(): void {
+    if (!this.emailVerifCode || this.emailVerifCode.length !== 6) {
+      this.emailVerifError = 'Please enter the 6-digit code.';
+      return;
+    }
+    const email = this.userType === 'Pro' ? this.pro.email : this.user.email;
+    const userType = this.userType === 'Pro' ? 'Pro' : 'User';
+    this.emailVerifStep = 'verifying';
+    this.emailVerifError = '';
+    this.verificationService.verifyEmail(email, this.emailVerifCode, userType).subscribe({
+      next: () => {
+        if (this.userType === 'Pro') {
+          this.pro.isEmailVerified = true;
+        } else {
+          this.user.isEmailVerified = true;
+        }
+        this.emailVerifStep = 'idle';
+        this.successMessage = 'Email verified successfully!';
+        this.cdr.markForCheck();
+        setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 4000);
+      },
+      error: (err) => {
+        this.emailVerifError = err?.error?.message || 'Invalid or expired code. Please try again.';
+        this.emailVerifStep = 'code-sent';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  cancelEmailVerification(): void {
+    this.emailVerifStep = 'idle';
+    this.emailVerifCode = '';
+    this.emailVerifError = '';
   }
 
   private updateProProfile(): void {

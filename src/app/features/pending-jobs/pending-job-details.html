@@ -9,6 +9,16 @@
         <h1>{{ job?.title || 'Job Details' }}</h1>
         <p class="subtitle">View job details and track progress</p>
       </div>
+      <button
+        *ngIf="job && (job.status === 'Open' || job.status === 'Bid Accepted' || job.status === 'Completion Submitted')"
+        mat-stroked-button
+        (click)="cancelJob()"
+        [disabled]="cancellingJob"
+        class="cancel-job-btn-header"
+        matTooltip="Cancel this job">
+        <mat-icon>cancel</mat-icon>
+        {{ cancellingJob ? 'Cancelling...' : 'Cancel Job' }}
+      </button>
     </div>
   </div>
 
@@ -56,18 +66,6 @@
                 {{ job.status }}
               </mat-chip>
             </mat-chip-set>
-            <!-- Cancel Job — available before payment is made -->
-            <button
-              *ngIf="job.status === 'Open' || job.status === 'Bid Accepted' || job.status === 'Completion Submitted'"
-              mat-stroked-button
-              color="warn"
-              (click)="cancelJob()"
-              [disabled]="cancellingJob"
-              class="cancel-job-btn"
-              matTooltip="Cancel this job">
-              <mat-icon>cancel</mat-icon>
-              {{ cancellingJob ? 'Cancelling...' : 'Cancel Job' }}
-            </button>
           </div>
         </div>
       </mat-card-header>

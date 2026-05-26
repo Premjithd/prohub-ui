@@ -30,6 +30,27 @@
                 <mat-icon class="badge-icon">{{ user.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
                 {{ user.isEmailVerified ? 'Verified' : 'Unverified' }}
               </span>
+              <button *ngIf="!user.isEmailVerified && emailVerifStep === 'idle'"
+                      class="btn-verify-inline"
+                      (click)="sendEmailVerification()">
+                Verify Email
+              </button>
+              <span *ngIf="emailVerifStep === 'sending'" class="verif-status-text">Sending code…</span>
+            </div>
+            <!-- Code entry -->
+            <div class="email-verif-panel" *ngIf="!user.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
+              <p class="verif-hint">A 6-digit code was sent to <strong>{{ user.email }}</strong>. Enter it below:</p>
+              <div class="verif-code-row">
+                <input class="verif-code-input" type="text" maxlength="6" placeholder="000000"
+                       [(ngModel)]="emailVerifCode" name="emailVerifCodeUser" />
+                <button class="btn-verify-confirm" (click)="confirmEmailCode()"
+                        [disabled]="emailVerifStep === 'verifying'">
+                  {{ emailVerifStep === 'verifying' ? 'Verifying…' : 'Confirm' }}
+                </button>
+                <button class="btn-verify-cancel" (click)="cancelEmailVerification()">Cancel</button>
+              </div>
+              <span class="verif-error" *ngIf="emailVerifError">{{ emailVerifError }}</span>
+              <button class="btn-resend" (click)="sendEmailVerification()">Resend code</button>
             </div>
           </div>
           <div class="info-item">
@@ -64,6 +85,11 @@
               <span *ngIf="user.zipPostalCode"> - {{ user.zipPostalCode }}</span>
             </span>
           </div>
+        </div>
+
+        <div class="message-alert success-alert" *ngIf="successMessage && !isEditing">
+          <mat-icon>check_circle</mat-icon>
+          <span>{{ successMessage }}</span>
         </div>
 
         <div class="action-buttons" *ngIf="!isEditing">
@@ -107,6 +133,27 @@
                 <mat-icon class="badge-icon">{{ pro.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
                 {{ pro.isEmailVerified ? 'Verified' : 'Unverified' }}
               </span>
+              <button *ngIf="!pro.isEmailVerified && emailVerifStep === 'idle'"
+                      class="btn-verify-inline"
+                      (click)="sendEmailVerification()">
+                Verify Email
+              </button>
+              <span *ngIf="emailVerifStep === 'sending'" class="verif-status-text">Sending code…</span>
+            </div>
+            <!-- Code entry -->
+            <div class="email-verif-panel" *ngIf="!pro.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
+              <p class="verif-hint">A 6-digit code was sent to <strong>{{ pro.email }}</strong>. Enter it below:</p>
+              <div class="verif-code-row">
+                <input class="verif-code-input" type="text" maxlength="6" placeholder="000000"
+                       [(ngModel)]="emailVerifCode" name="emailVerifCodePro" />
+                <button class="btn-verify-confirm" (click)="confirmEmailCode()"
+                        [disabled]="emailVerifStep === 'verifying'">
+                  {{ emailVerifStep === 'verifying' ? 'Verifying…' : 'Confirm' }}
+                </button>
+                <button class="btn-verify-cancel" (click)="cancelEmailVerification()">Cancel</button>
+              </div>
+              <span class="verif-error" *ngIf="emailVerifError">{{ emailVerifError }}</span>
+              <button class="btn-resend" (click)="sendEmailVerification()">Resend code</button>
             </div>
           </div>
           <div class="info-item">
@@ -143,6 +190,11 @@
             <span class="info-label">Service Radius</span>
             <span class="info-value">{{ pro.serviceRadiusKm ?? 25 }} km</span>
           </div>
+        </div>
+
+        <div class="message-alert success-alert" *ngIf="successMessage && !isEditing">
+          <mat-icon>check_circle</mat-icon>
+          <span>{{ successMessage }}</span>
         </div>
 
         <div class="action-buttons" *ngIf="!isEditing">
