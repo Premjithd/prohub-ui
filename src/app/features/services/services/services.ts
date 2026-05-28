@@ -35,6 +35,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
 
   prosMapMarkers: MapMarker[] = [];
   prosLoading = false;
+  private allProsMarkers: MapMarker[] = [];
 
   private destroy$ = new Subject<void>();
   private search$ = new Subject<string>();
@@ -127,7 +128,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
     this.prosLoading = true;
     this.proBrowseService.browse().pipe(takeUntil(this.destroy$)).subscribe({
       next: pros => {
-        this.prosMapMarkers = pros
+        this.allProsMarkers = pros
           .filter(p => p.latitude != null && p.longitude != null)
           .map(p => ({
             id: p.id,
@@ -139,10 +140,18 @@ export class ServicesComponent implements OnInit, OnDestroy {
             radiusKm: p.serviceRadiusKm
           }));
         this.prosLoading = false;
+        this.syncMapMarkers();
         this.cdr.detectChanges();
       },
       error: () => { this.prosLoading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  private syncMapMarkers(): void {
+    const proIds = new Set(this.filteredServices.map(s => s.proId));
+    this.prosMapMarkers = proIds.size > 0
+      ? this.allProsMarkers.filter(m => proIds.has(m.id))
+      : this.allProsMarkers;
   }
 
   filterByCategory(categoryName: string): void {
@@ -177,6 +186,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         break;
     }
     this.filteredServices = sorted;
+    this.syncMapMarkers();
   }
 
   getCategoryImage(name: string): string {
