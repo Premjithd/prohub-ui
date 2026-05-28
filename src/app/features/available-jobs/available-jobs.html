@@ -107,10 +107,16 @@
       <div *ngIf="filteredJobs.length === 0" class="empty-state">
         <mat-icon class="empty-icon">assignment</mat-icon>
         <h2>No Jobs Found</h2>
-        <p>No jobs match your current filters. Try adjusting your search criteria.</p>
+        <p *ngIf="proximityFilterApplied">
+          No jobs are within <strong>{{ activeRadiusKm }} km</strong> of your location.
+          Try widening the distance filter or selecting <strong>All</strong>.
+        </p>
+        <p *ngIf="!proximityFilterApplied">
+          No open jobs match your current filters. Try adjusting your search or category.
+        </p>
         <button mat-raised-button color="primary" (click)="resetFilters()">
           <mat-icon>restart_alt</mat-icon>
-          Clear Filters
+          Clear All Filters
         </button>
       </div>
 

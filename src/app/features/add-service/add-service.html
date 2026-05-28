@@ -63,6 +63,28 @@
             </small>
           </div>
 
+          <!-- Service Price -->
+          <div class="form-group">
+            <label for="price">Starting Price (₹) *</label>
+            <div class="price-input-wrapper">
+              <span class="currency">₹</span>
+              <input
+                type="number"
+                id="price"
+                formControlName="price"
+                placeholder="e.g., 500"
+                class="form-control price-input"
+                step="1"
+                min="1"
+                [class.is-invalid]="(submitted || f['price'].touched) && f['price'].errors"
+              />
+            </div>
+            <small *ngIf="(submitted || f['price'].touched) && f['price'].errors" class="error-text">
+              <span *ngIf="f['price'].errors['required']">Price is required</span>
+              <span *ngIf="f['price'].errors['min']">Price must be greater than 0</span>
+            </small>
+          </div>
+
           <!-- Service Category -->
           <div class="form-group">
             <label for="serviceCategoryId">Service Category *</label>
@@ -80,6 +102,20 @@
             <small *ngIf="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors" class="error-text">
               <span *ngIf="f['serviceCategoryId'].errors['required']">Please select a service category</span>
             </small>
+          </div>
+
+          <!-- Service Photo URL (Optional) -->
+          <div class="form-group">
+            <label for="imageUrl">Service Photo URL <span class="optional-label">(optional)</span></label>
+            <input
+              type="url"
+              id="imageUrl"
+              formControlName="imageUrl"
+              placeholder="https://example.com/your-photo.jpg"
+              class="form-control"
+              [class.is-invalid]="(submitted || f['imageUrl'].touched) && f['imageUrl'].errors"
+            />
+            <small class="hint-text">Paste a direct link to a photo that best represents your service</small>
           </div>
 
           <!-- Terms & Conditions -->

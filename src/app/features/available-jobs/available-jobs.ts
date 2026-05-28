@@ -67,7 +67,7 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
   private search$ = new Subject<string>();
 
   // Proximity radius filter (null = all jobs)
-  selectedRadiusKm: number | null = 25;
+  selectedRadiusKm: number | null = null;
   proximityFilterApplied = false;
   proLocationSet = false;
   activeRadiusKm: number | null = null;
@@ -220,7 +220,7 @@ export class AvailableJobsComponent implements OnInit, OnDestroy {
     this.searchText = '';
     this.minBudget = null;
     this.maxBudget = null;
-    this.selectedRadiusKm = 25;
+    this.selectedRadiusKm = null;
     this.page = 1;
     this.loadAvailableJobs();
   }

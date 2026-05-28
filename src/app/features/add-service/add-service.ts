@@ -67,7 +67,9 @@ export class AddServiceComponent implements OnInit, OnDestroy {
     this.serviceForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
       description: ['', [Validators.required, Validators.minLength(20), Validators.maxLength(2000)]],
+      price: ['', [Validators.required, Validators.min(1)]],
       serviceCategoryId: ['', Validators.required],
+      imageUrl: [''],
       agreeToTerms: [false, Validators.required]
     });
   }
@@ -114,6 +116,8 @@ export class AddServiceComponent implements OnInit, OnDestroy {
     const serviceData = {
       name: this.serviceForm.value.name,
       description: this.serviceForm.value.description,
+      price: parseFloat(this.serviceForm.value.price),
+      imageUrl: this.serviceForm.value.imageUrl?.trim() || null,
       serviceCategoryId: parseInt(this.serviceForm.value.serviceCategoryId, 10),
       proId: parseInt(proId, 10)
     };

@@ -14,6 +14,8 @@ export interface Service {
   id: number;
   name: string;
   description: string;
+  price: number;
+  imageUrl?: string;
   proId: number;
   createdAt: string;
   updatedAt: string;
@@ -72,12 +74,12 @@ export class MyServicesService {
   }
 
   // Update a service
-  updateService(id: number, service: { name: string; description: string; proId: number; serviceCategoryId?: number | null }): Observable<Service> {
+  updateService(id: number, service: { name: string; description: string; price: number; imageUrl?: string | null; proId: number; serviceCategoryId?: number | null }): Observable<Service> {
     return this.http.put<Service>(`${this.apiUrl}/${id}`, service);
   }
 
   // Create a new service
-  createService(serviceData: { name: string; description: string; proId: number; serviceCategoryId: number }): Observable<Service> {
+  createService(serviceData: { name: string; description: string; price: number; imageUrl?: string | null; proId: number; serviceCategoryId: number }): Observable<Service> {
     return this.http.post<Service>(this.apiUrl, serviceData);
   }
 }

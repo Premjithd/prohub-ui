@@ -269,3 +269,41 @@
     padding: 2rem 1rem;
   }
 }
+
+.optional-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.hint-text {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  display: block;
+}
+
+.price-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
+
+  .currency {
+    padding: 0 10px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 14px;
+    border-right: 1px solid #d1d5db;
+    height: 42px;
+    display: flex;
+    align-items: center;
+  }
+
+  .price-input {
+    border: none;
+    border-radius: 0;
+    flex: 1;
+  }
+}

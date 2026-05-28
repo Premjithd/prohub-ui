@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { JobService } from '../../services/job.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { AddressService, AddressPrediction } from '../../core/services/address.service';
@@ -59,9 +59,12 @@ export class PostJobComponent implements OnInit, OnDestroy {
     { value: 'flexible', label: 'No specific deadline', icon: '🔄', description: 'Very flexible' }
   ];
 
+  private preFillCategoryId: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
     private jobService: JobService,
     private serviceCategoryService: ServiceCategoryService,
     private addressService: AddressService,
@@ -71,6 +74,9 @@ export class PostJobComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeForm();
+    const qp = this.route.snapshot.queryParamMap;
+    const catId = qp.get('categoryId');
+    if (catId) this.preFillCategoryId = parseInt(catId, 10);
     this.loadCategories();
     this.addressSearch$.pipe(
       debounceTime(450),
@@ -140,6 +146,10 @@ export class PostJobComponent implements OnInit, OnDestroy {
             serviceCount: cat.serviceCount
           }));
           this.categoriesLoading = false;
+          if (this.preFillCategoryId) {
+            const match = this.serviceCategories.find(c => c.id === this.preFillCategoryId);
+            if (match) this.jobForm.patchValue({ category: match.id });
+          }
           this.cdr.detectChanges();
         },
         error: () => {

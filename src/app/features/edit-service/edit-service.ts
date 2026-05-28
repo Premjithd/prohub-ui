@@ -113,8 +113,9 @@ export class EditServiceComponent implements OnInit, OnDestroy {
     this.serviceForm = this.fb.group({
       name: [service.name, [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
       description: [service.description, [Validators.required, Validators.minLength(20), Validators.maxLength(2000)]],
-      price: [service.price, [Validators.required, Validators.min(0.01), Validators.max(999999.99)]],
+      price: [service.price, [Validators.required, Validators.min(1)]],
       serviceCategoryId: [service.serviceCategoryId || '', Validators.required],
+      imageUrl: [service.imageUrl || ''],
       agreeToTerms: [true, Validators.required]
     });
   }
@@ -163,6 +164,7 @@ export class EditServiceComponent implements OnInit, OnDestroy {
       name: this.serviceForm.value.name,
       description: this.serviceForm.value.description,
       price: parseFloat(this.serviceForm.value.price),
+      imageUrl: this.serviceForm.value.imageUrl?.trim() || null,
       serviceCategoryId: this.serviceForm.value.serviceCategoryId ? parseInt(this.serviceForm.value.serviceCategoryId, 10) : null,
       proId: parseInt(proId, 10)
     };

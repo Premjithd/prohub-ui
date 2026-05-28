@@ -1,0 +1,69 @@
+<div class="detail-wrapper">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading service...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!loading && errorMessage" class="error-state">
+    <span class="material-icons">error_outline</span>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-outline" (click)="goBack()">Back to Services</button>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && service" class="detail-content">
+
+    <button class="back-btn" (click)="goBack()">
+      <span class="material-icons">arrow_back</span> Back to Services
+    </button>
+
+    <div class="detail-card">
+      <!-- Image -->
+      <div class="detail-image">
+        <img
+          [src]="service.imageUrl || getCategoryImage(service.categoryName || '')"
+          [alt]="service.name"
+          (error)="onImgError($event)"
+          loading="lazy" />
+        <span class="category-tag" *ngIf="service.categoryName">
+          {{ service.categoryIcon }} {{ service.categoryName }}
+        </span>
+      </div>
+
+      <!-- Info -->
+      <div class="detail-info">
+        <h1 class="service-name">{{ service.name }}</h1>
+
+        <div class="price-block">
+          <span class="price-label">Starting from</span>
+          <span class="price-value">{{ formatPrice(service.price) }}</span>
+        </div>
+
+        <p class="description">{{ service.description }}</p>
+
+        <div class="pro-block">
+          <span class="material-icons pro-icon">store</span>
+          <div>
+            <div class="pro-name">{{ service.businessName || service.proName }}</div>
+            <div class="pro-location" *ngIf="service.city">
+              <span class="material-icons">place</span>
+              {{ service.city }}{{ service.state ? ', ' + service.state : '' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-primary book-btn" (click)="bookNow()">
+            <span class="material-icons">assignment_add</span>
+            Book Now — Post a Job
+          </button>
+          <p class="book-hint">Post your job and this professional will bid on it</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
