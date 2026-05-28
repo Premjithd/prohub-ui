@@ -5,6 +5,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatChipsModule } from '@angular/material/chips';
@@ -29,6 +30,7 @@ import { MapViewComponent, MapMarker } from '../../shared/map-view/map-view';
     MatIconModule, 
     MatButtonModule,
     MatFormFieldModule,
+    MatInputModule,
     MatSelectModule,
     MatSliderModule,
     MatChipsModule,
