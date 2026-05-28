@@ -1,10 +1,13 @@
 .available-jobs-wrapper {
   padding: 0;
   max-width: none;
-  margin: 0;
+  // Escape .container's horizontal padding (1rem) and .main-content's top padding (2rem)
+  // so the split layout can use the full viewport height with no hardcoded offsets
+  margin: -2rem -1rem 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100vh - var(--nav-height, 64px));
+  overflow: hidden;
 }
 
 .page-header {
@@ -52,7 +55,6 @@
   flex: 1;
   overflow: hidden;
   min-height: 0;
-  height: calc(100vh - 220px);
 
   &.map-hidden {
     grid-template-columns: 1fr;
@@ -60,10 +62,9 @@
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
-    grid-template-rows: 50vh 320px;
-    height: auto;
+    grid-template-rows: 1fr 320px;
 
-    &.map-hidden { grid-template-rows: auto; }
+    &.map-hidden { grid-template-rows: 1fr; }
   }
 }
 
@@ -430,7 +431,8 @@
 
 @media (max-width: 600px) {
   .available-jobs-wrapper {
-    padding: 1rem;
+    margin: -1rem -0.75rem 0;
+    height: calc(100vh - var(--nav-height, 56px) - var(--bottom-nav-height, 60px));
   }
 
   .page-header {

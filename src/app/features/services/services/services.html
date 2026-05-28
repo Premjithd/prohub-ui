@@ -2,25 +2,59 @@
 
   <!-- Hero -->
   <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-badge">🛡️ Verified Professionals</div>
-      <h1>Find the Right Pro<br>for Any Job</h1>
-      <p class="hero-sub">Post a job, compare bids, and hire with confidence</p>
-      <div class="search-bar">
-        <span class="material-icons search-icon">search</span>
-        <input
-          [(ngModel)]="searchQuery"
-          (keyup.enter)="onSearch()"
-          placeholder="Search services or skills..."
-          aria-label="Search services" />
-        <button (click)="onSearch()">Search</button>
+    <div class="hero-body">
+      <div class="hero-left">
+        <div class="hero-tag">
+          <span class="tag-dot"></span>
+          Verified professionals · Secure payments
+        </div>
+        <h1>Hire the Right<br>Professional <span class="accent">Today</span></h1>
+        <p class="hero-sub">Browse services, compare prices, and book trusted pros — all in one place.</p>
+
+        <div class="hero-search">
+          <span class="material-icons">search</span>
+          <input
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="onSearch()"
+            placeholder="Search services, skills, or business name..."
+            aria-label="Search services" />
+          <button (click)="onSearch()">Search</button>
+        </div>
+
+        <div class="hero-actions">
+          <button class="hero-btn-primary" (click)="navigateTo('/post-job')">
+            <span class="material-icons">add_circle</span> Post a Job
+          </button>
+          <button class="hero-btn-ghost" (click)="navigateTo('/find-a-pro')">
+            <span class="material-icons">engineering</span> Browse Pros
+          </button>
+        </div>
       </div>
-      <div class="hero-stats">
-        <div class="stat"><strong>{{ categories.length }}+</strong><span>Categories</span></div>
-        <div class="stat-sep"></div>
-        <div class="stat"><strong>Fast</strong><span>Response</span></div>
-        <div class="stat-sep"></div>
-        <div class="stat"><strong>Secure</strong><span>Payments</span></div>
+
+      <div class="hero-right">
+        <div class="hero-trust">
+          <div class="trust-card">
+            <span class="trust-icon">{{ categories.length || '20' }}+</span>
+            <span class="trust-label">Categories</span>
+          </div>
+          <div class="trust-card">
+            <span class="trust-icon">⚡</span>
+            <span class="trust-label">Fast Responses</span>
+          </div>
+          <div class="trust-card">
+            <span class="trust-icon">🔒</span>
+            <span class="trust-label">Secure Payments</span>
+          </div>
+          <div class="trust-card">
+            <span class="trust-icon">✅</span>
+            <span class="trust-label">Verified Pros</span>
+          </div>
+        </div>
+        <div class="hero-cat-pills" *ngIf="!categoriesLoading && categories.length > 0">
+          <span *ngFor="let cat of categories.slice(0, 6)" class="hero-cat-pill" (click)="filterByCategory(cat.name)">
+            {{ cat.icon }} {{ cat.name }}
+          </span>
+        </div>
       </div>
     </div>
   </section>
