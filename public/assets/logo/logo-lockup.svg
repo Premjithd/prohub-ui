@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" width="280" height="64" role="img" aria-label="yProHub">
+  <defs>
+    <linearGradient id="ypG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#667eea"></stop>
+      <stop offset="100%" stop-color="#764ba2"></stop>
+    </linearGradient>
+  </defs>
+  <path d="M32 3 C43.5 3 53 12.5 53 24 C53 38 37 55 32 61 C27 55 11 38 11 24 C11 12.5 20.5 3 32 3 Z" fill="url(#ypG)"></path>
+  <path d="M 19 16 L 32 30 M 45 16 L 32 30 M 32 30 L 32 42" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+  <text x="74" y="44" font-family="Roboto, &#39;Helvetica Neue&#39;, Arial, sans-serif" font-weight="700" font-size="34" fill="#1f2937" letter-spacing="-0.5">yProHub</text>
+</svg>

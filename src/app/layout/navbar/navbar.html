@@ -3,7 +3,10 @@
     <mat-icon>menu</mat-icon>
   </button>
 
-  <span routerLink="/" class="brand">yProHub</span>
+  <a routerLink="/" class="brand" aria-label="yProHub home">
+    <img src="assets/logo/logo-mark-white.svg" alt="" class="brand-logo" />
+    <span>yProHub</span>
+  </a>
   <span class="spacer"></span>
 
   <ng-container *ngIf="!auth.isAuthenticated()">
