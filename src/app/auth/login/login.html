@@ -1,10 +1,17 @@
 <div class="login-wrapper">
   <div class="login-card">
-    <h2>Login</h2>
+
+    <div class="login-header">
+      <div class="logo-circle">yP</div>
+      <div class="header-text">
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Sign in to your yProHub account</p>
+      </div>
+    </div>
 
     <!-- User Type Selection -->
     <div class="user-type-selector">
-      <label>Login As:</label>
+      <label>Sign in as</label>
       <div class="type-buttons">
         <button
           type="button"
@@ -28,26 +35,26 @@
     <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
 
     <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
-      <!-- Email -->
       <div class="form-group">
         <label for="email">Email</label>
         <input
           type="email"
           id="email"
           name="email"
+          class="form-control"
           ngModel
           required
           placeholder="Enter your email"
         />
       </div>
 
-      <!-- Password -->
       <div class="form-group">
         <label for="password">Password</label>
         <input
           type="password"
           id="password"
           name="password"
+          class="form-control"
           ngModel
           required
           placeholder="Enter your password"
@@ -57,10 +64,14 @@
         </div>
       </div>
 
-      <!-- Submit Button -->
-      <button type="submit" [disabled]="!loginForm.valid || isLoading">
-        {{ isLoading ? 'Logging in…' : 'Login' }}
+      <button type="submit" class="btn-submit" [disabled]="!loginForm.valid || isLoading">
+        {{ isLoading ? 'Signing in…' : 'Sign In' }}
       </button>
     </form>
+
+    <div class="register-link">
+      <p>Don't have an account? <a [routerLink]="['/auth/register']">Create one here</a></p>
+    </div>
+
   </div>
 </div>

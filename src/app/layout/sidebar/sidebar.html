@@ -9,7 +9,7 @@
     <span>Services</span>
   </a>
 
-  <a mat-list-item routerLink="/find-a-pro" routerLinkActive="active" (click)="onMenuItemClick()">
+  <a *ngIf="!isProUser() && !isAdmin()" mat-list-item routerLink="/find-a-pro" routerLinkActive="active" (click)="onMenuItemClick()">
     <mat-icon>engineering</mat-icon>
     <span>Find a Pro</span>
   </a>

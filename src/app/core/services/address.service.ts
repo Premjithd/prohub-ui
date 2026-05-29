@@ -90,6 +90,19 @@ export class AddressService {
     );
   }
 
+  reverseGeocode(lat: number, lng: number): Observable<{ city: string; state: string; country: string }> {
+    return this.http.get<any>('https://nominatim.openstreetmap.org/reverse', {
+      params: { lat: lat.toString(), lon: lng.toString(), format: 'json' }
+    }).pipe(
+      map(result => {
+        const a: NominatimAddress = result?.address || {};
+        const city = a.city || a.town || a.municipality || a.village || a.suburb || a.hamlet || '';
+        return { city, state: a.state || a.state_district || '', country: a.country || '' };
+      }),
+      catchError(() => of({ city: '', state: '', country: '' }))
+    );
+  }
+
   getAddressDetails(placeId: string): Observable<AddressDetails> {
     return this.http.get<NominatimResult | NominatimResult[]>(`${this.API_URL}/details`, {
       params: { placeId }

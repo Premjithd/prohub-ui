@@ -6,14 +6,14 @@
         <h1><span class="material-icons">engineering</span> Find a Professional</h1>
         <p class="subtitle">Browse verified service providers near you</p>
       </div>
-      <button class="map-toggle-btn" (click)="toggleMap()">
+      <button *ngIf="isAuthenticated" class="map-toggle-btn" (click)="toggleMap()">
         <span class="material-icons">{{ showMap ? 'view_list' : 'map' }}</span>
         {{ showMap ? 'List only' : 'Show map' }}
       </button>
     </div>
 
-    <!-- Search & Filter bar -->
-    <div class="filter-bar">
+    <!-- Search & Filter bar — authenticated only -->
+    <div *ngIf="isAuthenticated" class="filter-bar">
       <div class="search-wrap">
         <span class="material-icons search-icon">search</span>
         <input
@@ -34,6 +34,21 @@
     </div>
   </div>
 
+  <!-- Sign-in banner for unauthenticated users -->
+  <div *ngIf="!isAuthenticated" class="preview-banner">
+    <div class="preview-banner-inner">
+      <span class="material-icons preview-icon">lock</span>
+      <div class="preview-text">
+        <strong>Sign in to browse real professionals near you</strong>
+        <p>Here's a preview of the pros available on yProHub. Create a free account to see all professionals, search by service, and get in touch.</p>
+      </div>
+      <div class="preview-actions">
+        <a routerLink="/auth/login" class="banner-btn primary">Sign In</a>
+        <a routerLink="/auth/register" class="banner-btn secondary">Create Account</a>
+      </div>
+    </div>
+  </div>
+
   <!-- Error -->
   <div *ngIf="errorMessage" class="alert-error">
     <span class="material-icons">error</span> {{ errorMessage }}
@@ -48,27 +63,28 @@
         <p>Loading professionals...</p>
       </div>
 
-      <div *ngIf="!loading && pros.length === 0" class="empty-state">
+      <div *ngIf="!loading && isAuthenticated && pros.length === 0" class="empty-state">
         <span class="material-icons">search_off</span>
         <p>No professionals found. Try a different search.</p>
       </div>
 
-      <div *ngIf="!loading && pros.length > 0" class="results-meta">
+      <div *ngIf="!loading && isAuthenticated && pros.length > 0" class="results-meta">
         {{ pros.length }} professional{{ pros.length !== 1 ? 's' : '' }} found
         <span *ngIf="mapMarkers.length < pros.length" class="no-loc-note">
           ({{ pros.length - mapMarkers.length }} without location — not shown on map)
         </span>
       </div>
 
-      <div class="pro-list">
+<div class="pro-list" [class.preview-blur]="!isAuthenticated">
         <div
           *ngFor="let pro of pros"
           id="pro-card-{{ pro.id }}"
           class="pro-card"
           [class.highlighted]="highlightedProId === pro.id"
           [class.no-location]="!pro.latitude || !pro.longitude"
-          (mouseenter)="hoverPro(pro.id)"
-          (mouseleave)="hoverPro(null)"
+          [class.preview-card]="!isAuthenticated"
+          (mouseenter)="isAuthenticated && hoverPro(pro.id)"
+          (mouseleave)="isAuthenticated && hoverPro(null)"
           (click)="clickPro(pro)"
         >
           <div class="pro-avatar">
@@ -99,8 +115,8 @@
       </div>
     </div>
 
-    <!-- Right: map -->
-    <div class="map-panel" *ngIf="showMap">
+    <!-- Right: map — authenticated only -->
+    <div class="map-panel" *ngIf="isAuthenticated && showMap">
       <app-map-view
         [markers]="mapMarkers"
         [loading]="loading"

@@ -8,7 +8,6 @@ import { MatDialogModule, MatDialog, MatDialogRef } from '@angular/material/dial
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AdminUsersService, Job } from '../../core/services/admin-users.service';
 import { User } from '../../core/models/user.model';
 import { Pro } from '../../core/models/pro.model';
@@ -30,7 +29,6 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
-    ReactiveFormsModule,
     MatSnackBarModule
   ],
   templateUrl: './admin-users.html',
@@ -90,7 +88,6 @@ export class AdminUsersComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private dialog: MatDialog,
-    private fb: FormBuilder,
     private proUsersService: ProUsersService,
     private snack: MatSnackBar
   ) {}
@@ -486,188 +483,6 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  openCreateUser(): void {
-    const dialogRef = this.dialog.open(CreateUserDialogComponent, { width: '480px', maxWidth: '95vw' });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.adminUsersService.createUser(result).subscribe({
-          next: (user: any) => {
-            this.snack.open(`User "${user.firstName} ${user.lastName}" created successfully.`, 'OK', {
-              duration: 4000, panelClass: 'snack-success'
-            });
-          },
-          error: (err: any) => {
-            const msg = err?.error?.message ?? err?.error?.title ?? 'Failed to create user.';
-            this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
-          }
-        });
-      }
-    });
-  }
-
-  openCreatePro(): void {
-    const dialogRef = this.dialog.open(CreateProDialogComponent, { width: '480px', maxWidth: '95vw' });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.adminUsersService.createPro(result).subscribe({
-          next: (pro: any) => {
-            this.snack.open(`Professional "${pro.proName}" created successfully.`, 'OK', {
-              duration: 4000, panelClass: 'snack-success'
-            });
-          },
-          error: (err: any) => {
-            const msg = err?.error?.message ?? err?.error?.title ?? 'Failed to create professional.';
-            this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
-          }
-        });
-      }
-    });
-  }
-}
-
-const DIALOG_STYLES = [`
-  .create-form { display: flex; flex-direction: column; gap: 4px; padding-top: 8px; min-width: 0; }
-  .full-width { width: 100%; }
-  .form-row { display: flex; gap: 12px; }
-  .half-width { flex: 1; min-width: 0; }
-  @media (max-width: 480px) {
-    .form-row { flex-direction: column; gap: 0; }
-    .half-width { width: 100%; }
-  }
-`];
-
-@Component({
-  selector: 'app-create-user-dialog',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatDialogModule, MatInputModule, MatFormFieldModule, MatButtonModule],
-  template: `
-    <h2 mat-dialog-title>Create New User</h2>
-    <mat-dialog-content>
-      <form [formGroup]="form" class="create-form">
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="half-width">
-            <mat-label>First Name</mat-label>
-            <input matInput formControlName="firstName" />
-            <mat-error *ngIf="form.get('firstName')?.hasError('required')">Required</mat-error>
-          </mat-form-field>
-          <mat-form-field appearance="outline" class="half-width">
-            <mat-label>Last Name</mat-label>
-            <input matInput formControlName="lastName" />
-            <mat-error *ngIf="form.get('lastName')?.hasError('required')">Required</mat-error>
-          </mat-form-field>
-        </div>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" formControlName="email" />
-          <mat-error *ngIf="form.get('email')?.hasError('required')">Required</mat-error>
-          <mat-error *ngIf="form.get('email')?.hasError('email')">Invalid email</mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
-          <input matInput type="password" formControlName="passwordHash" />
-          <mat-error *ngIf="form.get('passwordHash')?.hasError('required')">Required</mat-error>
-          <mat-error *ngIf="form.get('passwordHash')?.hasError('minlength')">Minimum 6 characters</mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Phone Number</mat-label>
-          <input matInput formControlName="phoneNumber" />
-        </mat-form-field>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-raised-button color="primary" (click)="submit()" [disabled]="form.invalid">Create User</button>
-    </mat-dialog-actions>
-  `,
-  styles: DIALOG_STYLES
-})
-export class CreateUserDialogComponent {
-  form: FormGroup;
-
-  constructor(
-    public dialogRef: MatDialogRef<CreateUserDialogComponent>,
-    private fb: FormBuilder
-  ) {
-    this.form = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      passwordHash: ['', [Validators.required, Validators.minLength(6)]],
-      phoneNumber: ['']
-    });
-  }
-
-  submit(): void {
-    if (this.form.valid) {
-      this.dialogRef.close(this.form.value);
-    }
-  }
-}
-
-@Component({
-  selector: 'app-create-pro-dialog',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatDialogModule, MatInputModule, MatFormFieldModule, MatButtonModule],
-  template: `
-    <h2 mat-dialog-title>Create New Professional</h2>
-    <mat-dialog-content>
-      <form [formGroup]="form" class="create-form">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Pro Name (Full Name)</mat-label>
-          <input matInput formControlName="proName" />
-          <mat-error *ngIf="form.get('proName')?.hasError('required')">Required</mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Business Name</mat-label>
-          <input matInput formControlName="businessName" />
-          <mat-error *ngIf="form.get('businessName')?.hasError('required')">Required</mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" formControlName="email" />
-          <mat-error *ngIf="form.get('email')?.hasError('required')">Required</mat-error>
-          <mat-error *ngIf="form.get('email')?.hasError('email')">Invalid email</mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
-          <input matInput type="password" formControlName="passwordHash" />
-          <mat-error *ngIf="form.get('passwordHash')?.hasError('required')">Required</mat-error>
-          <mat-error *ngIf="form.get('passwordHash')?.hasError('minlength')">Minimum 6 characters</mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Phone Number</mat-label>
-          <input matInput formControlName="phoneNumber" />
-        </mat-form-field>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-raised-button color="accent" (click)="submit()" [disabled]="form.invalid">Create Professional</button>
-    </mat-dialog-actions>
-  `,
-  styles: DIALOG_STYLES
-})
-export class CreateProDialogComponent {
-  form: FormGroup;
-
-  constructor(
-    public dialogRef: MatDialogRef<CreateProDialogComponent>,
-    private fb: FormBuilder
-  ) {
-    this.form = this.fb.group({
-      proName: ['', Validators.required],
-      businessName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      passwordHash: ['', [Validators.required, Validators.minLength(6)]],
-      phoneNumber: ['']
-    });
-  }
-
-  submit(): void {
-    if (this.form.valid) {
-      this.dialogRef.close(this.form.value);
-    }
-  }
 }
 
 @Component({

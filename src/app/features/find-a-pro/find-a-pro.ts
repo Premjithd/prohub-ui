@@ -14,6 +14,36 @@ import { ProBrowseService, BrowsePro } from '../../services/pro-browse.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { ServiceCategory } from '../../core/models/service-category.model';
 import { MapViewComponent, MapMarker } from '../../shared/map-view/map-view';
+import { Auth } from '../../core/services/auth';
+import { AddressService } from '../../core/services/address.service';
+
+const PREVIEW_PROS: BrowsePro[] = [
+  {
+    id: -1, proName: 'Alice Johnson', businessName: 'Johnson Plumbing Services',
+    city: 'London', state: 'England', country: 'UK', isEmailVerified: true,
+    services: [{ id: 1, name: 'Plumbing', price: 60 }, { id: 2, name: 'Pipe Repair', price: 45 }]
+  },
+  {
+    id: -2, proName: 'Bob Martinez', businessName: 'Martinez Electrical',
+    city: 'Manchester', state: 'England', country: 'UK', isEmailVerified: true,
+    services: [{ id: 3, name: 'Electrical', price: 75 }, { id: 4, name: 'Wiring', price: 90 }]
+  },
+  {
+    id: -3, proName: 'Carol Williams', businessName: 'Sparkle Clean Co.',
+    city: 'Birmingham', state: 'England', country: 'UK', isEmailVerified: true,
+    services: [{ id: 5, name: 'House Cleaning', price: 35 }]
+  },
+  {
+    id: -4, proName: 'David Chen', businessName: 'Chen Carpentry',
+    city: 'Bristol', state: 'England', country: 'UK', isEmailVerified: true,
+    services: [{ id: 6, name: 'Carpentry', price: 55 }, { id: 7, name: 'Furniture Assembly', price: 40 }]
+  },
+  {
+    id: -5, proName: 'Emma Davis', businessName: 'Davis Decorating',
+    city: 'Leeds', state: 'England', country: 'UK', isEmailVerified: true,
+    services: [{ id: 8, name: 'Painting', price: 50 }, { id: 9, name: 'Decorating', price: 65 }]
+  }
+];
 
 @Component({
   selector: 'app-find-a-pro',
@@ -36,6 +66,7 @@ export class FindAProComponent implements OnInit, OnDestroy {
   categories: ServiceCategory[] = [];
   highlightedProId: number | null = null;
   showMap = true;
+  isAuthenticated = false;
 
   mapMarkers: MapMarker[] = [];
 
@@ -47,10 +78,21 @@ export class FindAProComponent implements OnInit, OnDestroy {
   constructor(
     private proBrowseService: ProBrowseService,
     private serviceCategoryService: ServiceCategoryService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private auth: Auth,
+    private addressService: AddressService
   ) {}
 
   ngOnInit(): void {
+    this.isAuthenticated = this.auth.isAuthenticated();
+
+    if (!this.isAuthenticated) {
+      this.pros = PREVIEW_PROS.map(p => ({ ...p }));
+      this.showMap = false;
+      this.applyUserLocationToPreviews();
+      return;
+    }
+
     this.serviceCategoryService.getCategories().pipe(takeUntil(this.destroy$)).subscribe({
       next: cats => { this.categories = cats; this.cdr.markForCheck(); }
     });
@@ -68,6 +110,28 @@ export class FindAProComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.search$.complete();
+  }
+
+  private applyUserLocationToPreviews(): void {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        this.addressService.reverseGeocode(coords.latitude, coords.longitude)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(loc => {
+            if (loc.city || loc.state) {
+              this.pros = this.pros.map(p => ({
+                ...p,
+                city: loc.city || p.city,
+                state: loc.state || p.state,
+                country: loc.country || p.country
+              }));
+              this.cdr.markForCheck();
+            }
+          });
+      },
+      () => { /* permission denied — keep default locations */ }
+    );
   }
 
   load(): void {
@@ -116,6 +180,7 @@ export class FindAProComponent implements OnInit, OnDestroy {
   }
 
   clickPro(pro: BrowsePro): void {
+    if (!this.isAuthenticated) return;
     this.highlightedProId = pro.id;
     this.cdr.markForCheck();
     if (pro.latitude && pro.longitude) {
