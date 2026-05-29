@@ -1,225 +1,152 @@
 <div class="register-container">
   <div class="register-card">
-  <div class="register-header">
-    <div class="logo-circle">👤</div>
-    <div class="header-text">
-      <h2>User Registration</h2>
-      <p class="subtitle">Create an account to book services and manage your appointments.</p>
-    </div>
-  </div>
-
-  <form #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)">
-    <!-- First Name -->
-    <div class="form-group">
-      <label for="FirstName">First Name</label>
-      <input
-        type="text"
-        id="FirstName"
-        name="FirstName"
-        class="form-control"
-        ngModel
-        required
-      />
+    <div class="register-header">
+      <div class="logo-circle">U</div>
+      <div class="header-text">
+        <h2>User Registration</h2>
+        <p class="subtitle">Create an account to book services and manage your appointments.</p>
+      </div>
     </div>
 
-    <!-- Last Name -->
-    <div class="form-group">
-      <label for="LastName">Last Name</label>
-      <input
-        type="text"
-        id="LastName"
-        name="LastName"
-        class="form-control"
-        ngModel
-        required
-      />
-    </div>
-
-    <!-- Email -->
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input
-        type="email"
-        id="email"
-        name="Email"
-        class="form-control"
-        ngModel
-        required
-        email
-      />
-    </div>
-
-    <!-- Phone Number -->
-    <div class="form-group">
-      <label for="phone">Phone Number</label>
-      <input
-        type="tel"
-        id="phone"
-        name="PhoneNumber"
-        class="form-control"
-        ngModel
-        required
-        pattern="^[0-9]{10}$"
-        placeholder="Enter 10-digit phone number"
-      />
-      <small class="text-muted">Format: 10 digits (e.g., 9876543210)</small>
-    </div>
-
-    <!-- Password -->
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input
-        type="password"
-        id="password"
-        name="Password"
-        class="form-control"
-        ngModel
-        required
-        minlength="6"
-      />
-    </div>
-
-    <!-- Confirm Password -->
-    <!-- <div class="form-group">
-      <label for="confirmPassword">Confirm Password</label>
-      <input
-        type="password"
-        id="confirmPassword"
-        name="confirmPassword"
-        class="form-control"
-        ngModel
-        required
-        minlength="6"
-      />
-    </div> -->
-
-    <!-- Address Section -->
-    <div class="address-section">
-      <h3>Address <span class="required">*</span></h3>
-      
-      <!-- Address Autocomplete -->
-      <div class="form-group">
-        <label for="addressAutocomplete">Search Address <span class="required">*</span></label>
-        <div class="autocomplete-container">
+    <form #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)">
+      <div class="name-row">
+        <div class="form-group">
+          <label for="FirstName">First Name</label>
           <input
-            #addressInput
             type="text"
-            id="addressAutocomplete"
+            id="FirstName"
+            name="FirstName"
             class="form-control"
-            placeholder="Start typing your address..."
-            (input)="onAddressInput($event, registerForm)"
-            (blur)="hideAddressList()"
-            autocomplete="off"
+            ngModel
+            required
           />
-          <div class="address-dropdown" *ngIf="showAddressList && addressPredictions.length > 0">
-            <div
-              *ngFor="let prediction of addressPredictions"
-              class="address-item"
-              (click)="onAddressSelected(prediction, registerForm)"
-            >
-              <div class="address-main">{{ prediction.mainText }}</div>
-              <div class="address-secondary">{{ prediction.secondaryText }}</div>
-            </div>
-          </div>
-          <div class="address-loading" *ngIf="addressLoading">Searching...</div>
         </div>
-        <small class="text-muted">Start typing to search for your address</small>
+        <div class="form-group">
+          <label for="LastName">Last Name</label>
+          <input
+            type="text"
+            id="LastName"
+            name="LastName"
+            class="form-control"
+            ngModel
+            required
+          />
+        </div>
       </div>
-      
-      <!-- House Name/Number -->
+
       <div class="form-group">
-        <label for="houseNameNumber">House Name/Number <span class="required">*</span></label>
+        <label for="email">Email</label>
         <input
-          type="text"
-          id="houseNameNumber"
-          name="houseNameNumber"
+          type="email"
+          id="email"
+          name="Email"
           class="form-control"
           ngModel
           required
+          email
+          placeholder="name@example.com"
         />
       </div>
 
-      <!-- Street 1 -->
       <div class="form-group">
-        <label for="street1">Street 1 <span class="required">*</span></label>
+        <label for="phone">Phone Number</label>
         <input
-          type="text"
-          id="street1"
-          name="street1"
+          type="tel"
+          id="phone"
+          name="PhoneNumber"
           class="form-control"
           ngModel
           required
+          pattern="^[0-9]{10}$"
+          placeholder="10-digit number"
         />
+        <small class="text-muted">Format: 10 digits (e.g., 9876543210)</small>
       </div>
 
-      <!-- Street 2 -->
       <div class="form-group">
-        <label for="street2">Street 2</label>
+        <label for="password">Password</label>
         <input
-          type="text"
-          id="street2"
-          name="street2"
-          class="form-control"
-        />
-      </div>
-
-      <!-- City -->
-      <div class="form-group">
-        <label for="city">City <span class="required">*</span></label>
-        <input
-          type="text"
-          id="city"
-          name="city"
+          type="password"
+          id="password"
+          name="Password"
           class="form-control"
           ngModel
           required
+          minlength="6"
+          placeholder="At least 6 characters"
         />
       </div>
 
-      <!-- State -->
-      <div class="form-group">
-        <label for="state">State <span class="required">*</span></label>
-        <input
-          type="text"
-          id="state"
-          name="state"
-          class="form-control"
-          ngModel
-          required
-        />
+      <div class="address-section">
+        <h3>Address <span class="required">*</span></h3>
+
+        <div class="form-group">
+          <label for="addressAutocomplete">Search Address</label>
+          <div class="autocomplete-container">
+            <input
+              #addressInput
+              type="text"
+              id="addressAutocomplete"
+              class="form-control"
+              placeholder="Start typing your address..."
+              (input)="onAddressInput($event, registerForm)"
+              (blur)="hideAddressList()"
+              autocomplete="off"
+            />
+            <div class="address-dropdown" *ngIf="showAddressList && addressPredictions.length > 0">
+              <div
+                *ngFor="let prediction of addressPredictions"
+                class="address-item"
+                (click)="onAddressSelected(prediction, registerForm)"
+              >
+                <div class="address-main">{{ prediction.mainText }}</div>
+                <div class="address-secondary">{{ prediction.secondaryText }}</div>
+              </div>
+            </div>
+            <div class="address-loading" *ngIf="addressLoading">Searching...</div>
+          </div>
+          <small class="text-muted">Start typing to search for your address</small>
+        </div>
+
+        <div class="form-group">
+          <label for="houseNameNumber">House Name/Number <span class="required">*</span></label>
+          <input type="text" id="houseNameNumber" name="houseNameNumber" class="form-control" ngModel required />
+        </div>
+
+        <div class="form-group">
+          <label for="street1">Street 1 <span class="required">*</span></label>
+          <input type="text" id="street1" name="street1" class="form-control" ngModel required />
+        </div>
+
+        <div class="form-group">
+          <label for="street2">Street 2</label>
+          <input type="text" id="street2" name="street2" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label for="city">City <span class="required">*</span></label>
+          <input type="text" id="city" name="city" class="form-control" ngModel required />
+        </div>
+
+        <div class="form-group">
+          <label for="state">State <span class="required">*</span></label>
+          <input type="text" id="state" name="state" class="form-control" ngModel required />
+        </div>
+
+        <div class="form-group">
+          <label for="country">Country <span class="required">*</span></label>
+          <input type="text" id="country" name="country" class="form-control" ngModel required />
+        </div>
+
+        <div class="form-group">
+          <label for="zipPostalCode">Zip/Postal Code <span class="required">*</span></label>
+          <input type="text" id="zipPostalCode" name="zipPostalCode" class="form-control" ngModel required />
+        </div>
       </div>
 
-      <!-- Country -->
-      <div class="form-group">
-        <label for="country">Country <span class="required">*</span></label>
-        <input
-          type="text"
-          id="country"
-          name="country"
-          class="form-control"
-          ngModel
-          required
-        />
-      </div>
-
-      <!-- Zip/Postal Code -->
-      <div class="form-group">
-        <label for="zipPostalCode">Zip/Postal Code <span class="required">*</span></label>
-        <input
-          type="text"
-          id="zipPostalCode"
-          name="zipPostalCode"
-          class="form-control"
-          ngModel
-          required
-        />
-      </div>
-    </div>
-
-    <!-- Submit Button -->
-    <button type="submit" class="btn btn-primary" [disabled]="!registerForm.valid">
-      Register
-    </button>
-  </form>
+      <button type="submit" class="btn-submit" [disabled]="!registerForm.valid">
+        Create Account
+      </button>
+    </form>
   </div>
 </div>

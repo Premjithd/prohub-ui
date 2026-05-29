@@ -1,12 +1,10 @@
-/* Register Choice Page Styling */
-
 .register-choice-wrapper {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
   color: #1f2937;
   background: #fff;
 }
 
-/* Hero Section */
+/* Hero */
 .hero {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -26,23 +24,10 @@
   opacity: 0.95;
 }
 
-@media (max-width: 768px) {
-  .hero {
-    padding: 60px 20px;
-  }
-  .hero-content h1 {
-    font-size: 36px;
-  }
-  .hero-content p {
-    font-size: 16px;
-  }
-}
-
 /* Container */
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
 }
 
 /* Registration Options */
@@ -55,189 +40,236 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 40px;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
+/* Option Cards */
 .option-card {
   background: white;
-  padding: 40px 30px;
+  padding: 40px 32px;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
   border: 2px solid transparent;
   display: flex;
   flex-direction: column;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
 
   &:hover {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
     border-color: #667eea;
   }
 }
 
+/* Card Icons — styled circles matching initials-avatar pattern */
 .card-icon {
-  font-size: 64px;
-  display: block;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
   margin-bottom: 20px;
+  flex-shrink: 0;
+
+  &.user-icon {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+  }
+
+  &.pro-icon {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    box-shadow: 0 6px 16px rgba(118, 75, 162, 0.3);
+  }
 }
 
 .option-card h2 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px;
   color: #1f2937;
 }
 
 .card-subtitle {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #667eea;
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pro-card .card-subtitle {
+  color: #764ba2;
 }
 
 .card-description {
-  font-size: 15px;
+  font-size: 14px;
   color: #6b7280;
-  line-height: 1.6;
+  line-height: 1.65;
   margin-bottom: 24px;
 }
 
 .features-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 32px 0;
+  margin: 0 0 32px;
   flex: 1;
 
   li {
     font-size: 14px;
     color: #4b5563;
-    padding: 8px 0;
+    padding: 7px 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    border-bottom: 1px solid #f3f4f6;
 
-    &:before {
-      content: '';
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &::before {
+      content: '✓';
+      font-weight: 700;
+      color: #667eea;
+      flex-shrink: 0;
     }
   }
 }
 
+.pro-card .features-list li::before {
+  color: #764ba2;
+}
+
+/* Buttons */
 .btn-primary,
 .btn-secondary {
-  padding: 14px 28px;
+  padding: 13px 28px;
   border: none;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s;
   font-family: inherit;
   text-align: center;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 48px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-  }
-
-  &:active {
-    transform: translateY(0);
   }
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #764ba2, #667eea);
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-/* Card Specific Styles */
-.user-card {
-  .card-subtitle {
-    color: #667eea;
-  }
-}
-
-.pro-card {
-  .card-subtitle {
-    color: #764ba2;
+    box-shadow: 0 8px 20px rgba(118, 75, 162, 0.3);
   }
 }
 
 /* Info Section */
 .info-section {
   text-align: center;
-  padding: 40px 20px;
+  padding: 28px 20px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.info-section h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  color: #1f2937;
-}
+.login-links p {
+  margin: 0;
+  font-size: 15px;
+  color: #6b7280;
 
-.login-links {
-  p {
-    margin: 12px 0;
-    font-size: 15px;
-    color: #6b7280;
+  a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
 
-    a {
-      color: #667eea;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.2s;
-
-      &:hover {
-        color: #764ba2;
-        text-decoration: underline;
-      }
+    &:hover {
+      color: #764ba2;
+      text-decoration: underline;
     }
   }
 }
 
+/* Responsive */
 @media (max-width: 768px) {
+  .hero {
+    padding: 48px 16px;
+  }
+
+  .hero-content h1 {
+    font-size: 32px;
+  }
+
+  .hero-content p {
+    font-size: 16px;
+  }
+
   .registration-options {
-    padding: 60px 20px;
+    padding: 40px 16px;
   }
 
   .options-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
-    margin-bottom: 40px;
+    gap: 20px;
+    margin-bottom: 20px;
   }
 
   .option-card {
-    padding: 30px 20px;
-  }
+    padding: 28px 24px;
 
-  .option-card h2 {
-    font-size: 20px;
-  }
-
-  .card-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
+    &:hover {
+      transform: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
   }
 
   .btn-primary,
   .btn-secondary {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 36px 12px;
+  }
+
+  .hero-content h1 {
+    font-size: 26px;
+  }
+
+  .hero-content p {
+    font-size: 14px;
+  }
+
+  .registration-options {
+    padding: 28px 12px;
+  }
+
+  .option-card {
+    padding: 24px 16px;
+  }
+
+  .card-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .option-card h2 {
+    font-size: 19px;
   }
 }
