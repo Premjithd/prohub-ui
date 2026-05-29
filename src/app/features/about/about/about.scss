@@ -27,13 +27,13 @@
 
 @media (max-width: 768px) {
   .about-hero {
-    padding: 60px 20px;
+    padding: 48px 16px;
   }
   .hero-content h1 {
-    font-size: 36px;
+    font-size: 28px;
   }
   .hero-content p {
-    font-size: 16px;
+    font-size: 15px;
   }
 }
 
@@ -98,13 +98,24 @@
 }
 
 @media (max-width: 768px) {
+  .section-container {
+    padding: 0;
+  }
+
+  .mission-section {
+    padding: 40px 16px;
+  }
+
   .mission-grid {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 24px;
   }
+
   .mission-left h2 {
-    font-size: 32px;
+    font-size: 26px;
+    margin-bottom: 16px;
   }
+
   .mission-right {
     grid-template-columns: 1fr 1fr;
   }
@@ -230,44 +241,68 @@
 
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 32px;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .team-member {
+  display: flex;
+  align-items: center;
+  gap: 20px;
   background: white;
-  padding: 32px 24px;
+  padding: 20px 24px;
   border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  transition: transform 0.3s;
-}
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s, border-color 0.2s;
 
-.team-member:hover {
-  transform: translateY(-8px);
+  &:hover {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.12);
+    border-color: #c7d2fe;
+  }
 }
 
 .member-avatar {
-  font-size: 64px;
-  display: block;
-  margin-bottom: 16px;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+
+  &.avatar-js { background: linear-gradient(135deg, #667eea, #764ba2); }
+  &.avatar-sc { background: linear-gradient(135deg, #f093fb, #f5576c); }
+  &.avatar-mj { background: linear-gradient(135deg, #4facfe, #00f2fe); color: #1a4a6b; }
+  &.avatar-er { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #0d4a2e; }
+}
+
+.member-info {
+  min-width: 0;
 }
 
 .team-member h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 2px;
+  color: #1f2937;
 }
 
 .member-role {
-  font-size: 14px;
+  font-size: 12px;
   color: #667eea;
   font-weight: 600;
-  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0 0 8px;
 }
 
 .member-bio {
-  font-size: 14px;
+  font-size: 13px;
   color: #6b7280;
   line-height: 1.5;
   margin: 0;
@@ -342,10 +377,60 @@
     grid-template-columns: 1fr;
   }
 
+  .values-section,
+  .how-we-work,
+  .team-section,
+  .about-cta {
+    padding: 40px 16px;
+  }
+
+  .values-section h2,
+  .how-we-work h2,
+  .team-section h2 {
+    font-size: 26px;
+    margin-bottom: 28px;
+  }
+
+  .cta-content h2 {
+    font-size: 26px;
+  }
+
   .values-grid,
   .difference-grid,
   .team-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .value-card,
+  .difference-item {
+    padding: 20px 16px;
+  }
+
+  .value-card:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .team-member {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .member-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 18px;
+  }
+
+  .difference-item:hover {
+    transform: none;
+    box-shadow: none;
+    background: #f9fafb;
   }
 
   .cta-buttons {
@@ -356,3 +441,50 @@
     width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .about-hero {
+    padding: 32px 16px;
+  }
+
+  .hero-content h1 {
+    font-size: 24px;
+  }
+
+  .hero-content p {
+    font-size: 14px;
+  }
+
+  .mission-section,
+  .values-section,
+  .how-we-work,
+  .team-section,
+  .about-cta {
+    padding: 28px 12px;
+  }
+
+  .mission-left h2 {
+    font-size: 22px;
+  }
+
+  .values-section h2,
+  .how-we-work h2,
+  .team-section h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .cta-content h2 {
+    font-size: 22px;
+  }
+
+  .stat-box {
+    padding: 20px 16px;
+  }
+
+  .stat-number {
+    font-size: 28px;
+  }
+
+}
+

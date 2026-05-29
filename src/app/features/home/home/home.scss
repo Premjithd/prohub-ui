@@ -330,8 +330,12 @@
 
 /* ── Responsive ───────────────────────────────────────── */
 @media (max-width: 768px) {
+  .section-container {
+    padding: 0;
+  }
+
   .hero {
-    padding: 48px 20px 60px;
+    padding: 48px 16px 56px;
   }
 
   .hero-container {
@@ -340,7 +344,7 @@
   }
 
   .hero-right {
-    display: none; // hide image on mobile to keep focus on CTA
+    display: none;
   }
 
   .hero-cta {
@@ -354,10 +358,64 @@
 
   .benefits,
   .how-works {
-    padding: 48px 16px;
+    padding: 40px 16px;
+  }
+
+  .benefits h2,
+  .how-works h2 {
+    margin-bottom: 28px;
+  }
+
+  .benefit-item:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   }
 
   .cta-banner {
-    padding: 40px 16px;
+    padding: 36px 16px;
+  }
+
+  .dash-header {
+    padding: 24px 16px;
+  }
+
+  .quick-actions {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 36px 12px 48px;
+  }
+
+  .hero-left h1 {
+    font-size: 1.6rem;
+  }
+
+  .benefits,
+  .how-works {
+    padding: 28px 12px;
+  }
+
+  .benefits-grid,
+  .steps {
+    gap: 12px;
+  }
+
+  .cta-banner {
+    padding: 28px 12px;
+  }
+
+  .dash-header {
+    padding: 20px 12px;
+  }
+
+  .dash-greeting h1 {
+    font-size: 1.3rem;
+  }
+
+  .quick-actions {
+    padding: 16px 12px;
   }
 }

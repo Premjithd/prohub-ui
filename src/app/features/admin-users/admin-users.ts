@@ -467,6 +467,7 @@ export class AdminUsersComponent implements OnInit {
   inviteAdmin(): void {
     const dialogRef = this.dialog.open(InviteAdminDialogComponent, {
       width: '400px',
+      maxWidth: '95vw',
       data: {}
     });
 
@@ -486,7 +487,7 @@ export class AdminUsersComponent implements OnInit {
   }
 
   openCreateUser(): void {
-    const dialogRef = this.dialog.open(CreateUserDialogComponent, { width: '480px' });
+    const dialogRef = this.dialog.open(CreateUserDialogComponent, { width: '480px', maxWidth: '95vw' });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminUsersService.createUser(result).subscribe({
@@ -505,7 +506,7 @@ export class AdminUsersComponent implements OnInit {
   }
 
   openCreatePro(): void {
-    const dialogRef = this.dialog.open(CreateProDialogComponent, { width: '480px' });
+    const dialogRef = this.dialog.open(CreateProDialogComponent, { width: '480px', maxWidth: '95vw' });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.adminUsersService.createPro(result).subscribe({
@@ -525,10 +526,14 @@ export class AdminUsersComponent implements OnInit {
 }
 
 const DIALOG_STYLES = [`
-  .create-form { display: flex; flex-direction: column; gap: 4px; padding-top: 8px; min-width: 380px; }
+  .create-form { display: flex; flex-direction: column; gap: 4px; padding-top: 8px; min-width: 0; }
   .full-width { width: 100%; }
   .form-row { display: flex; gap: 12px; }
-  .half-width { flex: 1; }
+  .half-width { flex: 1; min-width: 0; }
+  @media (max-width: 480px) {
+    .form-row { flex-direction: column; gap: 0; }
+    .half-width { width: 100%; }
+  }
 `];
 
 @Component({

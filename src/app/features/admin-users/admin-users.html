@@ -519,8 +519,8 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let invitation of adminInvitations" [class.expired]="invitation.isExpired">
-                    <td>{{ invitation.email }}</td>
-                    <td>
+                    <td data-label="Email">{{ invitation.email }}</td>
+                    <td data-label="Status">
                       <span *ngIf="invitation.isUsed" class="badge badge-used">
                         <mat-icon>check_circle</mat-icon> Used
                       </span>
@@ -531,8 +531,8 @@
                         <mat-icon>close_circle</mat-icon> Expired
                       </span>
                     </td>
-                    <td>{{ formatDate(invitation.createdAt) }}</td>
-                    <td>
+                    <td data-label="Created">{{ formatDate(invitation.createdAt) }}</td>
+                    <td data-label="Expires">
                       <span *ngIf="!invitation.isExpired && !invitation.isUsed" class="expires">
                         {{ invitation.daysUntilExpiry }} days
                       </span>
@@ -541,8 +541,8 @@
                         {{ formatDate(invitation.usedAt) }}
                       </span>
                     </td>
-                    <td>
-                      <button 
+                    <td data-label="Actions">
+                      <button
                         *ngIf="!invitation.isUsed && !invitation.isExpired"
                         (click)="resendInvitation(invitation.id)"
                         class="action-btn resend-btn"
