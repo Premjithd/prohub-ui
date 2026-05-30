@@ -120,6 +120,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
       serviceAddressHouse: [''],
       serviceAddressStreet1: [''],
       serviceAddressCity: ['', Validators.required],
+      serviceAddressDistrict: [''],
       serviceAddressState: [''],
       serviceAddressCountry: [''],
       serviceAddressPIN: [''],
@@ -182,6 +183,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
       serviceAddressHouse: details?.houseNameNumber || '',
       serviceAddressStreet1: details?.street1 || '',
       serviceAddressCity: details?.city || prediction.mainText,
+      serviceAddressDistrict: details?.district || '',
       serviceAddressState: details?.state || '',
       serviceAddressCountry: details?.country || '',
       serviceAddressPIN: details?.zipPostalCode || ''
@@ -198,6 +200,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
       serviceAddressHouse: '',
       serviceAddressStreet1: '',
       serviceAddressCity: '',
+      serviceAddressDistrict: '',
       serviceAddressState: '',
       serviceAddressCountry: '',
       serviceAddressPIN: ''
@@ -302,6 +305,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
       serviceAddressHouse: this.jobForm.value.serviceAddressHouse || null,
       serviceAddressStreet1: this.jobForm.value.serviceAddressStreet1 || null,
       serviceAddressCity: this.jobForm.value.serviceAddressCity,
+      serviceAddressDistrict: this.jobForm.value.serviceAddressDistrict || null,
       serviceAddressState: this.jobForm.value.serviceAddressState || null,
       serviceAddressCountry: this.jobForm.value.serviceAddressCountry || null,
       serviceAddressPIN: this.jobForm.value.serviceAddressPIN || null,

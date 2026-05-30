@@ -125,6 +125,104 @@
       </div>
     </div>
 
+    <!-- Service Areas Section -->
+    <div class="service-areas-section">
+      <div class="section-header" (click)="toggleServiceAreas()">
+        <h2>
+          <mat-icon>location_on</mat-icon>
+          Service Areas
+          <span class="area-count" *ngIf="serviceAreas.length">({{ serviceAreas.length }})</span>
+        </h2>
+        <mat-icon>{{ showServiceAreas ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </div>
+
+      <div *ngIf="showServiceAreas" class="service-areas-content">
+        <!-- Add area form -->
+        <div class="add-area-form">
+          <h3>Add Service Area</h3>
+          <div class="area-form-row">
+            <input type="text" [(ngModel)]="newArea.country" placeholder="Country *" class="area-input" />
+            <input type="text" [(ngModel)]="newArea.state" placeholder="State (optional)" class="area-input" />
+            <input type="text" [(ngModel)]="newArea.district" placeholder="District (optional)" class="area-input" />
+            <input type="text" [(ngModel)]="newArea.pinCode" placeholder="PIN Code (optional)" class="area-input" />
+            <input type="text" [(ngModel)]="newArea.notes" placeholder="Notes (optional)" class="area-input area-input-notes" />
+            <button
+              (click)="addServiceArea()"
+              [disabled]="!newArea.country || isSavingArea"
+              class="add-area-btn">
+              <mat-icon>add</mat-icon>
+              {{ isSavingArea ? 'Adding...' : 'Add' }}
+            </button>
+          </div>
+          <div *ngIf="areaErrorMsg" class="area-error">{{ areaErrorMsg }}</div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="isLoadingAreas" class="loading">
+          <mat-spinner diameter="32"></mat-spinner>
+          <span>Loading service areas...</span>
+        </div>
+
+        <!-- Areas table -->
+        <div *ngIf="!isLoadingAreas" class="areas-table-wrap">
+          <table class="areas-table" *ngIf="serviceAreas.length > 0">
+            <thead>
+              <tr>
+                <th>Country</th>
+                <th>State</th>
+                <th>District</th>
+                <th>PIN</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let area of serviceAreas" [class.area-row-inactive]="!area.isActive">
+                <td>{{ area.country }}</td>
+                <td>{{ area.state || '—' }}</td>
+                <td>{{ area.district || '—' }}</td>
+                <td>{{ area.pinCode || '—' }}</td>
+                <td>
+                  <span class="area-badge" [class.area-badge-active]="area.isActive" [class.area-badge-inactive]="!area.isActive">
+                    <mat-icon>{{ area.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+                    {{ area.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <span *ngIf="area.isAutoEnrolled" class="auto-badge" title="Auto-enrolled during pro registration">
+                    <mat-icon>autorenew</mat-icon> Auto
+                  </span>
+                  <span *ngIf="!area.isAutoEnrolled" class="manual-badge">Manual</span>
+                </td>
+                <td class="notes-cell">{{ area.notes || '—' }}</td>
+                <td class="area-actions">
+                  <button
+                    (click)="toggleServiceArea(area.id)"
+                    class="area-action-btn toggle-btn"
+                    [title]="area.isActive ? 'Disable this area' : 'Enable this area'">
+                    <mat-icon>{{ area.isActive ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                  </button>
+                  <button
+                    (click)="deleteServiceArea(area.id)"
+                    class="area-action-btn delete-btn"
+                    title="Delete area">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="serviceAreas.length === 0" class="no-data">
+            <mat-icon>location_off</mat-icon>
+            <p>No service areas defined. Add one above — currently accepting jobs from anywhere.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Search Section -->
     <div class="search-section">
       <form (ngSubmit)="search()" class="search-form">

@@ -20,6 +20,7 @@ export class RegisterUserComponent {
 
   private latitude: number | null = null;
   private longitude: number | null = null;
+  private district: string = '';
 
   constructor(private auth: Auth, private router: Router, private addressService: AddressService) {}
 
@@ -62,6 +63,7 @@ export class RegisterUserComponent {
 
         this.latitude = details.latitude ?? null;
         this.longitude = details.longitude ?? null;
+        this.district = details.district || '';
 
         if (this.addressInput) {
           this.addressInput.nativeElement.value = prediction.description;
@@ -84,7 +86,7 @@ export class RegisterUserComponent {
 
   onSubmit(form: any): void {
     if (form.valid) {
-      const payload = { ...form.value, latitude: this.latitude, longitude: this.longitude };
+      const payload = { ...form.value, latitude: this.latitude, longitude: this.longitude, district: this.district };
       this.auth.registerUser(payload).subscribe({
         next: (response) => {
           console.log('User registration successful:', response);

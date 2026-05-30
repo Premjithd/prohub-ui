@@ -15,6 +15,7 @@ import { Auth } from '../../core/services/auth';
 import { Router } from '@angular/router';
 import { ProUsersService, LinkedUser, LinkedPro } from '../../services/pro-users.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ServiceAreaService, ServiceArea } from '../../core/services/service-area.service';
 
 @Component({
   selector: 'app-admin-users',
@@ -82,6 +83,16 @@ export class AdminUsersComponent implements OnInit {
   isLoadingRelationships = false;
   addUserId: number | null = null;
 
+  // Service Areas
+  serviceAreas: ServiceArea[] = [];
+  isLoadingAreas = false;
+  isSavingArea = false;
+  showServiceAreas = false;
+  areaErrorMsg = '';
+  newArea: { country: string; state: string; district: string; pinCode: string; notes: string; isActive: boolean } = {
+    country: '', state: '', district: '', pinCode: '', notes: '', isActive: true
+  };
+
   constructor(
     private adminUsersService: AdminUsersService,
     private auth: Auth,
@@ -89,18 +100,19 @@ export class AdminUsersComponent implements OnInit {
     private router: Router,
     private dialog: MatDialog,
     private proUsersService: ProUsersService,
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private serviceAreaService: ServiceAreaService
   ) {}
 
   ngOnInit(): void {
     const userType = this.auth.getUserType();
     
     if (userType !== 'Admin') {
-      // Redirect to home if not admin
       this.router.navigate(['/']);
     } else {
       this.loadInvitations();
       this.loadDisputes();
+      this.loadServiceAreas();
     }
   }
 
@@ -458,6 +470,77 @@ export class AdminUsersComponent implements OnInit {
         this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
         this.cdr.markForCheck();
       }
+    });
+  }
+
+  toggleServiceAreas(): void {
+    this.showServiceAreas = !this.showServiceAreas;
+  }
+
+  loadServiceAreas(): void {
+    this.isLoadingAreas = true;
+    this.serviceAreaService.getAll().subscribe({
+      next: (areas) => {
+        this.serviceAreas = Array.isArray(areas) ? areas : (areas as any)?.$values ?? [];
+        this.isLoadingAreas = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoadingAreas = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  addServiceArea(): void {
+    if (!this.newArea.country.trim()) return;
+    this.isSavingArea = true;
+    this.areaErrorMsg = '';
+    this.serviceAreaService.add({
+      country: this.newArea.country.trim(),
+      state: this.newArea.state.trim() || undefined,
+      district: this.newArea.district.trim() || undefined,
+      pinCode: this.newArea.pinCode.trim() || undefined,
+      notes: this.newArea.notes.trim() || undefined,
+      isActive: true
+    }).subscribe({
+      next: (area) => {
+        this.serviceAreas = [...this.serviceAreas, area];
+        this.newArea = { country: '', state: '', district: '', pinCode: '', notes: '', isActive: true };
+        this.isSavingArea = false;
+        this.snack.open('Service area added.', 'OK', { duration: 3000, panelClass: 'snack-success' });
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.isSavingArea = false;
+        this.areaErrorMsg = err?.error?.message ?? 'Failed to add service area.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  toggleServiceArea(id: number): void {
+    this.serviceAreaService.toggle(id).subscribe({
+      next: (result) => {
+        const area = this.serviceAreas.find(a => a.id === id);
+        if (area) area.isActive = result.isActive;
+        const msg = result.isActive ? 'Area enabled.' : 'Area disabled.';
+        this.snack.open(msg, 'OK', { duration: 2500, panelClass: result.isActive ? 'snack-success' : 'snack-info' });
+        this.cdr.markForCheck();
+      },
+      error: () => this.snack.open('Failed to update area.', 'OK', { duration: 3000, panelClass: 'snack-error' })
+    });
+  }
+
+  deleteServiceArea(id: number): void {
+    if (!confirm('Delete this service area? This cannot be undone.')) return;
+    this.serviceAreaService.delete(id).subscribe({
+      next: () => {
+        this.serviceAreas = this.serviceAreas.filter(a => a.id !== id);
+        this.snack.open('Service area deleted.', 'OK', { duration: 3000, panelClass: 'snack-success' });
+        this.cdr.markForCheck();
+      },
+      error: () => this.snack.open('Failed to delete area.', 'OK', { duration: 3000, panelClass: 'snack-error' })
     });
   }
 

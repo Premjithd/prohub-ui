@@ -20,6 +20,7 @@ export interface AddressDetails {
   street1: string;
   street2: string;
   city: string;
+  district: string;
   state: string;
   country: string;
   zipPostalCode: string;
@@ -153,11 +154,15 @@ export class AddressService {
                || a.suburb || a.neighbourhood || a.city_district
                || a.county || a.state_district || '';
 
+    // District: use county or state_district (the administrative district level)
+    const district = a.county || a.state_district || a.district || '';
+
     return {
       houseNameNumber: a.house_number || '',
       street1: a.road || '',
       street2: a.suburb || a.neighbourhood || '',
       city,
+      district,
       state: a.state || a.state_district || '',
       country: a.country || a.country_code?.toUpperCase() || '',
       zipPostalCode: a.postcode || '',
@@ -167,6 +172,6 @@ export class AddressService {
   }
 
   private getEmptyAddressDetails(): AddressDetails {
-    return { houseNameNumber: '', street1: '', street2: '', city: '', state: '', country: '', zipPostalCode: '' };
+    return { houseNameNumber: '', street1: '', street2: '', city: '', district: '', state: '', country: '', zipPostalCode: '' };
   }
 }
