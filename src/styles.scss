@@ -110,3 +110,13 @@ body {
   color: #fff !important;
   border-radius: 8px !important;
 }
+
+.snack-service-area .mdc-snackbar__surface {
+  background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%) !important;
+  border: 1.5px solid #ffe082 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 16px rgba(245, 124, 0, 0.18) !important;
+  padding: 1rem 1.25rem !important;
+  max-width: 480px !important;
+  min-width: 300px !important;
+}

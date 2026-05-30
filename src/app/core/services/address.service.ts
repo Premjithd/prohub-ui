@@ -154,8 +154,12 @@ export class AddressService {
                || a.suburb || a.neighbourhood || a.city_district
                || a.county || a.state_district || '';
 
-    // District: use county or state_district (the administrative district level)
-    const district = a.county || a.state_district || a.district || '';
+    // For Indian addresses, Nominatim's `state_district` is the revenue district
+    // (e.g. "Thiruvananthapuram"), while `county` is often the taluk/block level
+    // (e.g. "Varkala"). Prioritise state_district so the correct district is sent.
+    // Strip any trailing admin suffix (e.g. "Thiruvananthapuram District" → "Thiruvananthapuram").
+    const rawDistrict = a.state_district || a.county || a.district || '';
+    const district = rawDistrict.replace(/\s+(district|taluk|division|tehsil|block)$/i, '').trim();
 
     return {
       houseNameNumber: a.house_number || '',

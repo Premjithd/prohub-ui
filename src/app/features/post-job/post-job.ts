@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef, V
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule, MatSnackBarRef } from '@angular/material/snack-bar';
 import { JobService } from '../../services/job.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { AddressService, AddressPrediction } from '../../core/services/address.service';
@@ -19,7 +21,7 @@ interface ServiceCategory {
 @Component({
   selector: 'app-post-job',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MatIconModule, MatSnackBarModule],
   templateUrl: './post-job.html',
   styleUrls: ['./post-job.scss']
 })
@@ -30,6 +32,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
   submitted = false;
   successMessage = '';
   errorMessage = '';
+  private serviceAreaSnackRef: MatSnackBarRef<ServiceAreaNoticeComponent> | null = null;
   currentStep = 1;
   private destroy$ = new Subject<void>();
 
@@ -69,7 +72,8 @@ export class PostJobComponent implements OnInit, OnDestroy {
     private serviceCategoryService: ServiceCategoryService,
     private addressService: AddressService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -272,6 +276,8 @@ export class PostJobComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     this.errorMessage = '';
     this.successMessage = '';
+    this.serviceAreaSnackRef?.dismiss();
+    this.serviceAreaSnackRef = null;
 
     this.markStepFieldsAsTouched(1);
     this.markStepFieldsAsTouched(2);
@@ -330,7 +336,16 @@ export class PostJobComponent implements OnInit, OnDestroy {
         } else if (error?.status === 403) {
           this.errorMessage = error?.error?.message || 'Please verify your email address before posting a job.';
         } else if (error?.status === 400) {
-          this.errorMessage = error?.error?.message || 'Invalid job data. Please check your inputs.';
+          const msg: string = error?.error?.message || '';
+          if (msg.toLowerCase().includes('not serving')) {
+            this.serviceAreaSnackRef = this.snackBar.openFromComponent(ServiceAreaNoticeComponent, {
+              panelClass: 'snack-service-area',
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom'
+            });
+          } else {
+            this.errorMessage = msg || 'Invalid job data. Please check your inputs.';
+          }
         } else {
           this.errorMessage = error?.error?.message || 'Error posting job. Please try again.';
         }
@@ -368,4 +383,35 @@ export class PostJobComponent implements OnInit, OnDestroy {
     const country = this.f['serviceAddressCountry'].value;
     return [city, state, country].filter(Boolean).join(', ');
   }
+}
+
+@Component({
+  selector: 'app-service-area-notice',
+  standalone: true,
+  imports: [MatIconModule],
+  template: `
+    <div class="san-wrap">
+      <mat-icon class="san-icon">location_on</mat-icon>
+      <div class="san-body">
+        <p class="san-title">Area Not Yet Covered</p>
+        <p class="san-msg">We're not serving this area currently. We're expanding — check back soon!</p>
+      </div>
+      <button class="san-close" (click)="ref.dismiss()" aria-label="Dismiss">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  `,
+  styles: [`
+    .san-wrap { display: flex; align-items: flex-start; gap: 0.875rem; }
+    .san-icon { font-size: 1.75rem; width: 1.75rem; height: 1.75rem; color: #f57c00; flex-shrink: 0; margin-top: 0.1rem; }
+    .san-body { flex: 1; }
+    .san-title { margin: 0 0 0.25rem; font-size: 0.95rem; font-weight: 700; color: #e65100; }
+    .san-msg { margin: 0; font-size: 0.84rem; color: #6d4c41; line-height: 1.5; }
+    .san-close { background: none; border: none; cursor: pointer; color: #f57c00; opacity: 0.6; display: flex; align-items: center; flex-shrink: 0; padding: 0.1rem; border-radius: 4px; transition: opacity 0.15s; }
+    .san-close:hover { opacity: 1; }
+    .san-close mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+  `]
+})
+export class ServiceAreaNoticeComponent {
+  constructor(public ref: MatSnackBarRef<ServiceAreaNoticeComponent>) {}
 }
