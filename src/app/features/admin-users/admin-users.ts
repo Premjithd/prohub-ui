@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,7 @@ import { MatDialogModule, MatDialog, MatDialogRef } from '@angular/material/dial
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
+import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { AdminUsersService, Job } from '../../core/services/admin-users.service';
 import { User } from '../../core/models/user.model';
 import { Pro } from '../../core/models/pro.model';
@@ -16,6 +17,8 @@ import { Router } from '@angular/router';
 import { ProUsersService, LinkedUser, LinkedPro } from '../../services/pro-users.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ServiceAreaService, ServiceArea } from '../../core/services/service-area.service';
+
+type AdminView = 'search' | 'service-areas' | 'invite-admin' | 'geocode';
 
 @Component({
   selector: 'app-admin-users',
@@ -30,68 +33,98 @@ import { ServiceAreaService, ServiceArea } from '../../core/services/service-are
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatBottomSheetModule
   ],
   templateUrl: './admin-users.html',
   styleUrl: './admin-users.scss'
 })
 export class AdminUsersComponent implements OnInit {
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  activeView: AdminView = 'search';
+  showToolsMenu = false;
+
+  readonly navItems: { id: AdminView; label: string; icon: string }[] = [
+    { id: 'search',        label: 'User / Pro Search', icon: 'manage_search' },
+    { id: 'service-areas', label: 'Service Areas',     icon: 'location_on'   },
+    { id: 'invite-admin',  label: 'Invite Admin',      icon: 'person_add'    },
+    { id: 'geocode',       label: 'Geocode',           icon: 'my_location'   },
+  ];
+
+  setView(view: AdminView): void {
+    this.activeView = view;
+    this.showToolsMenu = false;
+  }
+
+  getActiveViewLabel(): string {
+    return this.navItems.find(n => n.id === this.activeView)?.label ?? '';
+  }
+
+  getActiveViewIcon(): string {
+    return this.navItems.find(n => n.id === this.activeView)?.icon ?? 'menu';
+  }
+
+  // ── Search ────────────────────────────────────────────────────────────────
   searchQuery = '';
   searchType: 'user' | 'pro' = 'user';
-  
+
+  setSearchType(type: 'user' | 'pro'): void {
+    this.searchType = type;
+    this.users = [];
+    this.pros = [];
+    this.selectedUser = null;
+    this.selectedPro = null;
+    this.cdr.detectChanges();
+  }
   isSearching = false;
   isLoadingDetails = false;
-  
   users: User[] = [];
   pros: Pro[] = [];
-  
   selectedUser: User | null = null;
   selectedPro: Pro | null = null;
-  
   userJobs: Job[] = [];
   proJobs: Job[] = [];
-  
   userConversations: any[] = [];
   proConversations: any[] = [];
-  
   selectedConversation: any = null;
   conversationMessages: any[] = [];
-  
-  // Invitations tracking
+
+  // ── Invite Admin ──────────────────────────────────────────────────────────
   adminInvitations: any[] = [];
   isLoadingInvitations = false;
+  inviteEmail = '';
+  inviteSending = false;
+  inviteSuccess = '';
+  inviteError = '';
 
-  // Geocode backfill
+  // ── Geocode ───────────────────────────────────────────────────────────────
   isBackfillingPros = false;
   isBackfillingUsers = false;
   proBackfillResult: { message: string; updated: number; failed: number; total: number } | null = null;
   userBackfillResult: { message: string; updated: number; failed: number; total: number } | null = null;
 
-  // Service radius inline edit
+  // ── Service Radius ────────────────────────────────────────────────────────
   isEditingRadius = false;
   editRadiusValue = 25;
 
-  // Disputes
+  // ── Disputes ──────────────────────────────────────────────────────────────
   disputes: any[] = [];
   isLoadingDisputes = false;
   resolvingDisputeId: number | null = null;
 
-
-  // Pro-User relationships
+  // ── Relationships ─────────────────────────────────────────────────────────
   linkedUsers: LinkedUser[] = [];
   linkedPros: LinkedPro[] = [];
   isLoadingRelationships = false;
   addUserId: number | null = null;
 
-  // Service Areas
+  // ── Service Areas ─────────────────────────────────────────────────────────
   serviceAreas: ServiceArea[] = [];
   isLoadingAreas = false;
   isSavingArea = false;
-  showServiceAreas = false;
   areaErrorMsg = '';
-  newArea: { country: string; state: string; district: string; pinCode: string; notes: string; isActive: boolean } = {
-    country: '', state: '', district: '', pinCode: '', notes: '', isActive: true
-  };
+  newArea = { country: '', state: '', district: '', pinCode: '', notes: '', isActive: true };
 
   constructor(
     private adminUsersService: AdminUsersService,
@@ -101,20 +134,21 @@ export class AdminUsersComponent implements OnInit {
     private dialog: MatDialog,
     private proUsersService: ProUsersService,
     private snack: MatSnackBar,
-    private serviceAreaService: ServiceAreaService
+    private serviceAreaService: ServiceAreaService,
+    private bottomSheet: MatBottomSheet
   ) {}
 
   ngOnInit(): void {
-    const userType = this.auth.getUserType();
-    
-    if (userType !== 'Admin') {
+    if (this.auth.getUserType() !== 'Admin') {
       this.router.navigate(['/']);
-    } else {
-      this.loadInvitations();
-      this.loadDisputes();
-      this.loadServiceAreas();
+      return;
     }
+    this.loadInvitations();
+    this.loadDisputes();
+    this.loadServiceAreas();
   }
+
+  // ── Disputes ──────────────────────────────────────────────────────────────
 
   loadDisputes(): void {
     this.isLoadingDisputes = true;
@@ -149,61 +183,79 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
+  // ── Invitations ───────────────────────────────────────────────────────────
+
   loadInvitations(): void {
     this.isLoadingInvitations = true;
     this.adminUsersService.getAdminInvitations(true).subscribe({
       next: (invitations) => {
         this.adminInvitations = invitations || [];
         this.isLoadingInvitations = false;
+        this.cdr.markForCheck();
       },
-      error: (error) => {
-        this.isLoadingInvitations = false;
-      }
+      error: () => { this.isLoadingInvitations = false; }
     });
   }
 
   resendInvitation(invitationId: number): void {
     this.adminUsersService.resendAdminInvitation(invitationId).subscribe({
-      next: (response) => {
-        this.loadInvitations(); // Reload the list
+      next: () => this.loadInvitations(),
+      error: () => {}
+    });
+  }
+
+  sendInviteInline(): void {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.inviteEmail)) {
+      this.inviteError = 'Enter a valid email address.';
+      return;
+    }
+    this.inviteSending = true;
+    this.inviteSuccess = '';
+    this.inviteError = '';
+    this.adminUsersService.inviteAdmin(this.inviteEmail).subscribe({
+      next: () => {
+        this.inviteSuccess = `Invitation sent to ${this.inviteEmail}`;
+        this.inviteEmail = '';
+        this.inviteSending = false;
+        this.loadInvitations();
+        this.cdr.markForCheck();
       },
-      error: (error) => {
+      error: (err: any) => {
+        this.inviteError = err?.error?.message ?? 'Failed to send invitation.';
+        this.inviteSending = false;
+        this.cdr.markForCheck();
       }
     });
   }
 
-  search(): void {
-    if (!this.searchQuery || !this.searchQuery.trim()) {
-      return;
-    }
+  // ── Search ────────────────────────────────────────────────────────────────
 
+  search(): void {
+    if (!this.searchQuery?.trim()) return;
     this.isSearching = true;
+    this.selectedUser = null;
+    this.selectedPro = null;
     this.users = [];
     this.pros = [];
-
+    this.cdr.detectChanges();
     if (this.searchType === 'user') {
       this.adminUsersService.searchUsers(this.searchQuery).subscribe({
         next: (response) => {
           this.users = Array.isArray(response) ? response : (response.$values || response.data || []);
           this.isSearching = false;
-          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         },
-        error: (error) => {
-          this.isSearching = false;
-          this.cdr.markForCheck();
-        }
+        error: () => { this.isSearching = false; this.cdr.detectChanges(); }
       });
     } else {
       this.adminUsersService.searchPros(this.searchQuery).subscribe({
         next: (response) => {
           this.pros = Array.isArray(response) ? response : (response.$values || response.data || []);
           this.isSearching = false;
-          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         },
-        error: (error) => {
-          this.isSearching = false;
-          this.cdr.markForCheck();
-        }
+        error: () => { this.isSearching = false; this.cdr.detectChanges(); }
       });
     }
   }
@@ -211,6 +263,7 @@ export class AdminUsersComponent implements OnInit {
   selectUser(user: User): void {
     this.selectedUser = user;
     this.selectedPro = null;
+
     this.linkedUsers = [];
     this.linkedPros = [];
     this.addUserId = null;
@@ -221,6 +274,7 @@ export class AdminUsersComponent implements OnInit {
   selectPro(pro: Pro): void {
     this.selectedPro = pro;
     this.selectedUser = null;
+
     this.linkedUsers = [];
     this.linkedPros = [];
     this.addUserId = null;
@@ -232,31 +286,22 @@ export class AdminUsersComponent implements OnInit {
     this.isLoadingDetails = true;
     this.selectedConversation = null;
     this.conversationMessages = [];
-    this.userJobs = [];  // Clear previous data
-    this.userConversations = [];  // Clear previous data
-
-    // Load user jobs and conversations in parallel
+    this.userJobs = [];
+    this.userConversations = [];
     this.adminUsersService.getUserJobs(userId).subscribe({
       next: (response) => {
-        // Handle both $values format (from .NET) and direct array/data format
         this.userJobs = Array.isArray(response) ? response : (response.$values || response.data || []);
         this.cdr.markForCheck();
       },
-      error: (error) => {
-      }
+      error: () => {}
     });
-
     this.adminUsersService.getUserConversations(userId).subscribe({
       next: (response) => {
-        // Handle both $values format (from .NET) and direct array/data format
         this.userConversations = Array.isArray(response) ? response : (response.$values || response.data || []);
         this.isLoadingDetails = false;
         this.cdr.markForCheck();
       },
-      error: (error) => {
-        this.isLoadingDetails = false;
-        this.cdr.markForCheck();
-      }
+      error: () => { this.isLoadingDetails = false; this.cdr.markForCheck(); }
     });
   }
 
@@ -264,31 +309,22 @@ export class AdminUsersComponent implements OnInit {
     this.isLoadingDetails = true;
     this.selectedConversation = null;
     this.conversationMessages = [];
-    this.proJobs = [];  // Clear previous data
-    this.proConversations = [];  // Clear previous data
-
-    // Load pro jobs and conversations in parallel
+    this.proJobs = [];
+    this.proConversations = [];
     this.adminUsersService.getProJobs(proId).subscribe({
       next: (response) => {
-        // Handle both $values format (from .NET) and direct array/data format
         this.proJobs = Array.isArray(response) ? response : (response.$values || response.data || []);
         this.cdr.markForCheck();
       },
-      error: (error) => {
-      }
+      error: () => {}
     });
-
     this.adminUsersService.getProConversations(proId).subscribe({
       next: (response) => {
-        // Handle both $values format (from .NET) and direct array/data format
         this.proConversations = Array.isArray(response) ? response : (response.$values || response.data || []);
         this.isLoadingDetails = false;
         this.cdr.markForCheck();
       },
-      error: (error) => {
-        this.isLoadingDetails = false;
-        this.cdr.markForCheck();
-      }
+      error: () => { this.isLoadingDetails = false; this.cdr.markForCheck(); }
     });
   }
 
@@ -296,66 +332,55 @@ export class AdminUsersComponent implements OnInit {
     this.selectedConversation = conversation;
     const userType = this.selectedUser ? 'User' : 'Pro';
     const currentUserId = this.selectedUser ? this.selectedUser.id : this.selectedPro!.id;
-    
-    this.adminUsersService.getMessages(
-      currentUserId,
-      userType,
-      conversation.userId,
-      conversation.userType
-    ).subscribe({
+    this.adminUsersService.getMessages(currentUserId, userType, conversation.userId, conversation.userType).subscribe({
       next: (response) => {
-        // Handle both $values format (from .NET) and direct array/data format
         this.conversationMessages = Array.isArray(response) ? response : (response.$values || response.data || []);
         this.cdr.markForCheck();
       },
-      error: (error) => {
-      }
+      error: () => {}
     });
   }
 
   impersonate(): void {
     if (!this.selectedUser && !this.selectedPro) return;
-
     const userId = this.selectedUser ? this.selectedUser.id : this.selectedPro!.id;
     const userType = this.selectedUser ? 'User' : 'Pro';
     const displayName = this.selectedUser
       ? `${this.selectedUser.firstName} ${this.selectedUser.lastName}`
       : this.selectedPro!.proName;
-
-    if (!confirm(`Impersonate ${displayName} (${userType})?\n\nYou will browse the app as this ${userType.toLowerCase()}. An "Exit Impersonation" banner will appear at the top of every page.`)) return;
-
-    this.adminUsersService.impersonateUser(userId, userType).subscribe({
-      next: (data) => {
-        this.auth.startImpersonation(data.token, data.userId, data.userType, displayName);
-        this.router.navigate(['/']);
-      },
-      error: (err) => {
-        const msg = err?.error?.message ?? 'Impersonation failed.';
-        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
-      }
+    const ref = this.bottomSheet.open(ImpersonateSheetComponent, {
+      data: { displayName, userType }
+    });
+    ref.afterDismissed().subscribe((confirmed: boolean) => {
+      if (!confirmed) return;
+      this.adminUsersService.impersonateUser(userId, userType).subscribe({
+        next: (data) => {
+          this.auth.startImpersonation(data.token, data.userId, data.userType, displayName);
+          this.router.navigate(['/']);
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? 'Impersonation failed.';
+          this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+        }
+      });
     });
   }
 
   getDisplayName(user?: User, pro?: Pro): string {
-    if (user) {
-      return `${user.firstName} ${user.lastName}`;
-    }
-    if (pro) {
-      return pro.proName;
-    }
+    if (user) return `${user.firstName} ${user.lastName}`;
+    if (pro) return pro.proName;
     return '';
   }
 
   formatDate(date: string | Date): string {
-    if (!date) {
-      return '';
-    }
+    if (!date) return '';
     return new Date(date).toLocaleDateString();
   }
 
   clearSelection(): void {
     this.selectedUser = null;
     this.selectedPro = null;
+
     this.userJobs = [];
     this.proJobs = [];
     this.userConversations = [];
@@ -372,7 +397,6 @@ export class AdminUsersComponent implements OnInit {
     const req = type === 'pro'
       ? this.proUsersService.getUsersUnderPro(id)
       : this.proUsersService.getProsForUser(id);
-
     req.subscribe({
       next: (res: any) => {
         const items = Array.isArray(res) ? res : (res?.$values ?? []);
@@ -394,8 +418,7 @@ export class AdminUsersComponent implements OnInit {
         this.loadRelationships('pro', this.selectedPro!.id);
       },
       error: (err: any) => {
-        const msg = err?.error?.message ?? 'Failed to link user.';
-        this.snack.open(msg, 'OK', { duration: 4000 });
+        this.snack.open(err?.error?.message ?? 'Failed to link user.', 'OK', { duration: 4000 });
       }
     });
   }
@@ -417,9 +440,7 @@ export class AdminUsersComponent implements OnInit {
     this.isEditingRadius = true;
   }
 
-  cancelEditRadius(): void {
-    this.isEditingRadius = false;
-  }
+  cancelEditRadius(): void { this.isEditingRadius = false; }
 
   saveRadius(): void {
     if (!this.selectedPro || !this.editRadiusValue) return;
@@ -431,11 +452,12 @@ export class AdminUsersComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err: any) => {
-        const msg = err?.error?.message ?? 'Failed to update service radius.';
-        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+        this.snack.open(err?.error?.message ?? 'Failed to update service radius.', 'OK', { duration: 4000, panelClass: 'snack-error' });
       }
     });
   }
+
+  // ── Geocode ───────────────────────────────────────────────────────────────
 
   runGeocodeBackfillPros(): void {
     this.isBackfillingPros = true;
@@ -448,8 +470,7 @@ export class AdminUsersComponent implements OnInit {
       },
       error: (err: any) => {
         this.isBackfillingPros = false;
-        const msg = err?.error?.message ?? 'Pro geocode backfill failed.';
-        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+        this.snack.open(err?.error?.message ?? 'Pro geocode backfill failed.', 'OK', { duration: 4000, panelClass: 'snack-error' });
         this.cdr.markForCheck();
       }
     });
@@ -466,16 +487,13 @@ export class AdminUsersComponent implements OnInit {
       },
       error: (err: any) => {
         this.isBackfillingUsers = false;
-        const msg = err?.error?.message ?? 'User geocode backfill failed.';
-        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+        this.snack.open(err?.error?.message ?? 'User geocode backfill failed.', 'OK', { duration: 4000, panelClass: 'snack-error' });
         this.cdr.markForCheck();
       }
     });
   }
 
-  toggleServiceAreas(): void {
-    this.showServiceAreas = !this.showServiceAreas;
-  }
+  // ── Service Areas ─────────────────────────────────────────────────────────
 
   loadServiceAreas(): void {
     this.isLoadingAreas = true;
@@ -485,10 +503,7 @@ export class AdminUsersComponent implements OnInit {
         this.isLoadingAreas = false;
         this.cdr.markForCheck();
       },
-      error: () => {
-        this.isLoadingAreas = false;
-        this.cdr.markForCheck();
-      }
+      error: () => { this.isLoadingAreas = false; this.cdr.markForCheck(); }
     });
   }
 
@@ -524,48 +539,111 @@ export class AdminUsersComponent implements OnInit {
       next: (result) => {
         const area = this.serviceAreas.find(a => a.id === id);
         if (area) area.isActive = result.isActive;
-        const msg = result.isActive ? 'Area enabled.' : 'Area disabled.';
-        this.snack.open(msg, 'OK', { duration: 2500, panelClass: result.isActive ? 'snack-success' : 'snack-info' });
+        this.snack.open(result.isActive ? 'Area enabled.' : 'Area disabled.', 'OK', {
+          duration: 2500,
+          panelClass: result.isActive ? 'snack-success' : 'snack-info'
+        });
         this.cdr.markForCheck();
       },
       error: () => this.snack.open('Failed to update area.', 'OK', { duration: 3000, panelClass: 'snack-error' })
     });
   }
 
-  deleteServiceArea(id: number): void {
-    if (!confirm('Delete this service area? This cannot be undone.')) return;
-    this.serviceAreaService.delete(id).subscribe({
-      next: () => {
-        this.serviceAreas = this.serviceAreas.filter(a => a.id !== id);
-        this.snack.open('Service area deleted.', 'OK', { duration: 3000, panelClass: 'snack-success' });
-        this.cdr.markForCheck();
-      },
-      error: () => this.snack.open('Failed to delete area.', 'OK', { duration: 3000, panelClass: 'snack-error' })
+  deleteServiceArea(area: ServiceArea): void {
+    const ref = this.bottomSheet.open(DeleteAreaSheetComponent, {
+      data: { breadcrumb: [area.country, area.state, area.district, area.pinCode].filter(Boolean).join(' › ') }
+    });
+    ref.afterDismissed().subscribe((confirmed: boolean) => {
+      if (!confirmed) return;
+      this.serviceAreaService.delete(area.id).subscribe({
+        next: () => {
+          this.serviceAreas = this.serviceAreas.filter(a => a.id !== area.id);
+          this.snack.open('Service area deleted.', 'OK', { duration: 3000, panelClass: 'snack-success' });
+          this.cdr.detectChanges();
+        },
+        error: () => this.snack.open('Failed to delete area.', 'OK', { duration: 3000, panelClass: 'snack-error' })
+      });
     });
   }
+}
 
-  inviteAdmin(): void {
-    const dialogRef = this.dialog.open(InviteAdminDialogComponent, {
-      width: '400px',
-      maxWidth: '95vw',
-      data: {}
-    });
+@Component({
+  selector: 'app-impersonate-sheet',
+  standalone: true,
+  imports: [CommonModule, MatIconModule, MatButtonModule],
+  template: `
+    <div class="impersonate-sheet">
+      <div class="ims-icon-row">
+        <mat-icon class="ims-icon">manage_accounts</mat-icon>
+      </div>
+      <p class="ims-title">Impersonate {{ data.userType }}?</p>
+      <p class="ims-name">{{ data.displayName }}</p>
+      <p class="ims-warning">You will browse the app as this {{ data.userType.toLowerCase() }}. An "Exit Impersonation" banner will appear at the top of every page.</p>
+      <div class="ims-actions">
+        <button mat-stroked-button (click)="cancel()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="confirm()">
+          <mat-icon>login</mat-icon> Impersonate
+        </button>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .impersonate-sheet { padding: 1.5rem 1.5rem 2rem; text-align: center; }
+    .ims-icon-row { margin-bottom: 0.5rem; }
+    .ims-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; color: #667eea; }
+    .ims-title { margin: 0 0 0.3rem; font-size: 1.05rem; font-weight: 700; color: #1a1a1a; }
+    .ims-name { margin: 0 0 0.6rem; font-size: 1rem; color: #444; font-weight: 600; }
+    .ims-warning { margin: 0 0 1.25rem; font-size: 0.82rem; color: #888; line-height: 1.5; }
+    .ims-actions { display: flex; gap: 0.75rem; justify-content: center; }
+    .ims-actions button { min-width: 110px; }
+    .ims-actions mat-icon { font-size: 1rem; width: 1rem; height: 1rem; margin-right: 0.2rem; }
+  `]
+})
+export class ImpersonateSheetComponent {
+  constructor(
+    private sheetRef: MatBottomSheetRef<ImpersonateSheetComponent>,
+    @Inject(MAT_BOTTOM_SHEET_DATA) public data: { displayName: string; userType: string }
+  ) {}
+  confirm(): void { this.sheetRef.dismiss(true); }
+  cancel(): void { this.sheetRef.dismiss(false); }
+}
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result && result.email) {
-        this.adminUsersService.inviteAdmin(result.email).subscribe({
-          next: (response) => {
-            alert('Invitation sent to ' + result.email);
-            this.cdr.markForCheck();
-          },
-          error: (error) => {
-            alert('Failed to send invitation. Please try again.');
-          }
-        });
-      }
-    });
-  }
-
+@Component({
+  selector: 'app-delete-area-sheet',
+  standalone: true,
+  imports: [CommonModule, MatIconModule, MatButtonModule],
+  template: `
+    <div class="delete-area-sheet">
+      <div class="das-icon-row">
+        <mat-icon class="das-icon">delete_forever</mat-icon>
+      </div>
+      <p class="das-title">Delete service area?</p>
+      <p class="das-breadcrumb">{{ data.breadcrumb }}</p>
+      <p class="das-warning">This cannot be undone.</p>
+      <div class="das-actions">
+        <button mat-stroked-button (click)="cancel()">Cancel</button>
+        <button mat-raised-button color="warn" (click)="confirm()">Delete</button>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .delete-area-sheet { padding: 1.5rem 1.5rem 2rem; text-align: center; }
+    .das-icon-row { margin-bottom: 0.5rem; }
+    .das-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; color: #e53935; }
+    .das-title { margin: 0 0 0.4rem; font-size: 1.05rem; font-weight: 700; color: #1a1a1a; }
+    .das-breadcrumb { margin: 0 0 0.3rem; font-size: 0.9rem; color: #444; font-weight: 500; }
+    .das-warning { margin: 0 0 1.25rem; font-size: 0.82rem; color: #999; }
+    .das-actions { display: flex; gap: 0.75rem; justify-content: center; }
+    .das-actions button { min-width: 100px; }
+  `]
+})
+export class DeleteAreaSheetComponent {
+  constructor(
+    private sheetRef: MatBottomSheetRef<DeleteAreaSheetComponent>,
+    @Inject(MAT_BOTTOM_SHEET_DATA) public data: { breadcrumb: string }
+  ) {}
+  confirm(): void { this.sheetRef.dismiss(true); }
+  cancel(): void { this.sheetRef.dismiss(false); }
 }
 
 @Component({
@@ -591,17 +669,9 @@ export class AdminUsersComponent implements OnInit {
     </div>
   `,
   styles: [`
-    .invite-admin-dialog {
-      padding: 0;
-    }
-    .full-width {
-      width: 100%;
-    }
-    .info-text {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #666;
-    }
+    .invite-admin-dialog { padding: 0; }
+    .full-width { width: 100%; }
+    .info-text { margin-top: 1rem; font-size: 0.9rem; color: #666; }
   `]
 })
 export class InviteAdminDialogComponent {
@@ -610,14 +680,11 @@ export class InviteAdminDialogComponent {
   constructor(public dialogRef: MatDialogRef<InviteAdminDialogComponent>) {}
 
   isEmailValid(): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(this.email);
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email);
   }
 
   onConfirm(): void {
-    if (this.isEmailValid()) {
-      this.dialogRef.close({ email: this.email });
-    }
+    if (this.isEmailValid()) this.dialogRef.close({ email: this.email });
   }
 
   onCancel(): void {
