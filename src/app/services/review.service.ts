@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Review, ProRatingSummary, PlatformRatingStats } from '../models/review.model';
+import { Review, ProRatingSummary, PlatformRatingStats, UserReview, UserRatingSummary } from '../models/review.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
@@ -30,5 +30,23 @@ export class ReviewService {
 
   getPlatformStats(): Observable<PlatformRatingStats> {
     return this.http.get<PlatformRatingStats>(`${this.base}/stats`);
+  }
+
+  submitUserReview(jobId: number, rating: number, comment?: string): Observable<UserReview> {
+    return this.http.post<UserReview>(`${this.base}/jobs/${jobId}/user`, { rating, comment });
+  }
+
+  getJobUserReview(jobId: number): Observable<UserReview> {
+    return this.http.get<UserReview>(`${this.base}/jobs/${jobId}/user`);
+  }
+
+  getUserReviews(userId: number, page = 1, pageSize = 10): Observable<{ reviews: UserReview[]; total: number }> {
+    return this.http.get<{ reviews: UserReview[]; total: number }>(
+      `${this.base}/users/${userId}`, { params: { page, pageSize } }
+    );
+  }
+
+  getUserRatingSummary(userId: number): Observable<UserRatingSummary> {
+    return this.http.get<UserRatingSummary>(`${this.base}/users/${userId}/summary`);
   }
 }

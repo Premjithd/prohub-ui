@@ -985,6 +985,117 @@
   }
 }
 
+// Review customer section
+.review-customer-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f7ff;
+  border: 1px solid #e0daff;
+  border-left: 4px solid #667eea;
+  border-radius: 8px;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 1.25rem;
+    mat-icon { color: #667eea; }
+  }
+
+  .review-loading {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+  }
+
+  .review-submitted {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    .review-done-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+      color: #10b981;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .review-done-body {
+      .review-done-msg { margin: 0 0 6px; font-size: 14px; font-weight: 600; color: #374151; }
+      .review-comment-text { margin: 6px 0 0; font-size: 14px; color: #4b5563; font-style: italic; }
+    }
+  }
+
+  .review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    .review-prompt { margin: 0; font-size: 14px; color: #374151; }
+  }
+
+  .review-stars-row,
+  .review-stars-picker {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .r-star {
+    font-size: 28px;
+    color: #d1d5db;
+    line-height: 1;
+
+    &.filled { color: #f59e0b; }
+
+    &.picker {
+      cursor: pointer;
+      transition: color 0.1s, transform 0.1s;
+      &:hover, &.filled { color: #f59e0b; transform: scale(1.15); }
+    }
+  }
+
+  .review-rating-num {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-left: 6px;
+  }
+
+  .review-rating-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-left: 8px;
+  }
+
+  .review-comment-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    background: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+
+    &::placeholder { color: #d1d5db; }
+  }
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);

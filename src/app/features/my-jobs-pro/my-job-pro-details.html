@@ -284,6 +284,59 @@
             </button>
           </div>
         </div>
+
+        <!-- Rate the Customer — shown when job is Completed -->
+        <div *ngIf="job.status === 'Completed'" class="review-customer-section">
+          <h3>
+            <mat-icon>rate_review</mat-icon>
+            Rate the Customer
+          </h3>
+
+          <div *ngIf="userReviewLoading" class="review-loading">
+            <mat-spinner diameter="28"></mat-spinner>
+          </div>
+
+          <!-- Already submitted -->
+          <div *ngIf="!userReviewLoading && userReview" class="review-submitted">
+            <mat-icon class="review-done-icon">check_circle</mat-icon>
+            <div class="review-done-body">
+              <p class="review-done-msg">You rated this customer</p>
+              <div class="review-stars-row">
+                <span *ngFor="let i of starsArray" class="r-star" [class.filled]="reviewStarFilled(userReview.rating, i - 1)">★</span>
+                <span class="review-rating-num">{{ userReview.rating }}/5</span>
+              </div>
+              <p *ngIf="userReview.comment" class="review-comment-text">{{ userReview.comment }}</p>
+            </div>
+          </div>
+
+          <!-- Review form -->
+          <div *ngIf="!userReviewLoading && !userReview" class="review-form">
+            <p class="review-prompt">How was your experience working with this customer?</p>
+            <div class="review-stars-picker">
+              <span
+                *ngFor="let i of starsArray"
+                class="r-star picker"
+                [class.filled]="i <= (reviewHoveredStar || reviewRating)"
+                (mouseenter)="reviewHoveredStar = i"
+                (mouseleave)="reviewHoveredStar = 0"
+                (click)="reviewRating = i">★</span>
+              <span class="review-rating-label" *ngIf="reviewRating">{{ reviewRating }}/5</span>
+            </div>
+            <textarea
+              class="review-comment-input"
+              placeholder="Add a comment (optional)..."
+              [(ngModel)]="reviewComment"
+              rows="3"></textarea>
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="submitUserReview()"
+              [disabled]="reviewRating === 0 || submittingReview">
+              <mat-icon>send</mat-icon>
+              {{ submittingReview ? 'Submitting...' : 'Submit Review' }}
+            </button>
+          </div>
+        </div>
       </mat-card-content>
 
       <!-- Job Actions -->

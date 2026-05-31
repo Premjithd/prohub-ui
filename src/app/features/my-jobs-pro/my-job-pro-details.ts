@@ -16,6 +16,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { JobService, Job, JobPhase, Message, JobBid } from '../../services/job.service.js';
 import { Auth } from '../../core/services/auth';
+import { ReviewService } from '../../services/review.service';
+import { UserReview } from '../../models/review.model';
 import { Subject, interval } from 'rxjs';
 import { takeUntil, switchMap, filter } from 'rxjs/operators';
 
@@ -62,6 +64,13 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   resubmittingCompletion = false;
   completionStatus: string | null = null;
   disputeReason: string | null = null;
+  userReview: UserReview | null = null;
+  userReviewLoading = false;
+  reviewRating = 0;
+  reviewComment = '';
+  reviewHoveredStar = 0;
+  submittingReview = false;
+  readonly starsArray = [1, 2, 3, 4, 5];
   private destroy$ = new Subject<void>();
   private pollMessages$ = new Subject<void>(); // Subject to control polling
   private currentJobId: number | null = null;
@@ -90,7 +99,8 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
     private router: Router,
     public auth: Auth,
     private cdr: ChangeDetectorRef,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private reviewService: ReviewService
   ) {}
 
   ngOnInit(): void {
@@ -124,6 +134,9 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
         this.loadBidsForJob(jobId);
         if (job.status === 'Completion Submitted') {
           this.loadCompletionStatus(jobId);
+        }
+        if (job.status === 'Completed') {
+          this.loadJobUserReview(jobId);
         }
       },
       error: (error) => {
@@ -411,6 +424,49 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  loadJobUserReview(jobId: number): void {
+    this.userReviewLoading = true;
+    this.reviewService.getJobUserReview(jobId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: review => {
+          this.userReview = review;
+          this.userReviewLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.userReview = null;
+          this.userReviewLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  submitUserReview(): void {
+    if (!this.job || this.reviewRating === 0) return;
+    this.submittingReview = true;
+    this.reviewService.submitUserReview(this.job.id, this.reviewRating, this.reviewComment || undefined)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: review => {
+          this.userReview = review;
+          this.submittingReview = false;
+          this.successMessage = 'Review submitted successfully!';
+          this.cdr.markForCheck();
+          setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 3000);
+        },
+        error: err => {
+          this.errorMessage = err?.error?.message || 'Failed to submit review. Please try again.';
+          this.submittingReview = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  reviewStarFilled(rating: number, index: number): boolean {
+    return index + 1 <= Math.round(rating);
   }
 
   confirmJob(): void {

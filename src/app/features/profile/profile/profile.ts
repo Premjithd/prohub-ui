@@ -6,7 +6,7 @@ import { Pro } from '../../../core/models/pro.model';
 import { Auth } from '../../../core/services/auth';
 import { VerificationService } from '../../../core/services/verification.service';
 import { ReviewService } from '../../../services/review.service';
-import { Review, ProRatingSummary } from '../../../models/review.model';
+import { Review, ProRatingSummary, UserReview, UserRatingSummary } from '../../../models/review.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,7 +30,7 @@ export class ProfileComponent implements OnInit {
   errorMessage = '';
   userType: string | null = null;
 
-  // Reviews (Pro only)
+  // Reviews (Pro only — reviews received from users)
   ratingSummary: ProRatingSummary | null = null;
   reviews: Review[] = [];
   reviewsLoading = false;
@@ -38,6 +38,13 @@ export class ProfileComponent implements OnInit {
   reviewsTotal = 0;
   readonly reviewsPageSize = 5;
   readonly starsArray = [1, 2, 3, 4, 5];
+
+  // User reviews — reviews received from pros
+  userRatingSummary: UserRatingSummary | null = null;
+  userReviews: UserReview[] = [];
+  userReviewsLoading = false;
+  userReviewsPage = 1;
+  userReviewsTotal = 0;
 
   // Email verification flow
   emailVerifStep: 'idle' | 'sending' | 'code-sent' | 'verifying' = 'idle';
@@ -67,6 +74,7 @@ export class ProfileComponent implements OnInit {
         this.loadProRatings(this.userId);
       } else {
         this.loadUser(this.userId);
+        this.loadUserRatings(this.userId);
       }
     } else {
       console.warn('User ID not found in storage');
@@ -256,6 +264,34 @@ export class ProfileComponent implements OnInit {
       next: result => {
         this.reviews = [...this.reviews, ...(result.reviews ?? [])];
         this.reviewsTotal = result.total ?? 0;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  loadUserRatings(userId: number): void {
+    this.userReviewsLoading = true;
+    this.reviewService.getUserRatingSummary(userId).subscribe({
+      next: summary => { this.userRatingSummary = summary; this.cdr.markForCheck(); },
+      error: () => { this.cdr.markForCheck(); }
+    });
+    this.reviewService.getUserReviews(userId, 1, this.reviewsPageSize).subscribe({
+      next: result => {
+        this.userReviews = result.reviews ?? [];
+        this.userReviewsTotal = result.total ?? 0;
+        this.userReviewsLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.userReviewsLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  loadMoreUserReviews(): void {
+    this.userReviewsPage++;
+    this.reviewService.getUserReviews(this.userId, this.userReviewsPage, this.reviewsPageSize).subscribe({
+      next: result => {
+        this.userReviews = [...this.userReviews, ...(result.reviews ?? [])];
+        this.userReviewsTotal = result.total ?? 0;
         this.cdr.markForCheck();
       }
     });
