@@ -55,7 +55,7 @@
   </div>
 
   <!-- Body -->
-  <div class="body-split" [class.map-hidden]="!showMap">
+  <div class="body-split" [class.map-hidden]="!showMap && !selectedPro">
     <!-- Left: list -->
     <div class="list-panel">
       <div *ngIf="loading" class="loading-wrap">
@@ -75,12 +75,13 @@
         </span>
       </div>
 
-<div class="pro-list" [class.preview-blur]="!isAuthenticated">
+      <div class="pro-list" [class.preview-blur]="!isAuthenticated">
         <div
           *ngFor="let pro of pros"
           id="pro-card-{{ pro.id }}"
           class="pro-card"
           [class.highlighted]="highlightedProId === pro.id"
+          [class.selected]="selectedPro?.id === pro.id"
           [class.no-location]="!pro.latitude || !pro.longitude"
           [class.preview-card]="!isAuthenticated"
           (mouseenter)="isAuthenticated && hoverPro(pro.id)"
@@ -105,24 +106,84 @@
               <span *ngIf="pro.services.length > 3" class="service-chip more">+{{ pro.services.length - 3 }} more</span>
             </div>
           </div>
-          <div class="pro-badge" *ngIf="pro.isEmailVerified">
-            <span class="material-icons verified-icon">verified</span>
-          </div>
-          <div *ngIf="!pro.latitude || !pro.longitude" class="no-loc-badge" title="No location set">
-            <span class="material-icons">location_off</span>
+          <div class="pro-right-col">
+            <span *ngIf="pro.isEmailVerified" class="material-icons verified-icon" title="Verified">verified</span>
+            <span *ngIf="!pro.latitude || !pro.longitude" class="material-icons no-loc-icon" title="No location set">location_off</span>
+            <span class="material-icons chevron-icon">chevron_right</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Right: map — authenticated only -->
-    <div class="map-panel" *ngIf="isAuthenticated && showMap">
+    <!-- Right: map — hidden when detail panel is open -->
+    <div class="map-panel" *ngIf="isAuthenticated && showMap && !selectedPro">
       <app-map-view
         [markers]="mapMarkers"
         [loading]="loading"
         [highlightedId]="highlightedProId"
         (markerClick)="onMapMarkerClick($event)"
       ></app-map-view>
+    </div>
+
+    <!-- Pro detail panel — replaces map on desktop, full-screen on mobile -->
+    <div class="pro-detail-panel" *ngIf="isAuthenticated && selectedPro">
+
+      <!-- Panel header -->
+      <div class="pd-header">
+        <button class="pd-back-btn" (click)="closePro()" aria-label="Back to list">
+          <span class="material-icons">arrow_back</span>
+        </button>
+        <div class="pd-title">
+          <span class="pd-name">{{ selectedPro.proName }}</span>
+          <span class="pd-business" *ngIf="selectedPro.businessName">{{ selectedPro.businessName }}</span>
+        </div>
+        <span *ngIf="selectedPro.isEmailVerified" class="material-icons pd-verified" title="Verified professional">verified</span>
+      </div>
+
+      <!-- Pro meta info -->
+      <div class="pd-meta">
+        <div class="pd-meta-row">
+          <span class="material-icons">place</span>
+          {{ getLocation(selectedPro) }}
+        </div>
+        <div *ngIf="selectedPro.serviceRadiusKm" class="pd-meta-row">
+          <span class="material-icons">radio_button_checked</span>
+          Serves within {{ selectedPro.serviceRadiusKm }} km
+        </div>
+      </div>
+
+      <!-- Services offered -->
+      <div class="pd-services-section">
+        <h3 class="pd-section-title">Services Offered</h3>
+
+        <div *ngIf="proServicesLoading" class="pd-loading">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+
+        <div *ngIf="!proServicesLoading && proServices.length === 0" class="pd-empty">
+          <span class="material-icons">info</span>
+          No services listed yet.
+        </div>
+
+        <div *ngFor="let service of proServices" class="pd-service-card">
+          <div class="pd-service-info">
+            <div class="pd-service-name">{{ service.name }}</div>
+            <div *ngIf="service.serviceCategory" class="pd-service-cat">{{ service.serviceCategory.name }}</div>
+            <div *ngIf="service.description" class="pd-service-desc">{{ service.description }}</div>
+          </div>
+          <div class="pd-service-right">
+            <div class="pd-service-price">₹{{ service.price | number:'1.0-0' }}</div>
+            <button *ngIf="canPostJob()" class="pd-post-btn" (click)="postJobForService(service)">Post a Job</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- General post-job CTA (regular users only) -->
+      <div class="pd-cta" *ngIf="!proServicesLoading && canPostJob()">
+        <p>Not sure which service fits?</p>
+        <button class="pd-post-general-btn" (click)="postJobGeneral()">Post a General Job</button>
+      </div>
+
     </div>
   </div>
 </div>

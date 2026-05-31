@@ -81,6 +81,8 @@ export class PostJobComponent implements OnInit, OnDestroy {
     const qp = this.route.snapshot.queryParamMap;
     const catId = qp.get('categoryId');
     if (catId) this.preFillCategoryId = parseInt(catId, 10);
+    const title = qp.get('title');
+    if (title) this.jobForm.patchValue({ title });
     this.loadCategories();
     this.addressSearch$.pipe(
       debounceTime(450),

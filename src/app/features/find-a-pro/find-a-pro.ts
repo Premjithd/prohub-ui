@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -16,6 +16,7 @@ import { ServiceCategory } from '../../core/models/service-category.model';
 import { MapViewComponent, MapMarker } from '../../shared/map-view/map-view';
 import { Auth } from '../../core/services/auth';
 import { AddressService } from '../../core/services/address.service';
+import { MyServicesService, Service } from '../../services/my-services.service';
 
 const PREVIEW_PROS: BrowsePro[] = [
   {
@@ -68,6 +69,10 @@ export class FindAProComponent implements OnInit, OnDestroy {
   showMap = true;
   isAuthenticated = false;
 
+  selectedPro: BrowsePro | null = null;
+  proServices: Service[] = [];
+  proServicesLoading = false;
+
   mapMarkers: MapMarker[] = [];
 
   @ViewChild(MapViewComponent) mapView?: MapViewComponent;
@@ -80,7 +85,9 @@ export class FindAProComponent implements OnInit, OnDestroy {
     private serviceCategoryService: ServiceCategoryService,
     private cdr: ChangeDetectorRef,
     private auth: Auth,
-    private addressService: AddressService
+    private addressService: AddressService,
+    private myServicesService: MyServicesService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -182,17 +189,56 @@ export class FindAProComponent implements OnInit, OnDestroy {
   clickPro(pro: BrowsePro): void {
     if (!this.isAuthenticated) return;
     this.highlightedProId = pro.id;
+    this.selectedPro = pro;
+    this.proServices = [];
+    this.proServicesLoading = true;
     this.cdr.markForCheck();
-    if (pro.latitude && pro.longitude) {
-      this.mapView?.panTo(pro.id);
-    }
+    this.myServicesService.getMyServices(pro.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: services => {
+          this.proServices = services;
+          this.proServicesLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.proServicesLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  closePro(): void {
+    this.selectedPro = null;
+    this.proServices = [];
+    this.cdr.markForCheck();
   }
 
   onMapMarkerClick(id: number): void {
-    this.highlightedProId = id;
-    this.cdr.markForCheck();
+    const pro = this.pros.find(p => p.id === id);
+    if (pro) {
+      this.clickPro(pro);
+    } else {
+      this.highlightedProId = id;
+      this.cdr.markForCheck();
+    }
     const el = document.getElementById(`pro-card-${id}`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  isProUser(): boolean { return this.auth.getUserType() === 'Pro'; }
+  isAdmin(): boolean { return this.auth.getUserType() === 'Admin'; }
+  canPostJob(): boolean { return this.isAuthenticated && !this.isProUser() && !this.isAdmin(); }
+
+  postJobForService(service: Service): void {
+    const params: Record<string, string> = {};
+    if (service.serviceCategoryId) params['categoryId'] = String(service.serviceCategoryId);
+    if (service.name) params['title'] = service.name;
+    this.router.navigate(['/post-job'], { queryParams: params });
+  }
+
+  postJobGeneral(): void {
+    this.router.navigate(['/post-job']);
   }
 
   toggleMap(): void {
