@@ -32,9 +32,24 @@
   font-weight: 500;
   letter-spacing: 0.02em;
   transition: color 0.2s ease;
-  padding: 6px 4px 4px;
+  padding: 4px;
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+  position: relative;
+
+  // Top indicator: fixed width, always centred regardless of tab width
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: transparent;
+    border-radius: 0 0 4px 4px;
+    transition: background 0.2s ease;
+  }
 
   mat-icon {
     font-size: 22px;
@@ -43,11 +58,22 @@
     line-height: 22px;
   }
 
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90%;
+  }
+
   &.active {
     color: var(--color-primary);
 
+    &::after {
+      background: var(--color-primary);
+    }
+
     mat-icon {
-      // Solid fill effect for active state
+      // Solid fill on active – no translateY so icons stay on the same baseline
       font-variation-settings: 'FILL' 1;
     }
   }

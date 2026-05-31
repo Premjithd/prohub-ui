@@ -1,7 +1,7 @@
 <nav class="bottom-nav">
 
-  <!-- Home — always visible -->
-  <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+  <!-- Home — always visible for non-admin users -->
+  <a class="nav-item" *ngIf="!isAdmin()" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
     <mat-icon>home</mat-icon>
     <span>Home</span>
   </a>
@@ -63,19 +63,19 @@
     </a>
   </ng-container>
 
-  <!-- ── Admin ────────────────────────────────────────── -->
+  <!-- ── Admin — 4 tabs, home included here ───────────── -->
   <ng-container *ngIf="auth.isAuthenticated() && isAdmin()">
+    <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+      <mat-icon>home</mat-icon>
+      <span>Home</span>
+    </a>
     <a class="nav-item" routerLink="/admin-users" routerLinkActive="active">
       <mat-icon>admin_panel_settings</mat-icon>
-      <span>Users</span>
+      <span>Dashboard</span>
     </a>
-    <a class="nav-item" routerLink="/admin-materials" routerLinkActive="active">
-      <mat-icon>inventory_2</mat-icon>
-      <span>Materials</span>
-    </a>
-    <a class="nav-item" routerLink="/messages" routerLinkActive="active">
-      <mat-icon>mail</mat-icon>
-      <span>Messages</span>
+    <a class="nav-item" routerLink="/notifications" routerLinkActive="active">
+      <mat-icon>notifications</mat-icon>
+      <span>Notifications</span>
     </a>
     <a class="nav-item" routerLink="/profile" routerLinkActive="active">
       <mat-icon>person</mat-icon>

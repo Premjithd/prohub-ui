@@ -25,27 +25,16 @@ export class HomeComponent {
     return this.auth.isAuthenticated();
   }
 
-  navigateTo(path: string) {
-    // For post-job path, check if user is logged in
-    if (path === '/post-job') {
+  navigateTo(path: string, queryParams?: Record<string, string>) {
+    const extras = queryParams ? { queryParams } : {};
+    if (path === '/post-job' || path === '/add-service') {
       if (!this.auth.isAuthenticated()) {
-        // Redirect to login if not authenticated
         this.router.navigate(['/auth/login']);
       } else {
-        // Navigate to post-job if authenticated
-        this.router.navigate([path]);
-      }
-    } else if (path === '/add-service') {
-      if (!this.auth.isAuthenticated()) {
-        // Redirect to login if not authenticated
-        this.router.navigate(['/auth/login']);
-      } else {
-        // Navigate to add-service if authenticated
-        this.router.navigate([path]);
+        this.router.navigate([path], extras);
       }
     } else {
-      // Use Angular router to navigate within the SPA for other paths
-      this.router.navigate([path]);
+      this.router.navigate([path], extras);
     }
   }
 }

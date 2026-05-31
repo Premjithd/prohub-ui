@@ -231,6 +231,15 @@
   margin-bottom: 28px;
 }
 
+/* ── Admin grid override ──────────────────────────────── */
+.admin-grid {
+  grid-template-columns: repeat(3, 1fr);
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* ── Authenticated Dashboard ──────────────────────────── */
 .dash-header {
   background: var(--color-primary, #667eea);
@@ -286,6 +295,14 @@
   .action-icon {
     font-size: 28px;
     margin-bottom: 6px;
+    flex-shrink: 0;
+  }
+
+  .card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
   }
 
   strong {
@@ -294,7 +311,7 @@
     color: var(--color-text, #1f2937);
   }
 
-  span:last-child {
+  .card-text span {
     font-size: var(--text-small, 0.8125rem);
     color: var(--color-text-muted, #6b7280);
     line-height: 1.4;
@@ -315,7 +332,6 @@
     }
   }
 
-  // Full-width on small mobile
   @media (max-width: 480px) {
     flex-direction: row;
     align-items: center;
@@ -324,6 +340,11 @@
     .action-icon {
       font-size: 24px;
       margin: 0;
+    }
+
+    .card-text {
+      flex: 1;
+      min-width: 0;
     }
   }
 }

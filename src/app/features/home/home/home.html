@@ -8,8 +8,9 @@
       <div class="dash-header-inner">
         <div class="dash-greeting">
           <h1>Welcome back, {{ auth.getName() }}</h1>
-          <p *ngIf="!isProUser()">What would you like to do today?</p>
+          <p *ngIf="isAdmin()">Platform overview — manage users, materials, and services.</p>
           <p *ngIf="isProUser()">Here's a quick look at your work.</p>
+          <p *ngIf="!isProUser() && !isAdmin()">What would you like to do today?</p>
         </div>
       </div>
     </section>
@@ -21,23 +22,31 @@
           <div class="action-grid">
             <button class="action-card primary-action" (click)="navigateTo('/post-job')">
               <span class="action-icon">📋</span>
-              <strong>Post a Job</strong>
-              <span>Describe your project and get quotes</span>
+              <div class="card-text">
+                <strong>Post a Job</strong>
+                <span>Describe your project and get quotes</span>
+              </div>
             </button>
             <button class="action-card" (click)="navigateTo('/pending-jobs')">
               <span class="action-icon">📁</span>
-              <strong>My Jobs</strong>
-              <span>Track your active and past jobs</span>
+              <div class="card-text">
+                <strong>My Jobs</strong>
+                <span>Track your active and past jobs</span>
+              </div>
             </button>
             <button class="action-card" (click)="navigateTo('/messages')">
               <span class="action-icon">💬</span>
-              <strong>Messages</strong>
-              <span>Chat with your professionals</span>
+              <div class="card-text">
+                <strong>Messages</strong>
+                <span>Chat with your professionals</span>
+              </div>
             </button>
             <button class="action-card" (click)="navigateTo('/find-a-pro')">
               <span class="action-icon">🔍</span>
-              <strong>Browse Pros</strong>
-              <span>Explore available professionals</span>
+              <div class="card-text">
+                <strong>Browse Pros</strong>
+                <span>Explore available professionals</span>
+              </div>
             </button>
           </div>
         </div>
@@ -51,23 +60,31 @@
           <div class="action-grid">
             <button class="action-card primary-action" (click)="navigateTo('/available-jobs')">
               <span class="action-icon">🔍</span>
-              <strong>Find Jobs</strong>
-              <span>Browse jobs in your area</span>
+              <div class="card-text">
+                <strong>Find Jobs</strong>
+                <span>Browse jobs in your area</span>
+              </div>
             </button>
             <button class="action-card" (click)="navigateTo('/my-jobs-pro')">
               <span class="action-icon">✅</span>
-              <strong>My Work</strong>
-              <span>View your assigned jobs</span>
+              <div class="card-text">
+                <strong>My Work</strong>
+                <span>View your assigned jobs</span>
+              </div>
             </button>
             <button class="action-card" (click)="navigateTo('/my-services')">
               <span class="action-icon">🛠️</span>
-              <strong>My Services</strong>
-              <span>Manage what you offer</span>
+              <div class="card-text">
+                <strong>My Services</strong>
+                <span>Manage what you offer</span>
+              </div>
             </button>
             <button class="action-card" (click)="navigateTo('/messages')">
               <span class="action-icon">💬</span>
-              <strong>Messages</strong>
-              <span>Talk to your customers</span>
+              <div class="card-text">
+                <strong>Messages</strong>
+                <span>Talk to your customers</span>
+              </div>
             </button>
           </div>
         </div>
@@ -78,74 +95,53 @@
     <ng-container *ngIf="isAdmin()">
       <section class="quick-actions">
         <div class="section-container">
-          <div class="action-grid">
+          <div class="action-grid admin-grid">
             <button class="action-card primary-action" (click)="navigateTo('/admin-users')">
               <span class="action-icon">🛡️</span>
-              <strong>Admin Dashboard</strong>
-              <span>Manage users and platform</span>
+              <div class="card-text">
+                <strong>User Management</strong>
+                <span>Manage users, pros &amp; verification</span>
+              </div>
+            </button>
+            <button class="action-card" (click)="navigateTo('/admin-materials')">
+              <span class="action-icon">📦</span>
+              <div class="card-text">
+                <strong>Materials</strong>
+                <span>Manage the materials catalog</span>
+              </div>
+            </button>
+            <button class="action-card" (click)="navigateTo('/admin-users', {view: 'service-areas'})">
+              <span class="action-icon">🗺️</span>
+              <div class="card-text">
+                <strong>Service Areas</strong>
+                <span>Configure service coverage zones</span>
+              </div>
             </button>
             <button class="action-card" (click)="navigateTo('/messages')">
               <span class="action-icon">💬</span>
-              <strong>Messages</strong>
-              <span>Platform communications</span>
+              <div class="card-text">
+                <strong>Messages</strong>
+                <span>View platform communications</span>
+              </div>
+            </button>
+            <button class="action-card" (click)="navigateTo('/notifications')">
+              <span class="action-icon">🔔</span>
+              <div class="card-text">
+                <strong>Notifications</strong>
+                <span>View platform alerts</span>
+              </div>
+            </button>
+            <button class="action-card" (click)="navigateTo('/profile')">
+              <span class="action-icon">👤</span>
+              <div class="card-text">
+                <strong>Profile</strong>
+                <span>Manage admin account</span>
+              </div>
             </button>
           </div>
         </div>
       </section>
     </ng-container>
-
-    <!-- ── How it works (compact, authenticated) ──────────── -->
-    <section class="how-works">
-      <div class="section-container">
-        <h2>How It Works</h2>
-        <div class="steps">
-          <ng-container *ngIf="isProUser()">
-            <div class="step">
-              <div class="step-num">1</div>
-              <h3>Post Your Service</h3>
-              <p>Describe your service and set your rates.</p>
-            </div>
-            <div class="step">
-              <div class="step-num">2</div>
-              <h3>Get Inquiries</h3>
-              <p>Receive requests from verified customers in your area.</p>
-            </div>
-            <div class="step">
-              <div class="step-num">3</div>
-              <h3>Connect &amp; Negotiate</h3>
-              <p>Message customers and finalise project details.</p>
-            </div>
-            <div class="step">
-              <div class="step-num">4</div>
-              <h3>Complete &amp; Earn</h3>
-              <p>Complete the work and receive secure payment.</p>
-            </div>
-          </ng-container>
-          <ng-container *ngIf="!isProUser()">
-            <div class="step">
-              <div class="step-num">1</div>
-              <h3>Post Your Job</h3>
-              <p>Describe your project and set your budget in minutes.</p>
-            </div>
-            <div class="step">
-              <div class="step-num">2</div>
-              <h3>Get Quotes</h3>
-              <p>Receive bids from verified professionals nearby.</p>
-            </div>
-            <div class="step">
-              <div class="step-num">3</div>
-              <h3>Choose &amp; Hire</h3>
-              <p>Review profiles, ratings, and choose your perfect pro.</p>
-            </div>
-            <div class="step">
-              <div class="step-num">4</div>
-              <h3>Pay &amp; Review</h3>
-              <p>Secure payment after completion, then leave a review.</p>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-    </section>
 
   </ng-container>
 

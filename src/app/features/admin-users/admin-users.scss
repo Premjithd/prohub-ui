@@ -879,6 +879,127 @@
 
 }
 
+// ── Service Area Map ─────────────────────────────────────────────────────────
+
+.map-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  padding: 0.4rem 0.9rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+  &:hover { border-color: #667eea; color: #667eea; background: #f5f3ff; }
+  &.active { border-color: #667eea; background: #667eea; color: #fff; }
+}
+
+.map-section { margin-top: 0.5rem; }
+
+.map-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.map-select {
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+  background: #fff;
+  min-width: 140px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: #667eea; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.map-inactive-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #555;
+  cursor: pointer;
+
+  input[type="checkbox"] { accent-color: #667eea; cursor: pointer; }
+}
+
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin-left: 0.25rem;
+}
+
+.map-legend-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+
+  &.active { background: #10b981; }
+  &.inactive { background: #9ca3af; }
+}
+
+.map-geocoding {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.map-container {
+  width: 100%;
+  height: 440px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+
+  @media (max-width: 768px) { height: 320px; }
+}
+
+.list-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.25rem 0 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+.list-filter-count {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.map-empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.88rem;
+  margin-top: 0.5rem;
+}
+
 // ── Invite Admin Panel ────────────────────────────────────────────────────────
 
 .invite-form-section {
@@ -1222,6 +1343,14 @@
 // ── Mobile ────────────────────────────────────────────────────────────────────
 
 @media (max-width: 768px) {
+  // Escape the layout container so the header banner reaches the screen edges
+  // and the top flush against the navbar instead of floating in a padded box.
+  .admin-users-container {
+    margin: -1rem -1rem 0;
+    width: calc(100% + 2rem);
+    min-height: unset;
+  }
+
   .admin-header {
     padding: 1rem;
 
@@ -1246,9 +1375,9 @@
 
   .disputes-banner { padding: 0.875rem 1rem; }
 
-  .admin-panel-area { padding: 1rem; }
+  .admin-panel-area { padding: 1rem 0.75rem; }
 
-  .panel-card { padding: 1.25rem 1rem; }
+  .panel-card { padding: 1rem 0.875rem; }
 
   .panel-search-layout { flex-direction: column; }
 

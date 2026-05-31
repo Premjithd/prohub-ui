@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,11 +9,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { AdminUsersService, Job } from '../../core/services/admin-users.service';
 import { User } from '../../core/models/user.model';
 import { Pro } from '../../core/models/pro.model';
 import { Auth } from '../../core/services/auth';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ProUsersService, LinkedUser, LinkedPro } from '../../services/pro-users.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ServiceAreaService, ServiceArea } from '../../core/services/service-area.service';
@@ -39,7 +41,7 @@ type AdminView = 'search' | 'service-areas' | 'invite-admin' | 'geocode';
   templateUrl: './admin-users.html',
   styleUrl: './admin-users.scss'
 })
-export class AdminUsersComponent implements OnInit {
+export class AdminUsersComponent implements OnInit, OnDestroy {
 
   // ── Navigation ────────────────────────────────────────────────────────────
   activeView: AdminView = 'search';
@@ -126,22 +128,95 @@ export class AdminUsersComponent implements OnInit {
   areaErrorMsg = '';
   newArea = { country: '', state: '', district: '', pinCode: '', notes: '', isActive: true };
 
+  // ── Service Area List Filter ───────────────────────────────────────────────
+  listFilterCountry = '';
+  listFilterState = '';
+  listShowInactive = false;
+
+  get listStates(): string[] {
+    const src = this.listFilterCountry
+      ? this.serviceAreas.filter(a => a.country === this.listFilterCountry)
+      : this.serviceAreas;
+    return [...new Set(src.map(a => a.state).filter((s): s is string => !!s))].sort();
+  }
+
+  get filteredListAreas(): ServiceArea[] {
+    return this.serviceAreas.filter(a => {
+      if (!this.listShowInactive && !a.isActive) return false;
+      if (this.listFilterCountry && a.country !== this.listFilterCountry) return false;
+      if (this.listFilterState && a.state !== this.listFilterState) return false;
+      return true;
+    });
+  }
+
+  onListCountryChange(val: string): void {
+    this.listFilterCountry = val;
+    this.listFilterState = '';
+  }
+
+  onListStateChange(val: string): void {
+    this.listFilterState = val;
+  }
+
+  onListInactiveChange(val: boolean): void {
+    this.listShowInactive = val;
+  }
+
+  // ── Service Area Map ───────────────────────────────────────────────────────
+  showMapView = false;
+  mapFilterCountry = '';
+  mapFilterState = '';
+  mapShowInactive = false;
+  isGeocodingAreas = false;
+  private leafletMap: any = null;
+  private mapMarkers: any[] = [];
+  private geocodeCache = new Map<string, { lat: number; lng: number; geojson?: any } | null>();
+  private regionBoundsCache = new Map<string, [[number, number], [number, number]] | null>();
+  private mapLoadId = 0;
+  private lastGeocodeMs = 0;
+
+  get mapCountries(): string[] {
+    return [...new Set(this.serviceAreas.map(a => a.country))].sort();
+  }
+
+  get mapStates(): string[] {
+    const src = this.mapFilterCountry
+      ? this.serviceAreas.filter(a => a.country === this.mapFilterCountry)
+      : this.serviceAreas;
+    return [...new Set(src.map(a => a.state).filter((s): s is string => !!s))].sort();
+  }
+
+  get filteredMapAreas(): ServiceArea[] {
+    return this.serviceAreas.filter(a => {
+      if (!this.mapShowInactive && !a.isActive) return false;
+      if (this.mapFilterCountry && a.country !== this.mapFilterCountry) return false;
+      if (this.mapFilterState && a.state !== this.mapFilterState) return false;
+      return true;
+    });
+  }
+
   constructor(
     private adminUsersService: AdminUsersService,
     private auth: Auth,
     private cdr: ChangeDetectorRef,
     private router: Router,
+    private route: ActivatedRoute,
     private dialog: MatDialog,
     private proUsersService: ProUsersService,
     private snack: MatSnackBar,
     private serviceAreaService: ServiceAreaService,
-    private bottomSheet: MatBottomSheet
+    private bottomSheet: MatBottomSheet,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     if (this.auth.getUserType() !== 'Admin') {
       this.router.navigate(['/']);
       return;
+    }
+    const view = this.route.snapshot.queryParamMap.get('view') as AdminView | null;
+    if (view && this.navItems.some(n => n.id === view)) {
+      this.activeView = view;
     }
     this.loadInvitations();
     this.loadDisputes();
@@ -493,6 +568,62 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
+  // ── State abbreviation expansion ──────────────────────────────────────────
+
+  private readonly STATE_ABBREVIATIONS: Record<string, Record<string, string>> = {
+    india: {
+      AN: 'Andaman and Nicobar Islands', AP: 'Andhra Pradesh', AR: 'Arunachal Pradesh',
+      AS: 'Assam', BR: 'Bihar', CH: 'Chandigarh', CG: 'Chhattisgarh', CT: 'Chhattisgarh',
+      DN: 'Dadra and Nagar Haveli and Daman and Diu', DL: 'Delhi', GA: 'Goa', GJ: 'Gujarat',
+      HR: 'Haryana', HP: 'Himachal Pradesh', JK: 'Jammu and Kashmir', JH: 'Jharkhand',
+      KA: 'Karnataka', KL: 'Kerala', LA: 'Ladakh', LD: 'Lakshadweep', MP: 'Madhya Pradesh',
+      MH: 'Maharashtra', MN: 'Manipur', ML: 'Meghalaya', MZ: 'Mizoram', NL: 'Nagaland',
+      OD: 'Odisha', OR: 'Odisha', PY: 'Puducherry', PB: 'Punjab', RJ: 'Rajasthan',
+      SK: 'Sikkim', TN: 'Tamil Nadu', TS: 'Telangana', TG: 'Telangana', TR: 'Tripura',
+      UP: 'Uttar Pradesh', UK: 'Uttarakhand', UT: 'Uttarakhand', WB: 'West Bengal',
+    },
+    canada: {
+      AB: 'Alberta', BC: 'British Columbia', MB: 'Manitoba', NB: 'New Brunswick',
+      NL: 'Newfoundland and Labrador', NS: 'Nova Scotia', NT: 'Northwest Territories',
+      NU: 'Nunavut', ON: 'Ontario', PE: 'Prince Edward Island', QC: 'Quebec',
+      SK: 'Saskatchewan', YT: 'Yukon',
+    },
+    'united states': {
+      AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California',
+      CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', FL: 'Florida', GA: 'Georgia',
+      HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas',
+      KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts',
+      MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi', MO: 'Missouri', MT: 'Montana',
+      NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico',
+      NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma',
+      OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina',
+      SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah', VT: 'Vermont',
+      VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming',
+      DC: 'District of Columbia',
+    },
+    australia: {
+      ACT: 'Australian Capital Territory', NSW: 'New South Wales', NT: 'Northern Territory',
+      QLD: 'Queensland', SA: 'South Australia', TAS: 'Tasmania', VIC: 'Victoria',
+      WA: 'Western Australia',
+    },
+    'united kingdom': {
+      ENG: 'England', SCT: 'Scotland', WLS: 'Wales', NIR: 'Northern Ireland',
+    },
+  };
+
+  private expandStateAbbrev(country: string, state: string): string {
+    if (!state?.trim()) return state;
+    const map = this.STATE_ABBREVIATIONS[country.trim().toLowerCase()];
+    if (!map) return state;
+    return map[state.trim().toUpperCase()] ?? state;
+  }
+
+  expandNewAreaState(): void {
+    if (this.newArea.state && this.newArea.country) {
+      this.newArea.state = this.expandStateAbbrev(this.newArea.country, this.newArea.state);
+    }
+  }
+
   // ── Service Areas ─────────────────────────────────────────────────────────
 
   loadServiceAreas(): void {
@@ -511,9 +642,10 @@ export class AdminUsersComponent implements OnInit {
     if (!this.newArea.country.trim()) return;
     this.isSavingArea = true;
     this.areaErrorMsg = '';
+    const state = this.expandStateAbbrev(this.newArea.country, this.newArea.state.trim());
     this.serviceAreaService.add({
       country: this.newArea.country.trim(),
-      state: this.newArea.state.trim() || undefined,
+      state: state || undefined,
       district: this.newArea.district.trim() || undefined,
       pinCode: this.newArea.pinCode.trim() || undefined,
       notes: this.newArea.notes.trim() || undefined,
@@ -524,6 +656,7 @@ export class AdminUsersComponent implements OnInit {
         this.newArea = { country: '', state: '', district: '', pinCode: '', notes: '', isActive: true };
         this.isSavingArea = false;
         this.snack.open('Service area added.', 'OK', { duration: 3000, panelClass: 'snack-success' });
+        if (this.showMapView) this.loadMapMarkers();
         this.cdr.markForCheck();
       },
       error: (err: any) => {
@@ -543,6 +676,7 @@ export class AdminUsersComponent implements OnInit {
           duration: 2500,
           panelClass: result.isActive ? 'snack-success' : 'snack-info'
         });
+        if (this.showMapView) this.loadMapMarkers();
         this.cdr.markForCheck();
       },
       error: () => this.snack.open('Failed to update area.', 'OK', { duration: 3000, panelClass: 'snack-error' })
@@ -564,6 +698,242 @@ export class AdminUsersComponent implements OnInit {
         error: () => this.snack.open('Failed to delete area.', 'OK', { duration: 3000, panelClass: 'snack-error' })
       });
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.leafletMap) { this.leafletMap.remove(); this.leafletMap = null; }
+  }
+
+  // ── Service Area Map ───────────────────────────────────────────────────────
+
+  toggleMapView(): void {
+    this.showMapView = !this.showMapView;
+    if (this.showMapView) {
+      this.geocodeCache.clear();
+      this.regionBoundsCache.clear();
+      this.mapFilterCountry = this.mapCountries.includes('India') ? 'India' : (this.mapCountries[0] ?? '');
+      this.mapFilterState = '';
+      setTimeout(() => this.initMap(), 150);
+    } else {
+      if (this.leafletMap) { this.leafletMap.remove(); this.leafletMap = null; }
+    }
+  }
+
+  onMapCountryChange(val: string): void {
+    this.mapFilterCountry = val;
+    this.mapFilterState = '';
+    this.loadMapMarkers();
+  }
+
+  onMapStateChange(val: string): void {
+    this.mapFilterState = val;
+    this.loadMapMarkers();
+  }
+
+  onMapInactiveChange(val: boolean): void {
+    this.mapShowInactive = val;
+    this.loadMapMarkers();
+  }
+
+  private async geocodeArea(area: ServiceArea): Promise<{ lat: number; lng: number; geojson?: any } | null> {
+    const pin = area.pinCode ? this.formatPostalCode(area.pinCode) : undefined;
+    const key = [pin, area.district, area.state, area.country].filter(Boolean).join('|');
+    if (this.geocodeCache.has(key)) return this.geocodeCache.get(key) ?? null;
+
+    // Nominatim public API: max 1 req/s — wait if we fired one recently
+    const wait = 1150 - (Date.now() - this.lastGeocodeMs);
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    this.lastGeocodeMs = Date.now();
+
+    const base: Record<string, string> = { format: 'json', limit: '1', 'accept-language': 'en', polygon_geojson: '1' };
+
+    // PIN codes: use free-text — structured postalcode= is unreliable for Indian PINs.
+    // District/state: use structured params to match administrative boundaries precisely.
+    const queries: Record<string, string>[] = [];
+    if (pin) {
+      const q = [pin, area.district, area.state, area.country].filter(Boolean).join(', ');
+      queries.push({ ...base, q });
+      // Postal codes may not exist in Nominatim (e.g. Canadian codes) — fall back to region level
+      if (area.district) {
+        const structured: Record<string, string> = { ...base, county: area.district, country: area.country };
+        if (area.state) structured['state'] = area.state;
+        queries.push(structured, { ...base, q: [area.district, area.state, area.country].filter(Boolean).join(', ') });
+      } else if (area.state) {
+        queries.push({ ...base, state: area.state, country: area.country });
+      } else {
+        queries.push({ ...base, country: area.country });
+      }
+    } else if (area.district) {
+      const structured: Record<string, string> = { ...base, county: area.district, country: area.country };
+      if (area.state) structured['state'] = area.state;
+      const freeText = [area.district, area.state, area.country].filter(Boolean).join(', ');
+      queries.push(structured, { ...base, q: freeText }); // fallback to free-text if structured misses
+    } else if (area.state) {
+      queries.push({ ...base, state: area.state, country: area.country });
+    } else {
+      queries.push({ ...base, country: area.country });
+    }
+
+    for (const qparams of queries) {
+      // Rate-limit only on actual network calls (already waited above for the first; subsequent
+      // fallback calls need their own wait)
+      if (qparams !== queries[0]) {
+        const w2 = 1150 - (Date.now() - this.lastGeocodeMs);
+        if (w2 > 0) await new Promise(r => setTimeout(r, w2));
+        this.lastGeocodeMs = Date.now();
+      }
+      try {
+        const results = await firstValueFrom(
+          this.http.get<any[]>('https://nominatim.openstreetmap.org/search', { params: qparams })
+        );
+        if (results && results.length > 0) {
+          const r = results[0];
+          const pos = {
+            lat: parseFloat(r.lat),
+            lng: parseFloat(r.lon),
+            geojson: (r.geojson && r.geojson.type !== 'Point') ? r.geojson : undefined,
+          };
+          this.geocodeCache.set(key, pos);
+          return pos;
+        }
+      } catch {}
+    }
+    this.geocodeCache.set(key, null);
+    return null;
+  }
+
+  private async initMap(): Promise<void> {
+    const container = document.getElementById('service-area-map');
+    if (!container) return;
+
+    const L = await import('leaflet');
+    if (this.leafletMap) { this.leafletMap.remove(); this.leafletMap = null; }
+
+    this.leafletMap = L.map(container).setView([20, 78], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18
+    }).addTo(this.leafletMap);
+
+    await this.loadMapMarkers();
+  }
+
+  async loadMapMarkers(): Promise<void> {
+    if (!this.leafletMap) return;
+    const L = await import('leaflet');
+    const loadId = ++this.mapLoadId;
+
+    this.mapMarkers.forEach(m => m.remove());
+    this.mapMarkers = [];
+    this.isGeocodingAreas = true;
+    this.cdr.markForCheck();
+
+    const areas = this.filteredMapAreas;
+    const latLngs: [number, number][] = [];
+
+    for (const area of areas) {
+      if (loadId !== this.mapLoadId) return;
+      const pos = await this.geocodeArea(area);
+      if (loadId !== this.mapLoadId) return;
+      if (!pos) continue;
+
+      latLngs.push([pos.lat, pos.lng]);
+      const color = area.isActive ? '#10b981' : '#9ca3af';
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.35)"></div>`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+      });
+
+      const breadcrumb = [area.district, area.state, area.country].filter(Boolean).map(s => this.escHtml(s!)).join(', ');
+      const popup = `<div style="font-family:Roboto,sans-serif;min-width:160px;line-height:1.5">
+        <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#1f2937">${this.escHtml(area.district || area.state || area.country)}</p>
+        ${area.district && area.state ? `<p style="margin:0 0 2px;font-size:12px;color:#6b7280">${this.escHtml(area.state)}</p>` : ''}
+        <p style="margin:0 0 4px;font-size:12px;color:#6b7280">${this.escHtml(area.country)}</p>
+        ${area.pinCode ? `<p style="margin:0 0 4px;font-size:12px;color:#9ca3af">PIN: ${this.escHtml(area.pinCode)}</p>` : ''}
+        <span style="font-size:12px;font-weight:600;color:${area.isActive ? '#10b981' : '#9ca3af'}">${area.isActive ? '✓ Active' : '✗ Inactive'}</span>
+        ${area.isAutoEnrolled ? '<span style="font-size:11px;color:#f57c00;margin-left:6px">· Auto-enrolled</span>' : ''}
+      </div>`;
+
+      if (pos.geojson) {
+        const fillColor = area.isActive ? '#10b981' : '#9ca3af';
+        const poly = L.geoJSON(pos.geojson, {
+          style: { color: fillColor, weight: 2, opacity: 0.7, fillColor, fillOpacity: 0.12 }
+        }).bindPopup(popup, { maxWidth: 240 }).addTo(this.leafletMap);
+        this.mapMarkers.push(poly);
+      }
+
+      const marker = L.marker([pos.lat, pos.lng], { icon, title: breadcrumb })
+        .bindPopup(popup, { maxWidth: 240 })
+        .addTo(this.leafletMap);
+      this.mapMarkers.push(marker);
+    }
+
+    if (loadId !== this.mapLoadId) return;
+
+    // When a filter is active, zoom to the region's geographic extent so the
+    // filter has a clear visual effect even if all markers happen to be there already.
+    if (this.mapFilterCountry) {
+      const fitted = await this.fitToRegion(loadId);
+      if (!fitted && latLngs.length > 0) {
+        this.leafletMap.fitBounds(latLngs, { padding: [40, 40], maxZoom: 10 });
+      }
+    } else if (latLngs.length > 0) {
+      this.leafletMap.fitBounds(latLngs, { padding: [40, 40], maxZoom: 10 });
+    }
+
+    if (loadId !== this.mapLoadId) return;
+    this.isGeocodingAreas = false;
+    this.cdr.markForCheck();
+  }
+
+  private async fitToRegion(loadId: number): Promise<boolean> {
+    const regionKey = [this.mapFilterState, this.mapFilterCountry].filter(Boolean).join(', ');
+
+    if (!this.regionBoundsCache.has(regionKey)) {
+      const wait = 1150 - (Date.now() - this.lastGeocodeMs);
+      if (wait > 0) await new Promise(r => setTimeout(r, wait));
+      if (loadId !== this.mapLoadId) return true;
+      this.lastGeocodeMs = Date.now();
+
+      try {
+        const results = await firstValueFrom(
+          this.http.get<any[]>('https://nominatim.openstreetmap.org/search', {
+            params: { q: regionKey, format: 'json', limit: '1', 'accept-language': 'en' }
+          })
+        );
+        if (results?.length > 0 && results[0].boundingbox) {
+          const [s, n, w, e] = (results[0].boundingbox as string[]).map(Number);
+          this.regionBoundsCache.set(regionKey, [[s, w], [n, e]]);
+        } else {
+          this.regionBoundsCache.set(regionKey, null);
+        }
+      } catch {
+        this.regionBoundsCache.set(regionKey, null);
+      }
+    }
+
+    if (loadId !== this.mapLoadId) return true;
+    const bounds = this.regionBoundsCache.get(regionKey) ?? null;
+    if (bounds && this.leafletMap) {
+      this.leafletMap.fitBounds(bounds, { padding: [30, 30] });
+      return true;
+    }
+    return false;
+  }
+
+  private formatPostalCode(code: string): string {
+    // Canadian postal codes: 6-char alternating letter-digit (e.g. L2G0L0 → L2G 0L0)
+    const clean = code.replace(/\s/g, '');
+    if (/^[A-Za-z]\d[A-Za-z]\d[A-Za-z]\d$/.test(clean)) {
+      return clean.substring(0, 3) + ' ' + clean.substring(3);
+    }
+    return code;
+  }
+
+  private escHtml(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 }
 

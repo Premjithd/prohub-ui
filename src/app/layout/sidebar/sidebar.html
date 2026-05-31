@@ -39,10 +39,14 @@
   </ng-container>
 
   <ng-container *ngIf="auth.isAuthenticated()">
-    <!-- Admin Dashboard -->
+    <!-- Admin links -->
     <a *ngIf="isAdmin()" mat-list-item routerLink="/admin-users" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>admin_panel_settings</mat-icon>
       <span>Admin Dashboard</span>
+    </a>
+    <a *ngIf="isAdmin()" mat-list-item routerLink="/admin-materials" routerLinkActive="active" (click)="onMenuItemClick()">
+      <mat-icon>inventory_2</mat-icon>
+      <span>Materials</span>
     </a>
 
     <mat-divider *ngIf="isAdmin()"></mat-divider>

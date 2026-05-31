@@ -435,6 +435,10 @@
           <mat-icon>location_on</mat-icon>
           <h2>Service Areas</h2>
           <span class="panel-count" *ngIf="serviceAreas.length">({{ serviceAreas.length }})</span>
+          <button class="map-view-btn" (click)="toggleMapView()" [class.active]="showMapView" title="Toggle map view">
+            <mat-icon>{{ showMapView ? 'list' : 'map' }}</mat-icon>
+            {{ showMapView ? 'List View' : 'Map View' }}
+          </button>
         </div>
 
         <!-- Add area form -->
@@ -442,7 +446,7 @@
           <h3>Add Service Area</h3>
           <div class="area-form-row">
             <input type="text" [(ngModel)]="newArea.country" placeholder="Country *" class="area-input" />
-            <input type="text" [(ngModel)]="newArea.state" placeholder="State (optional)" class="area-input" />
+            <input type="text" [(ngModel)]="newArea.state" placeholder="State (optional)" class="area-input" (blur)="expandNewAreaState()" />
             <input type="text" [(ngModel)]="newArea.district" placeholder="District (optional)" class="area-input" />
             <input type="text" [(ngModel)]="newArea.pinCode" placeholder="PIN Code (optional)" class="area-input" />
             <input type="text" [(ngModel)]="newArea.notes" placeholder="Notes (optional)" class="area-input area-input-notes" />
@@ -454,58 +458,117 @@
           <div *ngIf="areaErrorMsg" class="area-error">{{ areaErrorMsg }}</div>
         </div>
 
-        <!-- Loading -->
-        <div *ngIf="isLoadingAreas" class="loading">
-          <mat-spinner diameter="32"></mat-spinner>
-          <span>Loading service areas...</span>
-        </div>
-
-        <!-- Table -->
-        <div *ngIf="!isLoadingAreas" class="areas-table-wrap">
-          <table class="areas-table" *ngIf="serviceAreas.length > 0">
-            <thead>
-              <tr>
-                <th>Country</th><th>State</th><th>District</th><th>PIN</th>
-                <th>Status</th><th>Type</th><th>Notes</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let area of serviceAreas" [class.area-row-inactive]="!area.isActive">
-                <td>{{ area.country }}</td>
-                <td>{{ area.state || '—' }}</td>
-                <td>{{ area.district || '—' }}</td>
-                <td>{{ area.pinCode || '—' }}</td>
-                <td>
-                  <span class="area-badge" [class.area-badge-active]="area.isActive" [class.area-badge-inactive]="!area.isActive">
-                    <mat-icon>{{ area.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
-                    {{ area.isActive ? 'Active' : 'Inactive' }}
-                  </span>
-                </td>
-                <td>
-                  <span *ngIf="area.isAutoEnrolled" class="auto-badge" title="Auto-enrolled during pro registration">
-                    <mat-icon>autorenew</mat-icon> Auto
-                  </span>
-                  <span *ngIf="!area.isAutoEnrolled" class="manual-badge">Manual</span>
-                </td>
-                <td class="notes-cell">{{ area.notes || '—' }}</td>
-                <td class="area-actions">
-                  <button (click)="toggleServiceArea(area.id)" class="area-action-btn toggle-btn"
-                    [title]="area.isActive ? 'Disable this area' : 'Enable this area'">
-                    <mat-icon>{{ area.isActive ? 'toggle_on' : 'toggle_off' }}</mat-icon>
-                  </button>
-                  <button (click)="deleteServiceArea(area)" class="area-action-btn delete-btn" title="Delete area">
-                    <mat-icon>delete_outline</mat-icon>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div *ngIf="serviceAreas.length === 0" class="no-data">
-            <mat-icon>location_off</mat-icon>
-            <p>No service areas defined. Add one above — currently accepting jobs from anywhere.</p>
+        <!-- ── MAP VIEW ─────────────────────────────────────────────────── -->
+        <div *ngIf="showMapView" class="map-section">
+          <div class="map-filters">
+            <select class="map-select" [ngModel]="mapFilterCountry" (ngModelChange)="onMapCountryChange($event)">
+              <option value="">All Countries</option>
+              <option *ngFor="let c of mapCountries" [value]="c">{{ c }}</option>
+            </select>
+            <select class="map-select" [ngModel]="mapFilterState" (ngModelChange)="onMapStateChange($event)" [disabled]="!mapFilterCountry">
+              <option value="">All States</option>
+              <option *ngFor="let s of mapStates" [value]="s">{{ s }}</option>
+            </select>
+            <div class="map-inactive-label" (click)="$event.stopPropagation()">
+              <input type="checkbox" id="map-inactive-toggle"
+                [checked]="mapShowInactive"
+                (change)="onMapInactiveChange($any($event.target).checked)" />
+              <label for="map-inactive-toggle">Show inactive</label>
+            </div>
+            <div class="map-legend">
+              <span class="map-legend-dot active"></span> Active
+              <span class="map-legend-dot inactive"></span> Inactive
+            </div>
+            <span *ngIf="isGeocodingAreas" class="map-geocoding">
+              <mat-spinner diameter="14"></mat-spinner> Locating…
+            </span>
           </div>
+          <div id="service-area-map" class="map-container"></div>
+          <p *ngIf="!isGeocodingAreas && filteredMapAreas.length === 0" class="map-empty">
+            No areas match the current filter.
+          </p>
         </div>
+
+        <!-- ── LIST VIEW ────────────────────────────────────────────────── -->
+        <ng-container *ngIf="!showMapView">
+          <!-- List filters -->
+          <div class="list-filters">
+            <select class="map-select" [ngModel]="listFilterCountry" (ngModelChange)="onListCountryChange($event)">
+              <option value="">All Countries</option>
+              <option *ngFor="let c of mapCountries" [value]="c">{{ c }}</option>
+            </select>
+            <select class="map-select" [ngModel]="listFilterState" (ngModelChange)="onListStateChange($event)" [disabled]="!listFilterCountry">
+              <option value="">All States</option>
+              <option *ngFor="let s of listStates" [value]="s">{{ s }}</option>
+            </select>
+            <div class="map-inactive-label" (click)="$event.stopPropagation()">
+              <input type="checkbox" id="list-inactive-toggle"
+                [checked]="listShowInactive"
+                (change)="listShowInactive = $any($event.target).checked" />
+              <label for="list-inactive-toggle">Show inactive</label>
+            </div>
+            <span class="list-filter-count" *ngIf="listFilterCountry || listFilterState || listShowInactive">
+              {{ filteredListAreas.length }} of {{ serviceAreas.length }}
+            </span>
+          </div>
+
+          <!-- Loading -->
+          <div *ngIf="isLoadingAreas" class="loading">
+            <mat-spinner diameter="32"></mat-spinner>
+            <span>Loading service areas...</span>
+          </div>
+
+          <!-- Table -->
+          <div *ngIf="!isLoadingAreas" class="areas-table-wrap">
+            <table class="areas-table" *ngIf="filteredListAreas.length > 0">
+              <thead>
+                <tr>
+                  <th>Country</th><th>State</th><th>District</th><th>PIN</th>
+                  <th>Status</th><th>Type</th><th>Notes</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let area of filteredListAreas" [class.area-row-inactive]="!area.isActive">
+                  <td>{{ area.country }}</td>
+                  <td>{{ area.state || '—' }}</td>
+                  <td>{{ area.district || '—' }}</td>
+                  <td>{{ area.pinCode || '—' }}</td>
+                  <td>
+                    <span class="area-badge" [class.area-badge-active]="area.isActive" [class.area-badge-inactive]="!area.isActive">
+                      <mat-icon>{{ area.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+                      {{ area.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span *ngIf="area.isAutoEnrolled" class="auto-badge" title="Auto-enrolled during pro registration">
+                      <mat-icon>autorenew</mat-icon> Auto
+                    </span>
+                    <span *ngIf="!area.isAutoEnrolled" class="manual-badge">Manual</span>
+                  </td>
+                  <td class="notes-cell">{{ area.notes || '—' }}</td>
+                  <td class="area-actions">
+                    <button (click)="toggleServiceArea(area.id)" class="area-action-btn toggle-btn"
+                      [title]="area.isActive ? 'Disable this area' : 'Enable this area'">
+                      <mat-icon>{{ area.isActive ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                    </button>
+                    <button (click)="deleteServiceArea(area)" class="area-action-btn delete-btn" title="Delete area">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div *ngIf="serviceAreas.length === 0" class="no-data">
+              <mat-icon>location_off</mat-icon>
+              <p>No service areas defined. Add one above — currently accepting jobs from anywhere.</p>
+            </div>
+            <div *ngIf="serviceAreas.length > 0 && filteredListAreas.length === 0" class="no-data">
+              <mat-icon>filter_alt_off</mat-icon>
+              <p>No areas match the current filter.</p>
+            </div>
+          </div>
+        </ng-container>
       </div>
     </ng-container>
 
