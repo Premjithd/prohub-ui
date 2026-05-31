@@ -150,6 +150,13 @@
           <span class="material-icons">radio_button_checked</span>
           Serves within {{ selectedPro.serviceRadiusKm }} km
         </div>
+        <div *ngIf="proRatingSummary && proRatingSummary.totalReviews > 0" class="pd-meta-row">
+          <div class="pd-rating-inline">
+            <span *ngFor="let i of starsArray" class="pd-star" [class.filled]="starFilled(proRatingSummary.averageRating, i - 1)">★</span>
+            <span class="pd-rating-num">{{ proRatingSummary.averageRating | number:'1.1-1' }}</span>
+            <span class="pd-rating-count">({{ proRatingSummary.totalReviews }} review{{ proRatingSummary.totalReviews !== 1 ? 's' : '' }})</span>
+          </div>
+        </div>
       </div>
 
       <!-- Services offered -->
@@ -175,6 +182,19 @@
             <div class="pd-service-price">₹{{ service.price | number:'1.0-0' }}</div>
             <button *ngIf="canPostJob()" class="pd-post-btn" (click)="postJobForService(service)">Post a Job</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Customer reviews -->
+      <div class="pd-reviews-section" *ngIf="!proReviewsLoading && proReviews.length > 0">
+        <h3 class="pd-section-title">Customer Reviews</h3>
+        <div *ngFor="let review of proReviews" class="pd-review-card">
+          <div class="pd-review-header">
+            <span *ngFor="let i of starsArray" class="pd-star sm" [class.filled]="starFilled(review.rating, i - 1)">★</span>
+            <span class="pd-review-author">{{ review.reviewerName }}</span>
+            <span class="pd-review-date">{{ review.createdAt | date:'d MMM yyyy' }}</span>
+          </div>
+          <p *ngIf="review.comment" class="pd-review-comment">{{ review.comment }}</p>
         </div>
       </div>
 

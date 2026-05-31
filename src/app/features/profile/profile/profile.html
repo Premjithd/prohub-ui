@@ -289,6 +289,59 @@
       </div>
     </div>
 
+    <!-- Reviews & Ratings -->
+    <div class="profile-card reviews-card" *ngIf="!isEditing">
+      <h3 class="section-title"><mat-icon>star</mat-icon> Reviews &amp; Ratings</h3>
+
+      <div *ngIf="reviewsLoading" class="reviews-loading">
+        <mat-spinner diameter="28"></mat-spinner>
+      </div>
+
+      <ng-container *ngIf="!reviewsLoading">
+        <div *ngIf="!ratingSummary || ratingSummary.totalReviews === 0" class="reviews-empty">
+          <mat-icon>rate_review</mat-icon>
+          <p>No reviews yet. Complete jobs to receive ratings from customers.</p>
+        </div>
+
+        <ng-container *ngIf="ratingSummary && ratingSummary.totalReviews > 0">
+          <div class="rating-summary">
+            <div class="rating-avg-block">
+              <div class="rating-avg-num">{{ ratingSummary.averageRating | number:'1.1-1' }}</div>
+              <div class="rating-stars-row">
+                <span *ngFor="let i of starsArray" class="star" [class.filled]="starFilled(ratingSummary.averageRating, i - 1)">★</span>
+              </div>
+              <div class="rating-count">{{ ratingSummary.totalReviews }} review{{ ratingSummary.totalReviews !== 1 ? 's' : '' }}</div>
+            </div>
+            <div class="rating-breakdown">
+              <div *ngFor="let s of [5,4,3,2,1]" class="breakdown-row">
+                <span class="bd-label">{{ s }}★</span>
+                <div class="bd-bar-wrap">
+                  <div class="bd-bar-fill" [style.width]="ratingBarWidth(ratingSummary.ratingBreakdown[s - 1] || 0, ratingSummary.totalReviews)"></div>
+                </div>
+                <span class="bd-count">{{ ratingSummary.ratingBreakdown[s - 1] || 0 }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="reviews-list" *ngIf="reviews.length > 0">
+            <h4 class="reviews-list-title">Recent Reviews</h4>
+            <div *ngFor="let review of reviews" class="review-card">
+              <div class="review-header">
+                <span *ngFor="let i of starsArray" class="star sm" [class.filled]="starFilled(review.rating, i - 1)">★</span>
+                <span class="review-author">{{ review.reviewerName }}</span>
+                <span class="review-job" *ngIf="review.jobTitle">· {{ review.jobTitle }}</span>
+                <span class="review-date">{{ review.createdAt | date:'d MMM yyyy' }}</span>
+              </div>
+              <p *ngIf="review.comment" class="review-comment">{{ review.comment }}</p>
+            </div>
+            <button *ngIf="reviews.length < reviewsTotal" class="btn-load-more" (click)="loadMoreReviews()">
+              Load more reviews
+            </button>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+
     <!-- Edit Form -->
     <div class="profile-card edit-card" *ngIf="isEditing">
       <h2 class="form-title">Edit Professional Profile</h2>

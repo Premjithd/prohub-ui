@@ -17,6 +17,8 @@ import { MapViewComponent, MapMarker } from '../../shared/map-view/map-view';
 import { Auth } from '../../core/services/auth';
 import { AddressService } from '../../core/services/address.service';
 import { MyServicesService, Service } from '../../services/my-services.service';
+import { ReviewService } from '../../services/review.service';
+import { Review, ProRatingSummary } from '../../models/review.model';
 
 const PREVIEW_PROS: BrowsePro[] = [
   {
@@ -72,6 +74,10 @@ export class FindAProComponent implements OnInit, OnDestroy {
   selectedPro: BrowsePro | null = null;
   proServices: Service[] = [];
   proServicesLoading = false;
+  proRatingSummary: ProRatingSummary | null = null;
+  proReviews: Review[] = [];
+  proReviewsLoading = false;
+  readonly starsArray = [1, 2, 3, 4, 5];
 
   mapMarkers: MapMarker[] = [];
 
@@ -87,7 +93,8 @@ export class FindAProComponent implements OnInit, OnDestroy {
     private auth: Auth,
     private addressService: AddressService,
     private myServicesService: MyServicesService,
-    private router: Router
+    private router: Router,
+    private reviewService: ReviewService
   ) {}
 
   ngOnInit(): void {
@@ -192,7 +199,29 @@ export class FindAProComponent implements OnInit, OnDestroy {
     this.selectedPro = pro;
     this.proServices = [];
     this.proServicesLoading = true;
+    this.proRatingSummary = null;
+    this.proReviews = [];
+    this.proReviewsLoading = true;
     this.cdr.markForCheck();
+
+    this.reviewService.getProRatingSummary(pro.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: summary => { this.proRatingSummary = summary; this.cdr.markForCheck(); },
+        error: () => { this.cdr.markForCheck(); }
+      });
+
+    this.reviewService.getProReviews(pro.id, 1, 5)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: result => {
+          this.proReviews = result.reviews ?? [];
+          this.proReviewsLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => { this.proReviewsLoading = false; this.cdr.markForCheck(); }
+      });
+
     this.myServicesService.getMyServices(pro.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -211,7 +240,13 @@ export class FindAProComponent implements OnInit, OnDestroy {
   closePro(): void {
     this.selectedPro = null;
     this.proServices = [];
+    this.proRatingSummary = null;
+    this.proReviews = [];
     this.cdr.markForCheck();
+  }
+
+  starFilled(rating: number, index: number): boolean {
+    return index + 1 <= Math.round(rating);
   }
 
   onMapMarkerClick(id: number): void {

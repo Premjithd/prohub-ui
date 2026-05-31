@@ -5,13 +5,16 @@ import { User, GetUserRequest} from '../../../core/models/user.model';
 import { Pro } from '../../../core/models/pro.model';
 import { Auth } from '../../../core/services/auth';
 import { VerificationService } from '../../../core/services/verification.service';
+import { ReviewService } from '../../../services/review.service';
+import { Review, ProRatingSummary } from '../../../models/review.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-profile',
-  imports: [ FormsModule, CommonModule, MatIconModule],
+  imports: [ FormsModule, CommonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './profile.html',
   styleUrl: './profile.scss'
 })
@@ -27,6 +30,15 @@ export class ProfileComponent implements OnInit {
   errorMessage = '';
   userType: string | null = null;
 
+  // Reviews (Pro only)
+  ratingSummary: ProRatingSummary | null = null;
+  reviews: Review[] = [];
+  reviewsLoading = false;
+  reviewsPage = 1;
+  reviewsTotal = 0;
+  readonly reviewsPageSize = 5;
+  readonly starsArray = [1, 2, 3, 4, 5];
+
   // Email verification flow
   emailVerifStep: 'idle' | 'sending' | 'code-sent' | 'verifying' = 'idle';
   emailVerifCode = '';
@@ -37,7 +49,8 @@ export class ProfileComponent implements OnInit {
     private proService: ProService,
     public auth: Auth,
     private cdr: ChangeDetectorRef,
-    private verificationService: VerificationService
+    private verificationService: VerificationService,
+    private reviewService: ReviewService
   ) {}
 
   ngOnInit(): void {
@@ -51,6 +64,7 @@ export class ProfileComponent implements OnInit {
       this.userId = Number(userIdStr);
       if (this.userType === 'Pro') {
         this.loadPro(this.userId);
+        this.loadProRatings(this.userId);
       } else {
         this.loadUser(this.userId);
       }
@@ -217,6 +231,42 @@ export class ProfileComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  loadProRatings(proId: number): void {
+    this.reviewsLoading = true;
+    this.reviewService.getProRatingSummary(proId).subscribe({
+      next: summary => { this.ratingSummary = summary; this.cdr.markForCheck(); },
+      error: () => { this.cdr.markForCheck(); }
+    });
+    this.reviewService.getProReviews(proId, 1, this.reviewsPageSize).subscribe({
+      next: result => {
+        this.reviews = result.reviews ?? [];
+        this.reviewsTotal = result.total ?? 0;
+        this.reviewsLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.reviewsLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  loadMoreReviews(): void {
+    this.reviewsPage++;
+    this.reviewService.getProReviews(this.userId, this.reviewsPage, this.reviewsPageSize).subscribe({
+      next: result => {
+        this.reviews = [...this.reviews, ...(result.reviews ?? [])];
+        this.reviewsTotal = result.total ?? 0;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  starFilled(rating: number, index: number): boolean {
+    return index + 1 <= Math.round(rating);
+  }
+
+  ratingBarWidth(count: number, total: number): string {
+    return total ? `${Math.round((count / total) * 100)}%` : '0%';
   }
 
   cancelEmailVerification(): void {
