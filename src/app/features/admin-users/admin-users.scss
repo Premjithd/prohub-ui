@@ -1525,6 +1525,176 @@
   }
 }
 
+// ── Entity Payments Tab (inside user/pro details) ────────────────────────
+.entity-payments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.entity-payment-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-left: 4px solid #4caf50;
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+
+  &.ep-refunded { border-left-color: #ff9800; }
+  &.ep-failed   { border-left-color: #f44336; }
+
+  .ep-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .ep-title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    .ep-id   { font-size: 0.75rem; color: #aaa; font-family: monospace; }
+    .ep-job  { font-weight: 600; font-size: 0.9rem; }
+  }
+
+  .ep-status {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.18rem 0.55rem;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    &.epst-completed { background: #e8f5e9; color: #2e7d32; }
+    &.epst-refunded  { background: #fff3e0; color: #e65100; }
+    &.epst-failed    { background: #ffebee; color: #c62828; }
+    &.epst-pending   { background: #e3f2fd; color: #1565c0; }
+  }
+
+  .ep-amounts {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.45rem;
+    .ep-amount-item {
+      display: flex;
+      flex-direction: column;
+      .ep-amt-label { font-size: 0.7rem; color: #999; text-transform: uppercase; letter-spacing: 0.3px; }
+      .ep-amt-value { font-size: 0.92rem; font-weight: 600; color: #222; }
+    }
+  }
+
+  .ep-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    font-size: 0.78rem;
+    color: #777;
+    margin-bottom: 0.3rem;
+    span { display: flex; align-items: center; gap: 0.2rem; }
+    mat-icon { font-size: 13px; width: 13px; height: 13px; }
+  }
+
+  .ep-failure {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    color: #c62828;
+    margin-top: 0.35rem;
+    mat-icon { font-size: 15px; width: 15px; height: 15px; }
+  }
+
+  .ep-refund-block {
+    margin-top: 0.65rem;
+    padding: 0.65rem 0.85rem;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 6px;
+
+    .ep-refund-header {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #e65100;
+      margin-bottom: 0.4rem;
+      mat-icon { font-size: 14px; width: 14px; height: 14px; }
+    }
+
+    .ep-refund-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .ep-rd-item { display: flex; flex-direction: column; }
+    .ep-rd-reason { display: flex; flex-direction: column; }
+
+    .ep-rd-label {
+      font-size: 0.7rem;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .ep-rd-value {
+      font-size: 0.88rem;
+      color: #333;
+      &.ep-refund-amount { font-weight: 700; color: #e65100; font-size: 0.95rem; }
+    }
+  }
+
+  .ep-provider-ids {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+    font-size: 0.7rem;
+    color: #bbb;
+    font-family: monospace;
+  }
+
+  .ep-refund-action {
+    margin-top: 0.75rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid #eee;
+
+    .ep-refund-btn {
+      font-size: 0.82rem;
+    }
+
+    .ep-refund-confirm {
+      padding: 0.65rem;
+      background: #fff3e0;
+      border: 1px solid #ffb74d;
+      border-radius: 6px;
+
+      .ep-refund-warn {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.85rem;
+        color: #e65100;
+        margin: 0 0 0.6rem;
+        mat-icon { font-size: 17px; width: 17px; height: 17px; }
+      }
+
+      .ep-refund-notes { width: 100%; }
+
+      .ep-refund-confirm-btns {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        margin-top: 0.4rem;
+      }
+    }
+  }
+}
+
 @media (max-width: 480px) {
   .details-tabs {
     ::ng-deep {

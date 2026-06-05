@@ -1,6 +1,6 @@
-<div class="admin-users-container" (click)="showToolsMenu = false">
+﻿<div class="admin-users-container" (click)="showToolsMenu = false">
 
-  <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+  <!-- â”€â”€ HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <div class="admin-header">
     <div class="header-top">
       <h1><mat-icon>admin_panel_settings</mat-icon> Admin Dashboard</h1>
@@ -25,7 +25,7 @@
     </div>
   </div>
 
-  <!-- ── DISPUTES BANNER (always visible) ──────────────────────────────── -->
+  <!-- â”€â”€ DISPUTES BANNER (always visible) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <div class="disputes-banner" *ngIf="disputes.length > 0 || isLoadingDisputes">
     <div class="disputes-banner-title">
       <mat-icon>flag</mat-icon>
@@ -52,14 +52,14 @@
         <p *ngIf="d.completionNotes" class="dispute-completion-notes"><strong>Pro notes:</strong> {{ d.completionNotes }}</p>
         <p *ngIf="d.paymentAmount != null" class="dispute-payment-amount">
           <mat-icon>currency_rupee</mat-icon>
-          <strong>Payment amount:</strong> ₹{{ d.paymentAmount | number:'1.2-2' }}
+          <strong>Payment amount:</strong> â‚¹{{ d.paymentAmount | number:'1.2-2' }}
         </p>
 
         <!-- Inline refund confirm form -->
         <div *ngIf="refundConfirmJobId === d.jobId" class="refund-confirm-form">
           <p class="refund-confirm-warning">
             <mat-icon>warning</mat-icon>
-            This will refund <strong>₹{{ d.paymentAmount | number:'1.2-2' }}</strong> to the consumer and reopen the job for rebidding.
+            This will refund <strong>â‚¹{{ d.paymentAmount | number:'1.2-2' }}</strong> to the consumer and reopen the job for rebidding.
           </p>
           <mat-form-field appearance="outline" class="refund-notes-field">
             <mat-label>Reason for refund</mat-label>
@@ -98,10 +98,10 @@
     </div>
   </div>
 
-  <!-- ── PANEL AREA ─────────────────────────────────────────────────────── -->
+  <!-- â”€â”€ PANEL AREA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <div class="admin-panel-area" [ngSwitch]="activeView">
 
-    <!-- ══ SEARCH PANEL ══════════════════════════════════════════════════ -->
+    <!-- â•â• SEARCH PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <ng-container *ngSwitchCase="'search'">
       <div class="panel-search-layout">
 
@@ -365,7 +365,7 @@
                     </div>
                   </div>
                   <div class="messages-panel" *ngIf="selectedConversation">
-                    <h3>Messages — {{ selectedConversation.userName }}</h3>
+                    <h3>Messages â€” {{ selectedConversation.userName }}</h3>
                     <div class="messages-list">
                       <div class="message" *ngFor="let message of conversationMessages"
                         [ngClass]="'message-' + (message.senderType ? message.senderType.toLowerCase() : 'unknown')">
@@ -412,7 +412,7 @@
                       <mat-icon>person</mat-icon>
                       <div class="rel-info">
                         <div class="rel-name">{{ u.name }}</div>
-                        <div class="rel-email">{{ u.email }} &nbsp;·&nbsp; ID: {{ u.id }}</div>
+                        <div class="rel-email">{{ u.email }} &nbsp;Â·&nbsp; ID: {{ u.id }}</div>
                       </div>
                       <button mat-icon-button color="warn" title="Remove" (click)="removeUserFromPro(u.id)">
                         <mat-icon>link_off</mat-icon>
@@ -434,13 +434,139 @@
                       <mat-icon>engineering</mat-icon>
                       <div class="rel-info">
                         <div class="rel-name">{{ p.name }}</div>
-                        <div class="rel-email">{{ p.businessName }} &nbsp;·&nbsp; {{ p.email }}</div>
+                        <div class="rel-email">{{ p.businessName }} &nbsp;Â·&nbsp; {{ p.email }}</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </mat-tab>
+            <!-- Payments Tab -->
+            <mat-tab>
+              <ng-template mat-tab-label><mat-icon>payments</mat-icon> Payments</ng-template>
+              <div class="tab-content">
+
+                <!-- Loading -->
+                <div *ngIf="isLoadingEntityPayments" class="loading">
+                  <mat-spinner diameter="24"></mat-spinner> Loading payments...
+                </div>
+
+                <!-- Empty -->
+                <div *ngIf="!isLoadingEntityPayments && entityPayments.length === 0" class="empty-state">
+                  <mat-icon>payments</mat-icon>
+                  <p>No payments found for this {{ selectedUser ? 'user' : 'professional' }}.</p>
+                </div>
+
+                <!-- Payment cards -->
+                <div class="entity-payments-list" *ngIf="!isLoadingEntityPayments && entityPayments.length > 0">
+                  <div
+                    *ngFor="let p of entityPayments"
+                    class="entity-payment-card"
+                    [class.ep-refunded]="p.status === 'Refunded'"
+                    [class.ep-failed]="p.status === 'Failed'">
+
+                    <!-- Card header -->
+                    <div class="ep-header">
+                      <div class="ep-title">
+                        <span class="ep-id">#{{ p.id }}</span>
+                        <span class="ep-job">{{ p.jobTitle ?? ('Job #' + p.jobId) }}</span>
+                      </div>
+                      <span class="ep-status" [class]="'epst-' + (p.status | lowercase)">{{ p.status }}</span>
+                    </div>
+
+                    <!-- Amounts -->
+                    <div class="ep-amounts">
+                      <div class="ep-amount-item">
+                        <span class="ep-amt-label">Total paid</span>
+                        <span class="ep-amt-value">â‚¹{{ p.amount | number:'1.2-2' }}</span>
+                      </div>
+                      <div class="ep-amount-item">
+                        <span class="ep-amt-label">Platform fee</span>
+                        <span class="ep-amt-value">â‚¹{{ p.platformFee | number:'1.2-2' }}</span>
+                      </div>
+                      <div class="ep-amount-item">
+                        <span class="ep-amt-label">Pro payout</span>
+                        <span class="ep-amt-value">â‚¹{{ p.proPayOut | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="ep-dates">
+                      <span><mat-icon>schedule</mat-icon> {{ p.createdAt | date:'d MMM y' }}</span>
+                      <span *ngIf="p.completedAt"><mat-icon>check_circle</mat-icon> Paid {{ p.completedAt | date:'d MMM y' }}</span>
+                    </div>
+
+                    <!-- Failure reason -->
+                    <div *ngIf="p.status === 'Failed' && p.failureReason" class="ep-failure">
+                      <mat-icon>error_outline</mat-icon> {{ p.failureReason }}
+                    </div>
+
+                    <!-- Refund details block -->
+                    <div *ngIf="p.status === 'Refunded'" class="ep-refund-block">
+                      <div class="ep-refund-header"><mat-icon>currency_rupee</mat-icon> Refund Details</div>
+                      <div class="ep-refund-row">
+                        <span class="ep-rd-item">
+                          <span class="ep-rd-label">Refunded</span>
+                          <span class="ep-rd-value">{{ p.refundedAt | date:'d MMM y, h:mm a' }}</span>
+                        </span>
+                        <span class="ep-rd-item">
+                          <span class="ep-rd-label">Amount</span>
+                          <span class="ep-rd-value ep-refund-amount">â‚¹{{ (p.refundAmount ?? p.amount) | number:'1.2-2' }}</span>
+                        </span>
+                      </div>
+                      <div *ngIf="p.refundReason" class="ep-rd-reason">
+                        <span class="ep-rd-label">Reason</span>
+                        <span class="ep-rd-value">{{ p.refundReason }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Razorpay IDs -->
+                    <div class="ep-provider-ids" *ngIf="p.razorpayOrderId || p.razorpayPaymentId">
+                      <span *ngIf="p.razorpayOrderId">Order: {{ p.razorpayOrderId }}</span>
+                      <span *ngIf="p.razorpayPaymentId">Payment: {{ p.razorpayPaymentId }}</span>
+                    </div>
+
+                    <!-- Admin refund action (Completed payments only) -->
+                    <div *ngIf="p.status === 'Completed'" class="ep-refund-action">
+
+                      <!-- Confirm form -->
+                      <div *ngIf="refundConfirmPaymentId === p.id" class="ep-refund-confirm">
+                        <p class="ep-refund-warn">
+                          <mat-icon>warning</mat-icon>
+                          Refund <strong>â‚¹{{ p.amount | number:'1.2-2' }}</strong> to consumer?
+                        </p>
+                        <mat-form-field appearance="outline" class="ep-refund-notes">
+                          <mat-label>Reason (optional)</mat-label>
+                          <input matInput [(ngModel)]="refundDirectNotes" placeholder="Reason for refund...">
+                        </mat-form-field>
+                        <div class="ep-refund-confirm-btns">
+                          <button mat-stroked-button (click)="refundConfirmPaymentId = null" [disabled]="refundingPaymentId === p.id">
+                            Cancel
+                          </button>
+                          <button mat-raised-button color="warn" (click)="confirmDirectRefund(p.id)" [disabled]="refundingPaymentId === p.id">
+                            <mat-icon>{{ refundingPaymentId === p.id ? 'hourglass_empty' : 'currency_rupee' }}</mat-icon>
+                            {{ refundingPaymentId === p.id ? 'Processing...' : 'Confirm Refund' }}
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Refund button -->
+                      <button
+                        *ngIf="refundConfirmPaymentId !== p.id"
+                        mat-stroked-button color="warn"
+                        (click)="openDirectRefundConfirm(p.id)"
+                        class="ep-refund-btn">
+                        <mat-icon>currency_rupee</mat-icon>
+                        Issue Refund
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </mat-tab>
+
           </mat-tab-group>
         </div>
 
@@ -454,7 +580,7 @@
       </div>
     </ng-container>
 
-    <!-- ══ SERVICE AREAS PANEL ═══════════════════════════════════════════ -->
+    <!-- â•â• SERVICE AREAS PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <ng-container *ngSwitchCase="'service-areas'">
       <div class="panel-card">
         <div class="panel-card-header">
@@ -484,7 +610,7 @@
           <div *ngIf="areaErrorMsg" class="area-error">{{ areaErrorMsg }}</div>
         </div>
 
-        <!-- ── MAP VIEW ─────────────────────────────────────────────────── -->
+        <!-- â”€â”€ MAP VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div *ngIf="showMapView" class="map-section">
           <div class="map-filters">
             <select class="map-select" [ngModel]="mapFilterCountry" (ngModelChange)="onMapCountryChange($event)">
@@ -506,7 +632,7 @@
               <span class="map-legend-dot inactive"></span> Inactive
             </div>
             <span *ngIf="isGeocodingAreas" class="map-geocoding">
-              <mat-spinner diameter="14"></mat-spinner> Locating…
+              <mat-spinner diameter="14"></mat-spinner> Locatingâ€¦
             </span>
           </div>
           <div id="service-area-map" class="map-container"></div>
@@ -515,7 +641,7 @@
           </p>
         </div>
 
-        <!-- ── LIST VIEW ────────────────────────────────────────────────── -->
+        <!-- â”€â”€ LIST VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <ng-container *ngIf="!showMapView">
           <!-- List filters -->
           <div class="list-filters">
@@ -556,9 +682,9 @@
               <tbody>
                 <tr *ngFor="let area of filteredListAreas" [class.area-row-inactive]="!area.isActive">
                   <td>{{ area.country }}</td>
-                  <td>{{ area.state || '—' }}</td>
-                  <td>{{ area.district || '—' }}</td>
-                  <td>{{ area.pinCode || '—' }}</td>
+                  <td>{{ area.state || 'â€”' }}</td>
+                  <td>{{ area.district || 'â€”' }}</td>
+                  <td>{{ area.pinCode || 'â€”' }}</td>
                   <td>
                     <span class="area-badge" [class.area-badge-active]="area.isActive" [class.area-badge-inactive]="!area.isActive">
                       <mat-icon>{{ area.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
@@ -571,7 +697,7 @@
                     </span>
                     <span *ngIf="!area.isAutoEnrolled" class="manual-badge">Manual</span>
                   </td>
-                  <td class="notes-cell">{{ area.notes || '—' }}</td>
+                  <td class="notes-cell">{{ area.notes || 'â€”' }}</td>
                   <td class="area-actions">
                     <button (click)="toggleServiceArea(area.id)" class="area-action-btn toggle-btn"
                       [title]="area.isActive ? 'Disable this area' : 'Enable this area'">
@@ -587,7 +713,7 @@
 
             <div *ngIf="serviceAreas.length === 0" class="no-data">
               <mat-icon>location_off</mat-icon>
-              <p>No service areas defined. Add one above — currently accepting jobs from anywhere.</p>
+              <p>No service areas defined. Add one above â€” currently accepting jobs from anywhere.</p>
             </div>
             <div *ngIf="serviceAreas.length > 0 && filteredListAreas.length === 0" class="no-data">
               <mat-icon>filter_alt_off</mat-icon>
@@ -598,7 +724,7 @@
       </div>
     </ng-container>
 
-    <!-- ══ INVITE ADMIN PANEL ════════════════════════════════════════════ -->
+    <!-- â•â• INVITE ADMIN PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <ng-container *ngSwitchCase="'invite-admin'">
       <div class="panel-card">
         <div class="panel-card-header">
@@ -681,7 +807,7 @@
                       title="Resend invitation email">
                       <mat-icon>mail</mat-icon> Resend
                     </button>
-                    <span *ngIf="invitation.isUsed || invitation.isExpired" class="action-disabled">—</span>
+                    <span *ngIf="invitation.isUsed || invitation.isExpired" class="action-disabled">â€”</span>
                   </td>
                 </tr>
               </tbody>
@@ -696,7 +822,7 @@
       </div>
     </ng-container>
 
-    <!-- ══ GEOCODE PANEL ═════════════════════════════════════════════════ -->
+    <!-- â•â• GEOCODE PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <ng-container *ngSwitchCase="'geocode'">
       <div class="panel-card">
         <div class="panel-card-header">
@@ -715,7 +841,7 @@
             <p>Find and geocode all pro accounts that have an address but no coordinates.</p>
             <button class="geocode-run-btn" (click)="runGeocodeBackfillPros()" [disabled]="isBackfillingPros">
               <mat-icon>{{ isBackfillingPros ? 'hourglass_empty' : 'my_location' }}</mat-icon>
-              {{ isBackfillingPros ? 'Geocoding Pros...' : 'Run Geocode — Pros' }}
+              {{ isBackfillingPros ? 'Geocoding Pros...' : 'Run Geocode â€” Pros' }}
             </button>
 
             <div *ngIf="proBackfillResult" class="geocode-result">
@@ -752,7 +878,7 @@
             <p>Find and geocode all user accounts that have an address but no coordinates.</p>
             <button class="geocode-run-btn" (click)="runGeocodeBackfillUsers()" [disabled]="isBackfillingUsers">
               <mat-icon>{{ isBackfillingUsers ? 'hourglass_empty' : 'person_pin_circle' }}</mat-icon>
-              {{ isBackfillingUsers ? 'Geocoding Users...' : 'Run Geocode — Users' }}
+              {{ isBackfillingUsers ? 'Geocoding Users...' : 'Run Geocode â€” Users' }}
             </button>
 
             <div *ngIf="userBackfillResult" class="geocode-result">

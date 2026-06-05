@@ -155,6 +155,19 @@ export class AdminUsersService {
     return this.http.get<any[]>(`${this.apiUrl}/admin/disputes`);
   }
 
+  getAdminPayments(status?: string, userId?: number, proId?: number): Observable<any[]> {
+    const parts: string[] = [];
+    if (status)  parts.push(`status=${status}`);
+    if (userId)  parts.push(`userId=${userId}`);
+    if (proId)   parts.push(`proId=${proId}`);
+    const qs = parts.length ? `?${parts.join('&')}` : '';
+    return this.http.get<any[]>(`${this.apiUrl}/payments/admin${qs}`);
+  }
+
+  refundPayment(paymentId: number, reason: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/payments/${paymentId}/refund`, { reason });
+  }
+
   resolveDispute(jobId: number, resolution: 'complete' | 'refund', notes?: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/admin/jobs/${jobId}/completion/resolve`, { resolution, notes });
   }

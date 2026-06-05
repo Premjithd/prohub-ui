@@ -110,6 +110,62 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   isEditingRadius = false;
   editRadiusValue = 25;
 
+  // ── Entity Payments (user/pro detail tab) ────────────────────────────────
+  entityPayments: any[] = [];
+  isLoadingEntityPayments = false;
+  refundingPaymentId: number | null = null;
+  refundConfirmPaymentId: number | null = null;
+  refundDirectNotes = '';
+
+  loadEntityPayments(): void {
+    const userId  = this.selectedUser?.id;
+    const proId   = this.selectedPro?.id;
+    if (!userId && !proId) return;
+
+    this.isLoadingEntityPayments = true;
+    this.adminUsersService.getAdminPayments(undefined, userId, proId).subscribe({
+      next: (payments) => {
+        this.entityPayments = payments ?? [];
+        this.isLoadingEntityPayments = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoadingEntityPayments = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  openDirectRefundConfirm(paymentId: number): void {
+    this.refundConfirmPaymentId = paymentId;
+    this.refundDirectNotes = '';
+  }
+
+  confirmDirectRefund(paymentId: number): void {
+    this.refundingPaymentId = paymentId;
+    this.adminUsersService.refundPayment(paymentId, this.refundDirectNotes.trim() || 'Admin-initiated refund').subscribe({
+      next: () => {
+        const p = this.entityPayments.find(x => x.id === paymentId);
+        if (p) {
+          p.status = 'Refunded';
+          p.refundedAt = new Date().toISOString();
+          p.refundAmount = p.amount;
+          p.refundReason = this.refundDirectNotes.trim() || 'Admin-initiated refund';
+        }
+        this.refundingPaymentId = null;
+        this.refundConfirmPaymentId = null;
+        this.snack.open('Refund processed successfully.', 'OK', { duration: 4000, panelClass: 'snack-success' });
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.refundingPaymentId = null;
+        const msg = err?.error?.message ?? 'Failed to process refund.';
+        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   // ── Disputes ──────────────────────────────────────────────────────────────
   disputes: any[] = [];
   isLoadingDisputes = false;
@@ -355,8 +411,11 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.linkedUsers = [];
     this.linkedPros = [];
     this.addUserId = null;
+    this.entityPayments = [];
+    this.refundConfirmPaymentId = null;
     this.loadUserDetails(user.id);
     this.loadRelationships('user', user.id);
+    this.loadEntityPayments();
   }
 
   selectPro(pro: Pro): void {
@@ -366,8 +425,11 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.linkedUsers = [];
     this.linkedPros = [];
     this.addUserId = null;
+    this.entityPayments = [];
+    this.refundConfirmPaymentId = null;
     this.loadProDetails(pro.id);
     this.loadRelationships('pro', pro.id);
+    this.loadEntityPayments();
   }
 
   loadUserDetails(userId: number): void {
