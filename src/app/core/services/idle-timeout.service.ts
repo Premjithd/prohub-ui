@@ -73,9 +73,9 @@ export class IdleTimeoutService {
 
   private logout(): void {
     console.log('User idle for 30 minutes, logging out...');
+    const destination = this.router.url.startsWith('/profile') ? '/' : '/auth/login';
     this.auth.logout();
-    this.router.navigate(['/auth/login']);
-    // alert('Your session has expired due to inactivity. Please log in again.');
+    this.router.navigate([destination]);
   }
 
   private logoutOnBrowserClose(): void {

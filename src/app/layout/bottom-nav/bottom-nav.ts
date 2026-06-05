@@ -27,20 +27,22 @@ export class BottomNavComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    if (this.isProUser()) {
+    if (this.auth.isAuthenticated() && !this.isAdmin()) {
       interval(60000).pipe(
         startWith(0),
         switchMap(() => this.notificationService.getUnreadCount()),
         takeUntil(this.destroy$)
       ).subscribe({ next: (r) => { this.unreadCount = r.count; } });
 
-      this.signalRService.onNewNotification$.pipe(
-        takeUntil(this.destroy$)
-      ).subscribe(() => {
-        this.notificationService.getUnreadCount().subscribe({
-          next: (r) => { this.unreadCount = r.count; }
+      if (this.isProUser()) {
+        this.signalRService.onNewNotification$.pipe(
+          takeUntil(this.destroy$)
+        ).subscribe(() => {
+          this.notificationService.getUnreadCount().subscribe({
+            next: (r) => { this.unreadCount = r.count; }
+          });
         });
-      });
+      }
     }
   }
 

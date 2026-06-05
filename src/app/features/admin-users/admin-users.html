@@ -567,6 +567,71 @@
               </div>
             </mat-tab>
 
+            <!-- ── Payouts tab (Pro only) ───────────────── -->
+            <mat-tab *ngIf="selectedPro" label="Payouts">
+              <div class="tab-content">
+
+                <div *ngIf="isLoadingProPayouts" class="loading-state">
+                  <mat-spinner diameter="32"></mat-spinner>
+                </div>
+
+                <div *ngIf="!isLoadingProPayouts && proPayouts.length === 0" class="empty-state">
+                  <mat-icon>payments</mat-icon>
+                  <p>No payouts found for this professional.</p>
+                </div>
+
+                <div class="entity-payments-list" *ngIf="!isLoadingProPayouts && proPayouts.length > 0">
+                  <div *ngFor="let p of proPayouts" class="entity-payment-card"
+                    [class.ep-failed]="p.status === 'Failed'">
+
+                    <div class="ep-header">
+                      <div class="ep-title">
+                        <span class="ep-id">#{{ p.id }}</span>
+                        <span class="ep-job">{{ p.jobTitle ?? ('Job #' + p.jobId) }}</span>
+                      </div>
+                      <span class="ep-status" [class]="'epst-' + (p.status | lowercase)">{{ p.status }}</span>
+                    </div>
+
+                    <div class="ep-amounts">
+                      <div class="ep-amount-item">
+                        <span class="ep-amt-label">Amount</span>
+                        <span class="ep-amt-value">&#8377;{{ p.amount | number:'1.2-2' }}</span>
+                      </div>
+                      <div class="ep-amount-item" *ngIf="p.mode">
+                        <span class="ep-amt-label">Mode</span>
+                        <span class="ep-amt-value">{{ p.mode }}</span>
+                      </div>
+                    </div>
+
+                    <div class="ep-dates">
+                      <span><mat-icon>schedule</mat-icon> Created {{ p.createdAt | date:'d MMM y' }}</span>
+                      <span *ngIf="p.processedAt"><mat-icon>check_circle</mat-icon> Processed {{ p.processedAt | date:'d MMM y' }}</span>
+                    </div>
+
+                    <div *ngIf="p.failureReason" class="ep-failure">
+                      <mat-icon>error_outline</mat-icon> {{ p.failureReason }}
+                    </div>
+
+                    <div *ngIf="p.razorpayPayoutId" class="ep-provider-ids">
+                      <span>Razorpay: {{ p.razorpayPayoutId }}</span>
+                    </div>
+
+                    <!-- Retry button for Pending or Failed payouts -->
+                    <div *ngIf="p.status === 'Pending' || p.status === 'Failed'" class="ep-refund-action">
+                      <button mat-stroked-button color="primary"
+                        (click)="retryPayout(p.id)"
+                        [disabled]="retryingPayoutId === p.id">
+                        <mat-icon>{{ retryingPayoutId === p.id ? 'hourglass_empty' : 'refresh' }}</mat-icon>
+                        {{ retryingPayoutId === p.id ? 'Retrying…' : 'Retry Payout' }}
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </mat-tab>
+
           </mat-tab-group>
         </div>
 

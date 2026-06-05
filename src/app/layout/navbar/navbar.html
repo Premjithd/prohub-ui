@@ -17,8 +17,8 @@
   <ng-container *ngIf="auth.isAuthenticated()">
     <!-- Show name only on desktop -->
     <span class="welcome-text">{{ auth.getName() }}</span>
-    <!-- Notification bell — Pro users only -->
-    <button *ngIf="isProUser()" mat-icon-button routerLink="/notifications" aria-label="Notifications"
+    <!-- Notification bell — all authenticated users -->
+    <button mat-icon-button routerLink="/notifications" aria-label="Notifications"
       [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">
       <mat-icon>notifications</mat-icon>
     </button>

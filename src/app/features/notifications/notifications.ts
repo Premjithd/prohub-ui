@@ -9,6 +9,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NotificationService, JobNotification } from '../../services/notification.service';
 import { SignalRService } from '../../services/signalr.service';
+import { Auth } from '../../core/services/auth';
 
 @Component({
   selector: 'app-notifications',
@@ -30,7 +31,8 @@ import { SignalRService } from '../../services/signalr.service';
 
       <div *ngIf="!loading && notifications.length === 0" class="notif-empty">
         <mat-icon>notifications_none</mat-icon>
-        <p>No notifications yet. New job postings that match your services will appear here.</p>
+        <p *ngIf="isPro()">No notifications yet. New job postings that match your services will appear here.</p>
+        <p *ngIf="!isPro()">No notifications yet. Bid updates, payment confirmations, and job activity will appear here.</p>
       </div>
 
       <div *ngIf="!loading && notifications.length > 0" class="notif-list">
@@ -39,7 +41,7 @@ import { SignalRService } from '../../services/signalr.service';
              [class.unread]="!n.isRead"
              (click)="openNotification(n)">
           <div class="notif-icon">
-            <mat-icon>{{ n.notificationType === 'JobPosted' ? 'work' : 'notifications' }}</mat-icon>
+            <mat-icon>{{ notifIcon(n.notificationType) }}</mat-icon>
           </div>
           <div class="notif-body">
             <p class="notif-message">{{ n.message }}</p>
@@ -159,7 +161,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private signalRService: SignalRService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public auth: Auth
   ) {}
 
   ngOnInit(): void {
@@ -190,6 +193,21 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     });
   }
 
+  isPro(): boolean {
+    return this.auth.getUserType() === 'Pro';
+  }
+
+  notifIcon(type: string | undefined): string {
+    switch (type) {
+      case 'JobPosted':
+      case 'JobUpdated': return 'work';
+      case 'BidReceived': return 'gavel';
+      case 'PaymentConfirmed': return 'payment';
+      case 'JobCompleted': return 'task_alt';
+      default: return 'notifications';
+    }
+  }
+
   openNotification(n: JobNotification): void {
     if (!n.isRead) {
       this.notificationService.markRead(n.id).subscribe(() => {
@@ -199,7 +217,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       });
     }
     if (n.jobId) {
-      this.router.navigate(['/available-jobs']);
+      this.router.navigate([this.isPro() ? '/available-jobs' : '/pending-jobs']);
     }
   }
 

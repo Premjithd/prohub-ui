@@ -45,9 +45,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    if (this.auth.isAuthenticated() && this.auth.getUserType() === 'Pro') {
+    if (this.auth.isAuthenticated()) {
       this.startNotificationPolling();
-      this.connectSignalR();
+      if (this.auth.getUserType() === 'Pro') {
+        this.connectSignalR();
+      }
     }
   }
 

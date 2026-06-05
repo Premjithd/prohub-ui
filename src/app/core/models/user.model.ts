@@ -18,6 +18,7 @@ export interface User {
     zipPostalCode?: string;
     latitude?: number;
     longitude?: number;
+    upiVpa?: string;
 }
 
 export interface LoginRequest {

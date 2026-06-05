@@ -80,7 +80,7 @@ export class AuthInterceptor implements HttpInterceptor {
     const refreshToken = this.storage.getItem(this.REFRESH_TOKEN_KEY);
     if (!refreshToken) {
       this.clearAuth();
-      this.router.navigate(['/login']);
+      this.router.navigate([this.postLogoutRoute()]);
       return throwError(() => new Error('Session expired — please log in again'));
     }
 
@@ -112,7 +112,7 @@ export class AuthInterceptor implements HttpInterceptor {
         catchError(err => {
           this.refreshing = false;
           this.clearAuth();
-          this.router.navigate(['/login']);
+          this.router.navigate([this.postLogoutRoute()]);
           return throwError(() => err);
         })
       );
@@ -134,6 +134,10 @@ export class AuthInterceptor implements HttpInterceptor {
     [this.ADMIN_TOKEN_KEY, this.ADMIN_REFRESH_KEY,
      this.ADMIN_TYPE_KEY, this.ADMIN_NAME_KEY, this.ADMIN_ID_KEY]
       .forEach(k => this.storage.removeItem(k));
+  }
+
+  private postLogoutRoute(): string {
+    return this.router.url.startsWith('/profile') ? '/' : '/login';
   }
 
   private clearAuth(): void {

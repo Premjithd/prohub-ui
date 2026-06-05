@@ -335,10 +335,7 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
           // Refresh bid status to show updated bid
           this.checkIfUserHasBid();
 
-          // Show success message
-          this.snackBar.open('Bid submitted! Proceed to payment?', 'Pay Now', { duration: 5000 }).onAction().subscribe(() => {
-            this.openPaymentCheckout();
-          });
+          this.snackBar.open('Bid submitted successfully!', 'OK', { duration: 4000, panelClass: 'snack-success' });
           
           // Auto-hide success message after 3 seconds
           setTimeout(() => {
@@ -349,20 +346,21 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error submitting bid:', error);
           this.submittingBid = false;
-          
-          // Extract error message from response
-          if (error.error && typeof error.error === 'object') {
-            if (error.error.message) {
-              this.errorMessage = error.error.message;
-            } else if (error.error.error) {
-              this.errorMessage = error.error.error;
-            }
-          } else if (error.message) {
-            this.errorMessage = error.message;
+
+          if (error.status === 403) {
+            const msg = error.error?.message || 'You are not authorised to submit bids.';
+            this.snackBar.open(msg, 'Dismiss', {
+              duration: 8000,
+              panelClass: 'snack-error',
+              verticalPosition: 'bottom',
+              horizontalPosition: 'center'
+            });
+          } else if (error.error && typeof error.error === 'object') {
+            this.errorMessage = error.error.message || error.error.error || 'Failed to submit your bid. Please try again.';
           } else {
-            this.errorMessage = 'Failed to submit your bid. Please try again.';
+            this.errorMessage = error.message || 'Failed to submit your bid. Please try again.';
           }
-          
+
           this.cdr.markForCheck();
         }
       });

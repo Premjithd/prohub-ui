@@ -20,6 +20,7 @@ export interface RazorpayCheckoutData {
   consumerName: string;
   consumerEmail: string;
   consumerPhone: string;
+  prefillVpa?: string;
 }
 
 @Component({
@@ -377,7 +378,8 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
         prefill: {
           name: this.data.consumerName,
           email: this.data.consumerEmail,
-          contact: this.data.consumerPhone.replace(/\D/g, '')
+          contact: this.data.consumerPhone.replace(/\D/g, ''),
+          ...(this.data.prefillVpa ? { vpa: this.data.prefillVpa } : {})
         },
         theme: {
           color: '#3f51b5'

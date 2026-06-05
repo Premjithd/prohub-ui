@@ -44,4 +44,5 @@ export interface GetUserResponse {
     state?: string;
     country?: string;
     zipPostalCode?: string;
+    upiVpa?: string;
 }

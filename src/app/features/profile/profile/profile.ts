@@ -2,11 +2,13 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { UserService } from '../../../core/services/user';
 import { ProService } from '../../../core/services/pro';
 import { User, GetUserRequest} from '../../../core/models/user.model';
-import { Pro } from '../../../core/models/pro.model';
+import { Pro, ProBankDetails, UpdateBankDetailsRequest } from '../../../core/models/pro.model';
 import { Auth } from '../../../core/services/auth';
 import { VerificationService } from '../../../core/services/verification.service';
 import { ReviewService } from '../../../services/review.service';
+import { PayoutService } from '../../../services/payout.service';
 import { Review, ProRatingSummary, UserReview, UserRatingSummary } from '../../../models/review.model';
+import { Payout } from '../../../models/payout.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -39,6 +41,10 @@ export class ProfileComponent implements OnInit {
   readonly reviewsPageSize = 5;
   readonly starsArray = [1, 2, 3, 4, 5];
 
+  // User section nav (lazy-load)
+  userSection: 'info' | 'payment' | 'reviews' = 'info';
+  private userReviewsLoaded = false;
+
   // User reviews — reviews received from pros
   userRatingSummary: UserRatingSummary | null = null;
   userReviews: UserReview[] = [];
@@ -46,10 +52,60 @@ export class ProfileComponent implements OnInit {
   userReviewsPage = 1;
   userReviewsTotal = 0;
 
+  // User payment details
+  isEditingPayment = false;
+  paymentUpiVpa = '';
+  paymentSaveLoading = false;
+  paymentSuccessMessage = '';
+  paymentErrorMessage = '';
+
   // Email verification flow
   emailVerifStep: 'idle' | 'sending' | 'code-sent' | 'verifying' = 'idle';
   emailVerifCode = '';
   emailVerifError = '';
+
+  // Pro section nav (lazy-load)
+  proSection: 'info' | 'payout' | 'earnings' | 'reviews' = 'info';
+  private bankDetailsLoaded = false;
+  private payoutsLoaded = false;
+  private reviewsLoaded = false;
+
+  selectUserSection(section: 'info' | 'payment' | 'reviews'): void {
+    this.userSection = section;
+    if (section === 'reviews' && !this.userReviewsLoaded) {
+      this.userReviewsLoaded = true;
+      this.loadUserRatings(this.userId);
+    }
+  }
+
+  selectProSection(section: 'info' | 'payout' | 'earnings' | 'reviews'): void {
+    this.proSection = section;
+    if (section === 'payout' && !this.bankDetailsLoaded) {
+      this.bankDetailsLoaded = true;
+      this.loadBankDetails(this.userId);
+    }
+    if (section === 'earnings' && !this.payoutsLoaded) {
+      this.payoutsLoaded = true;
+      this.loadPayouts();
+    }
+    if (section === 'reviews' && !this.reviewsLoaded) {
+      this.reviewsLoaded = true;
+      this.loadProRatings(this.userId);
+    }
+  }
+
+  // Bank details (Pro only)
+  bankDetails: ProBankDetails | null = null;
+  bankDetailsLoading = false;
+  isEditingBank = false;
+  bankForm: UpdateBankDetailsRequest = { payoutMethod: 'Bank' };
+  bankSaveLoading = false;
+  bankSuccessMessage = '';
+  bankErrorMessage = '';
+
+  // Earnings / payouts (Pro only)
+  payouts: Payout[] = [];
+  payoutsLoading = false;
 
   constructor(
     private userService: UserService,
@@ -57,7 +113,8 @@ export class ProfileComponent implements OnInit {
     public auth: Auth,
     private cdr: ChangeDetectorRef,
     private verificationService: VerificationService,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    private payoutService: PayoutService
   ) {}
 
   ngOnInit(): void {
@@ -71,10 +128,8 @@ export class ProfileComponent implements OnInit {
       this.userId = Number(userIdStr);
       if (this.userType === 'Pro') {
         this.loadPro(this.userId);
-        this.loadProRatings(this.userId);
       } else {
         this.loadUser(this.userId);
-        this.loadUserRatings(this.userId);
       }
     } else {
       console.warn('User ID not found in storage');
@@ -112,11 +167,14 @@ export class ProfileComponent implements OnInit {
   }
 
   toggleEdit(): void {
+    this.proSection = 'info';
+    this.userSection = 'info';
     this.isEditing = true;
   }
 
   cancelEdit(): void {
     this.isEditing = false;
+    this.isEditingPayment = false;
     this.loadProfile();
   }
 
@@ -152,13 +210,15 @@ export class ProfileComponent implements OnInit {
 
     this.userService.updateUser(updateData).subscribe({
       next: (response: any) => {
-        console.log('Profile updated successfully:', response);
         const updatedUser = response?.data || response;
         if (updatedUser) {
           this.user = updatedUser as User;
         }
         this.isEditing = false;
         this.isLoading = false;
+        this.emailVerifStep = 'idle';
+        this.emailVerifCode = '';
+        this.emailVerifError = '';
         this.successMessage = 'Profile updated successfully!';
         this.cdr.markForCheck();
         
@@ -311,6 +371,107 @@ export class ProfileComponent implements OnInit {
     this.emailVerifError = '';
   }
 
+  // ── User payment details ──────────────────────────────────────────────────
+
+  startEditPayment(): void {
+    this.paymentUpiVpa = this.user.upiVpa ?? '';
+    this.isEditingPayment = true;
+    this.paymentSuccessMessage = '';
+    this.paymentErrorMessage = '';
+  }
+
+  cancelEditPayment(): void {
+    this.isEditingPayment = false;
+  }
+
+  savePaymentDetails(): void {
+    this.paymentSaveLoading = true;
+    this.paymentSuccessMessage = '';
+    this.paymentErrorMessage = '';
+    this.userService.savePaymentDetails(this.userId, this.paymentUpiVpa).subscribe({
+      next: () => {
+        this.user.upiVpa = this.paymentUpiVpa || undefined;
+        this.isEditingPayment = false;
+        this.paymentSaveLoading = false;
+        this.paymentSuccessMessage = 'Payment details saved!';
+        this.cdr.markForCheck();
+        setTimeout(() => { this.paymentSuccessMessage = ''; this.cdr.markForCheck(); }, 4000);
+      },
+      error: (err: any) => {
+        this.paymentSaveLoading = false;
+        this.paymentErrorMessage = err?.error?.message ?? 'Failed to save payment details.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  // ── Bank details ─────────────────────────────────────────────────────────
+
+  loadBankDetails(proId: number): void {
+    this.bankDetailsLoading = true;
+    this.proService.getBankDetails(proId).subscribe({
+      next: (details: any) => {
+        this.bankDetails = details?.data ?? details;
+        this.bankDetailsLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.bankDetailsLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  startEditBank(): void {
+    this.bankForm = {
+      payoutMethod: this.bankDetails?.payoutMethod ?? 'Bank',
+      bankAccountHolderName: this.bankDetails?.bankAccountHolderName ?? '',
+      bankAccountNumber: this.bankDetails?.bankAccountNumber ?? '',
+      bankIfsc: this.bankDetails?.bankIfsc ?? '',
+      upiVpa: this.bankDetails?.upiVpa ?? ''
+    };
+    this.isEditingBank = true;
+    this.bankSuccessMessage = '';
+    this.bankErrorMessage = '';
+  }
+
+  cancelEditBank(): void {
+    this.isEditingBank = false;
+  }
+
+  saveBankDetails(): void {
+    this.bankSaveLoading = true;
+    this.bankSuccessMessage = '';
+    this.bankErrorMessage = '';
+    this.proService.updateBankDetails(this.userId, this.bankForm).subscribe({
+      next: () => {
+        this.bankSaveLoading = false;
+        this.isEditingBank = false;
+        this.payoutsLoaded = false;
+        this.loadBankDetails(this.userId);
+        this.bankSuccessMessage = 'Bank details saved successfully!';
+        this.cdr.markForCheck();
+        setTimeout(() => { this.bankSuccessMessage = ''; this.cdr.markForCheck(); }, 4000);
+      },
+      error: (err: any) => {
+        this.bankSaveLoading = false;
+        this.bankErrorMessage = err?.error?.message ?? 'Failed to save bank details.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  // ── Payouts ───────────────────────────────────────────────────────────────
+
+  loadPayouts(): void {
+    this.payoutsLoading = true;
+    this.payoutService.getMyPayouts().subscribe({
+      next: (data) => {
+        this.payouts = data;
+        this.payoutsLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.payoutsLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
   private updateProProfile(): void {
     const updateData = {
       id: this.pro.id,
@@ -337,9 +498,12 @@ export class ProfileComponent implements OnInit {
         }
         this.isEditing = false;
         this.isLoading = false;
+        this.emailVerifStep = 'idle';
+        this.emailVerifCode = '';
+        this.emailVerifError = '';
         this.successMessage = 'Profile updated successfully!';
         this.cdr.markForCheck();
-        
+
         setTimeout(() => {
           this.successMessage = '';
           this.cdr.markForCheck();

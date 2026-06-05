@@ -18,11 +18,51 @@ import { JobService, Job, JobBid, JobPhase, Message } from '../../services/job.s
 import { PaymentService } from '../../services/payment.service';
 import { RazorpayCheckoutComponent } from '../payments/razorpay-checkout.component';
 import { Auth } from '../../core/services/auth';
+import { UserService } from '../../core/services/user';
 import { ReviewService } from '../../services/review.service';
 import { Review } from '../../models/review.model';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, interval } from 'rxjs';
 import { takeUntil, switchMap, filter } from 'rxjs/operators';
+
+// ── Payment method confirmation dialog ───────────────────────────────────────
+@Component({
+  selector: 'app-payment-method-confirm',
+  standalone: true,
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
+  template: `
+    <div style="padding:24px 28px 20px">
+      <h2 mat-dialog-title style="margin:0 0 6px;font-size:1.1rem;font-weight:700">Confirm Payment Method</h2>
+      <p style="margin:0 0 20px;font-size:0.9rem;color:#6b7280">
+        Paying for: <strong>{{ data.jobTitle }}</strong>
+      </p>
+
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px 18px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <mat-icon style="color:#16a34a;font-size:22px">qr_code</mat-icon>
+          <div>
+            <div style="font-size:0.78rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.04em">Saved UPI</div>
+            <div style="font-size:1rem;font-weight:700;color:#111827">{{ data.upiVpa }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div mat-dialog-actions style="display:flex;gap:10px;justify-content:flex-end;padding:0;flex-wrap:wrap">
+        <button mat-button (click)="dialogRef.close(undefined)">Cancel</button>
+        <button mat-stroked-button (click)="dialogRef.close('other')">Use Different Method</button>
+        <button mat-raised-button color="primary" (click)="dialogRef.close('saved')">
+          <mat-icon>qr_code</mat-icon> Pay via {{ data.upiVpa }}
+        </button>
+      </div>
+    </div>
+  `
+})
+export class PaymentMethodConfirmDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<PaymentMethodConfirmDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { upiVpa: string; amount: number; jobTitle: string }
+  ) {}
+}
 
 @Component({
   selector: 'app-pending-job-details',
@@ -43,7 +83,8 @@ import { takeUntil, switchMap, filter } from 'rxjs/operators';
     MatInputModule,
     MatDialogModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    PaymentMethodConfirmDialogComponent
   ],
   templateUrl: './pending-job-details.html',
   styleUrl: './pending-job-details.scss'
@@ -84,7 +125,8 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     public auth: Auth,
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -284,47 +326,58 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Get accepted bid for this job
     const acceptedBid = this.jobBids.find(bid => bid.status === 'Accepted');
     if (!acceptedBid || !acceptedBid.bidAmount) {
       this.errorMessage = 'Bid information not available for payment.';
       return;
     }
 
-    // Open payment dialog
+    const userId = Number(this.auth.getUserId());
+    this.userService.getUser(userId).subscribe({
+      next: (user) => {
+        if (user?.upiVpa) {
+          const confirmRef = this.dialog.open(PaymentMethodConfirmDialogComponent, {
+            width: '420px',
+            data: { upiVpa: user.upiVpa, amount: acceptedBid.bidAmount, jobTitle: this.job!.title }
+          });
+          confirmRef.afterClosed().subscribe((choice: 'saved' | 'other' | undefined) => {
+            if (choice !== undefined) {
+              this.openRazorpayCheckout(acceptedBid, choice === 'saved' ? user.upiVpa : undefined);
+            }
+          });
+        } else {
+          this.openRazorpayCheckout(acceptedBid, undefined);
+        }
+      },
+      error: () => this.openRazorpayCheckout(acceptedBid, undefined)
+    });
+  }
+
+  private openRazorpayCheckout(acceptedBid: JobBid, prefillVpa: string | undefined): void {
     const paymentDialogRef = this.dialog.open(RazorpayCheckoutComponent, {
       width: '600px',
       maxHeight: '90vh',
       data: {
-        jobId: this.job.id,
+        jobId: this.job!.id,
         bidId: acceptedBid.id,
         bidAmount: acceptedBid.bidAmount,
-        jobTitle: this.job.title,
+        jobTitle: this.job!.title,
         consumerName: this.auth.getName() || 'User',
-        consumerEmail: this.job.user?.email || '',
-        consumerPhone: this.job.user?.phoneNumber || ''
+        consumerEmail: this.job!.user?.email || '',
+        consumerPhone: this.job!.user?.phoneNumber || '',
+        prefillVpa
       }
     });
 
     paymentDialogRef.afterClosed().subscribe(result => {
-      if (result && result.success) {
+      if (result?.success) {
         this.successMessage = 'Payment completed successfully!';
-        // Update payment status immediately to hide button
-        this.paymentStatus = {
-          status: 'Completed',
-          completed: true
-        };
+        this.paymentStatus = { status: 'Completed', completed: true };
         this.cdr.markForCheck();
-        setTimeout(() => {
-          this.successMessage = '';
-          this.cdr.markForCheck();
-        }, 3000);
-      } else if (result && result.error) {
+        setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 3000);
+      } else if (result?.error) {
         this.errorMessage = result.error;
-        setTimeout(() => {
-          this.errorMessage = '';
-          this.cdr.markForCheck();
-        }, 3000);
+        setTimeout(() => { this.errorMessage = ''; this.cdr.markForCheck(); }, 3000);
       }
     });
   }
@@ -1059,3 +1112,4 @@ export class SubmitReviewDialogComponent {
   setRating(s: number): void { this.rating = s; }
   submit(): void { if (this.rating > 0) this.dialogRef.close({ rating: this.rating, comment: this.comment || undefined }); }
 }
+

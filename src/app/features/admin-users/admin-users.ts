@@ -19,6 +19,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ProUsersService, LinkedUser, LinkedPro } from '../../services/pro-users.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ServiceAreaService, ServiceArea } from '../../core/services/service-area.service';
+import { PayoutService } from '../../services/payout.service';
+import { Payout } from '../../models/payout.model';
 
 type AdminView = 'search' | 'service-areas' | 'invite-admin' | 'geocode';
 
@@ -117,6 +119,11 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   refundConfirmPaymentId: number | null = null;
   refundDirectNotes = '';
 
+  // ── Pro Payouts (admin payout management) ────────────────────────────────
+  proPayouts: Payout[] = [];
+  isLoadingProPayouts = false;
+  retryingPayoutId: number | null = null;
+
   loadEntityPayments(): void {
     const userId  = this.selectedUser?.id;
     const proId   = this.selectedPro?.id;
@@ -160,6 +167,37 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.refundingPaymentId = null;
         const msg = err?.error?.message ?? 'Failed to process refund.';
+        this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  loadProPayouts(proId: number): void {
+    this.isLoadingProPayouts = true;
+    this.payoutService.getAdminPayouts(proId).subscribe({
+      next: (payouts) => {
+        this.proPayouts = payouts ?? [];
+        this.isLoadingProPayouts = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.isLoadingProPayouts = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  retryPayout(payoutId: number): void {
+    this.retryingPayoutId = payoutId;
+    this.payoutService.retryPayout(payoutId).subscribe({
+      next: () => {
+        const p = this.proPayouts.find(x => x.id === payoutId);
+        if (p) p.status = 'Processing';
+        this.retryingPayoutId = null;
+        this.snack.open('Payout retry initiated.', 'OK', { duration: 3000, panelClass: 'snack-success' });
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.retryingPayoutId = null;
+        const msg = err?.error?.message ?? 'Payout retry failed.';
         this.snack.open(msg, 'OK', { duration: 4000, panelClass: 'snack-error' });
         this.cdr.markForCheck();
       }
@@ -264,7 +302,8 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     private snack: MatSnackBar,
     private serviceAreaService: ServiceAreaService,
     private bottomSheet: MatBottomSheet,
-    private http: HttpClient
+    private http: HttpClient,
+    private payoutService: PayoutService
   ) {}
 
   ngOnInit(): void {
@@ -426,10 +465,12 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.linkedPros = [];
     this.addUserId = null;
     this.entityPayments = [];
+    this.proPayouts = [];
     this.refundConfirmPaymentId = null;
     this.loadProDetails(pro.id);
     this.loadRelationships('pro', pro.id);
     this.loadEntityPayments();
+    this.loadProPayouts(pro.id);
   }
 
   loadUserDetails(userId: number): void {

@@ -3,28 +3,37 @@
   <!-- ── USER PROFILE ──────────────────────────────────────────── -->
   <ng-container *ngIf="userType !== 'Pro'">
 
-    <!-- Header Card -->
-    <div class="profile-card hero-card">
-      <div class="avatar-wrap">
-        <div class="avatar-initials">{{ (user.firstName || '?')[0] }}{{ (user.lastName || '')[0] }}</div>
-        <span class="active-dot"></span>
+    <!-- Compact hero strip -->
+    <div class="pro-hero-strip">
+      <div class="phs-avatar">{{ (user.firstName || '?')[0] }}</div>
+      <div class="phs-info">
+        <div class="phs-name">{{ user.firstName }} {{ user.lastName }}</div>
+        <div class="phs-sub">Member since {{ user.createdAt | date:'MMM yyyy' }}<span *ngIf="user.city"> · {{ user.city }}</span></div>
       </div>
-      <div class="hero-info">
-        <h1>{{ user.firstName }} {{ user.lastName }}</h1>
-        <p class="hero-sub">Member since {{ user.createdAt | date:'MMM yyyy' }}</p>
-        <div class="hero-meta">
-          <span class="meta-chip" *ngIf="user.city">
-            <mat-icon>place</mat-icon>{{ user.city }}{{ user.state ? ', ' + user.state : '' }}
-          </span>
-          <span class="meta-chip verify-chip" [class.verified]="user.isEmailVerified" [class.unverified]="!user.isEmailVerified">
-            <mat-icon>{{ user.isEmailVerified ? 'verified' : 'error_outline' }}</mat-icon>
-            {{ user.isEmailVerified ? 'Email verified' : 'Email unverified' }}
-          </span>
-        </div>
-      </div>
-      <button class="btn btn-primary edit-btn" (click)="toggleEdit()" *ngIf="!isEditing">
-        <mat-icon>edit</mat-icon> Edit Profile
+      <span class="phs-badge" [class.verified]="user.isEmailVerified">
+        <mat-icon>{{ user.isEmailVerified ? 'verified' : 'error_outline' }}</mat-icon>
+      </span>
+    </div>
+
+    <!-- Tab bar -->
+    <nav class="pro-tab-bar" *ngIf="!isEditing">
+      <button class="ptb-tab" [class.active]="userSection === 'info'"    (click)="selectUserSection('info')">
+        <mat-icon>person</mat-icon><span>Profile</span>
       </button>
+      <button class="ptb-tab" [class.active]="userSection === 'payment'" (click)="selectUserSection('payment')">
+        <mat-icon>account_balance_wallet</mat-icon><span>Payment</span>
+      </button>
+      <button class="ptb-tab" [class.active]="userSection === 'reviews'" (click)="selectUserSection('reviews')">
+        <mat-icon>star</mat-icon><span>Reviews</span>
+      </button>
+    </nav>
+
+    <!-- Edit mode header -->
+    <div class="pro-edit-header" *ngIf="isEditing">
+      <button class="btn btn-cancel btn-sm" (click)="cancelEdit()">
+        <mat-icon>arrow_back</mat-icon> Back
+      </button>
+      <span class="pro-edit-title">Edit Profile</span>
     </div>
 
     <!-- Alerts -->
@@ -32,133 +41,191 @@
       <mat-icon>check_circle</mat-icon><span>{{ successMessage }}</span>
     </div>
 
-    <!-- Info Sections (view mode) -->
-    <div class="sections-grid" *ngIf="!isEditing">
-      <!-- Personal -->
-      <div class="profile-card info-card">
-        <h3 class="section-title"><mat-icon>person</mat-icon> Personal Information</h3>
-        <div class="field-row">
+    <!-- ── PROFILE section ─────────────────────────────────────── -->
+    <ng-container *ngIf="!isEditing && userSection === 'info'">
+      <div class="pro-section-actions">
+        <button class="btn btn-primary btn-sm" (click)="toggleEdit()">
+          <mat-icon>edit</mat-icon> Edit Profile
+        </button>
+      </div>
+      <div class="sections-grid">
+        <!-- Personal -->
+        <div class="profile-card info-card">
+          <h3 class="section-title"><mat-icon>person</mat-icon> Personal</h3>
+          <div class="field-row">
+            <div class="field">
+              <span class="field-label">First Name</span>
+              <span class="field-value">{{ user.firstName || '—' }}</span>
+            </div>
+            <div class="field">
+              <span class="field-label">Last Name</span>
+              <span class="field-value">{{ user.lastName || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="profile-card info-card">
+          <h3 class="section-title"><mat-icon>contacts</mat-icon> Contact</h3>
           <div class="field">
-            <span class="field-label">First Name</span>
-            <span class="field-value">{{ user.firstName || '—' }}</span>
+            <span class="field-label">Email</span>
+            <div class="field-value contact-row">
+              <span>{{ user.email }}</span>
+              <span class="badge" [class.badge-ok]="user.isEmailVerified" [class.badge-warn]="!user.isEmailVerified">
+                <mat-icon>{{ user.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
+                {{ user.isEmailVerified ? 'Verified' : 'Unverified' }}
+              </span>
+              <button *ngIf="!user.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">Verify now</button>
+              <span *ngIf="emailVerifStep === 'sending'" class="muted-text">Sending…</span>
+            </div>
+            <div class="verif-panel" *ngIf="!user.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
+              <p>Enter the 6-digit code sent to <strong>{{ user.email }}</strong></p>
+              <div class="verif-row">
+                <input class="code-input" type="text" maxlength="6" placeholder="000000" [(ngModel)]="emailVerifCode" name="ecUser" />
+                <button class="btn btn-success btn-sm" (click)="confirmEmailCode()" [disabled]="emailVerifStep === 'verifying'">
+                  {{ emailVerifStep === 'verifying' ? 'Verifying…' : 'Confirm' }}
+                </button>
+                <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">Cancel</button>
+              </div>
+              <span class="error-text" *ngIf="emailVerifError">{{ emailVerifError }}</span>
+              <button class="btn-link small" (click)="sendEmailVerification()">Resend code</button>
+            </div>
           </div>
           <div class="field">
-            <span class="field-label">Last Name</span>
-            <span class="field-value">{{ user.lastName || '—' }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Contact -->
-      <div class="profile-card info-card">
-        <h3 class="section-title"><mat-icon>contacts</mat-icon> Contact</h3>
-        <div class="field">
-          <span class="field-label">Email</span>
-          <div class="field-value contact-row">
-            <span>{{ user.email }}</span>
-            <span class="badge" [class.badge-ok]="user.isEmailVerified" [class.badge-warn]="!user.isEmailVerified">
-              <mat-icon>{{ user.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
-              {{ user.isEmailVerified ? 'Verified' : 'Unverified' }}
-            </span>
-            <button *ngIf="!user.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">Verify now</button>
-            <span *ngIf="emailVerifStep === 'sending'" class="muted-text">Sending…</span>
-          </div>
-          <!-- Code panel -->
-          <div class="verif-panel" *ngIf="!user.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
-            <p>Enter the 6-digit code sent to <strong>{{ user.email }}</strong></p>
-            <div class="verif-row">
-              <input class="code-input" type="text" maxlength="6" placeholder="000000" [(ngModel)]="emailVerifCode" name="ecUser" />
-              <button class="btn btn-success btn-sm" (click)="confirmEmailCode()" [disabled]="emailVerifStep === 'verifying'">
-                {{ emailVerifStep === 'verifying' ? 'Verifying…' : 'Confirm' }}
-              </button>
-              <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">Cancel</button>
-            </div>
-            <span class="error-text" *ngIf="emailVerifError">{{ emailVerifError }}</span>
-            <button class="btn-link small" (click)="sendEmailVerification()">Resend code</button>
-          </div>
-        </div>
-        <div class="field">
-          <span class="field-label">Phone</span>
-          <div class="field-value contact-row">
-            <span>{{ user.phoneNumber || 'Not set' }}</span>
-            <span *ngIf="user.phoneNumber" class="badge" [class.badge-ok]="user.isPhoneVerified" [class.badge-warn]="!user.isPhoneVerified">
-              <mat-icon>{{ user.isPhoneVerified ? 'check_circle' : 'cancel' }}</mat-icon>
-              {{ user.isPhoneVerified ? 'Verified' : 'Unverified' }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Address -->
-      <div class="profile-card info-card full-width" *ngIf="user.houseNameNumber || user.street1 || user.city">
-        <h3 class="section-title"><mat-icon>location_on</mat-icon> Address</h3>
-        <p class="address-text">
-          <ng-container *ngIf="user.houseNameNumber">{{ user.houseNameNumber }}, </ng-container>
-          <ng-container *ngIf="user.street1">{{ user.street1 }}<ng-container *ngIf="user.street2">, {{ user.street2 }}</ng-container>, </ng-container>
-          <ng-container *ngIf="user.city">{{ user.city }}<ng-container *ngIf="user.state">, {{ user.state }}</ng-container></ng-container>
-          <ng-container *ngIf="user.country">, {{ user.country }}</ng-container>
-          <ng-container *ngIf="user.zipPostalCode"> — {{ user.zipPostalCode }}</ng-container>
-        </p>
-      </div>
-    </div>
-
-    <!-- Reviews from Professionals (user view mode only) -->
-    <div class="profile-card reviews-card" *ngIf="!isEditing">
-      <h3 class="section-title"><mat-icon>star</mat-icon> Reviews from Professionals</h3>
-
-      <div *ngIf="userReviewsLoading" class="reviews-loading">
-        <mat-spinner diameter="28"></mat-spinner>
-      </div>
-
-      <ng-container *ngIf="!userReviewsLoading">
-        <div *ngIf="!userRatingSummary || userRatingSummary.totalReviews === 0" class="reviews-empty">
-          <mat-icon>rate_review</mat-icon>
-          <p>No reviews yet. Reviews from professionals will appear here after completed jobs.</p>
-        </div>
-
-        <ng-container *ngIf="userRatingSummary && userRatingSummary.totalReviews > 0">
-          <div class="rating-summary">
-            <div class="rating-avg-block">
-              <div class="rating-avg-num">{{ userRatingSummary.averageRating | number:'1.1-1' }}</div>
-              <div class="rating-stars-row">
-                <span *ngFor="let i of starsArray" class="star" [class.filled]="starFilled(userRatingSummary.averageRating, i - 1)">★</span>
-              </div>
-              <div class="rating-count">{{ userRatingSummary.totalReviews }} review{{ userRatingSummary.totalReviews !== 1 ? 's' : '' }}</div>
-            </div>
-            <div class="rating-breakdown">
-              <div *ngFor="let s of [5,4,3,2,1]" class="breakdown-row">
-                <span class="bd-label">{{ s }}★</span>
-                <div class="bd-bar-wrap">
-                  <div class="bd-bar-fill" [style.width]="ratingBarWidth(userRatingSummary.ratingBreakdown[s - 1] || 0, userRatingSummary.totalReviews)"></div>
-                </div>
-                <span class="bd-count">{{ userRatingSummary.ratingBreakdown[s - 1] || 0 }}</span>
-              </div>
+            <span class="field-label">Phone</span>
+            <div class="field-value contact-row">
+              <span>{{ user.phoneNumber || 'Not set' }}</span>
+              <span *ngIf="user.phoneNumber" class="badge" [class.badge-ok]="user.isPhoneVerified" [class.badge-warn]="!user.isPhoneVerified">
+                <mat-icon>{{ user.isPhoneVerified ? 'check_circle' : 'cancel' }}</mat-icon>
+                {{ user.isPhoneVerified ? 'Verified' : 'Unverified' }}
+              </span>
             </div>
           </div>
+        </div>
 
-          <div class="reviews-list" *ngIf="userReviews.length > 0">
-            <h4 class="reviews-list-title">Recent Reviews</h4>
-            <div *ngFor="let review of userReviews" class="review-card">
-              <div class="review-header">
-                <span *ngFor="let i of starsArray" class="star sm" [class.filled]="starFilled(review.rating, i - 1)">★</span>
-                <span class="review-author">{{ review.reviewerName }}</span>
-                <span class="review-job" *ngIf="review.jobTitle">· {{ review.jobTitle }}</span>
-                <span class="review-date">{{ review.createdAt | date:'d MMM yyyy' }}</span>
-              </div>
-              <p *ngIf="review.comment" class="review-comment">{{ review.comment }}</p>
+        <!-- Address -->
+        <div class="profile-card info-card full-width" *ngIf="user.houseNameNumber || user.street1 || user.city">
+          <h3 class="section-title"><mat-icon>location_on</mat-icon> Address</h3>
+          <p class="address-text">
+            <ng-container *ngIf="user.houseNameNumber">{{ user.houseNameNumber }}, </ng-container>
+            <ng-container *ngIf="user.street1">{{ user.street1 }}<ng-container *ngIf="user.street2">, {{ user.street2 }}</ng-container>, </ng-container>
+            <ng-container *ngIf="user.city">{{ user.city }}<ng-container *ngIf="user.state">, {{ user.state }}</ng-container></ng-container>
+            <ng-container *ngIf="user.country">, {{ user.country }}</ng-container>
+            <ng-container *ngIf="user.zipPostalCode"> — {{ user.zipPostalCode }}</ng-container>
+          </p>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── PAYMENT section ────────────────────────────────────── -->
+    <ng-container *ngIf="!isEditing && userSection === 'payment'">
+      <div class="profile-card bank-card">
+        <div class="bank-card-header">
+          <h3 class="section-title"><mat-icon>account_balance_wallet</mat-icon> Payment Details</h3>
+          <button class="btn btn-secondary btn-sm" (click)="startEditPayment()" *ngIf="!isEditingPayment">
+            <mat-icon>edit</mat-icon> {{ user.upiVpa ? 'Edit' : 'Add' }}
+          </button>
+        </div>
+
+        <div class="alert success-alert sm" *ngIf="paymentSuccessMessage">
+          <mat-icon>check_circle</mat-icon><span>{{ paymentSuccessMessage }}</span>
+        </div>
+        <div class="alert error-alert sm" *ngIf="paymentErrorMessage">
+          <mat-icon>error</mat-icon><span>{{ paymentErrorMessage }}</span>
+        </div>
+
+        <!-- View mode -->
+        <ng-container *ngIf="!isEditingPayment">
+          <div *ngIf="!user.upiVpa" class="bank-empty">
+            <mat-icon>info</mat-icon>
+            <p>No UPI ID saved. Add one and it will be pre-filled when you make a payment.</p>
+          </div>
+          <div *ngIf="user.upiVpa" class="field">
+            <span class="field-label">Saved UPI ID</span>
+            <div class="field-value contact-row">
+              <mat-icon style="font-size:18px;color:#16a34a">qr_code</mat-icon>
+              <span>{{ user.upiVpa }}</span>
             </div>
-            <button *ngIf="userReviews.length < userReviewsTotal" class="btn-load-more" (click)="loadMoreUserReviews()">
-              Load more reviews
-            </button>
+            <span class="field-hint" style="margin-top:4px">This UPI ID will be offered as a quick option when you pay for a job.</span>
           </div>
         </ng-container>
-      </ng-container>
-    </div>
+
+        <!-- Edit form -->
+        <div class="bank-edit-form" *ngIf="isEditingPayment">
+          <div class="form-group">
+            <label>UPI ID</label>
+            <input type="text" [(ngModel)]="paymentUpiVpa" name="paymentUpi" placeholder="e.g. yourname@upi" />
+            <span class="field-hint">Leave blank to remove saved UPI ID.</span>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-success btn-sm" (click)="savePaymentDetails()" [disabled]="paymentSaveLoading">
+              <mat-icon>save</mat-icon>{{ paymentSaveLoading ? 'Saving…' : 'Save' }}
+            </button>
+            <button class="btn btn-cancel btn-sm" (click)="cancelEditPayment()">
+              <mat-icon>close</mat-icon> Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── REVIEWS section ────────────────────────────────────── -->
+    <ng-container *ngIf="!isEditing && userSection === 'reviews'">
+      <div class="profile-card reviews-card">
+        <h3 class="section-title"><mat-icon>star</mat-icon> Reviews from Professionals</h3>
+
+        <div *ngIf="userReviewsLoading" class="reviews-loading">
+          <mat-spinner diameter="28"></mat-spinner>
+        </div>
+
+        <ng-container *ngIf="!userReviewsLoading">
+          <div *ngIf="!userRatingSummary || userRatingSummary.totalReviews === 0" class="reviews-empty">
+            <mat-icon>rate_review</mat-icon>
+            <p>No reviews yet. Reviews from professionals will appear here after completed jobs.</p>
+          </div>
+
+          <ng-container *ngIf="userRatingSummary && userRatingSummary.totalReviews > 0">
+            <div class="rating-summary">
+              <div class="rating-avg-block">
+                <div class="rating-avg-num">{{ userRatingSummary.averageRating | number:'1.1-1' }}</div>
+                <div class="rating-stars-row">
+                  <span *ngFor="let i of starsArray" class="star" [class.filled]="starFilled(userRatingSummary.averageRating, i - 1)">★</span>
+                </div>
+                <div class="rating-count">{{ userRatingSummary.totalReviews }} review{{ userRatingSummary.totalReviews !== 1 ? 's' : '' }}</div>
+              </div>
+              <div class="rating-breakdown">
+                <div *ngFor="let s of [5,4,3,2,1]" class="breakdown-row">
+                  <span class="bd-label">{{ s }}★</span>
+                  <div class="bd-bar-wrap">
+                    <div class="bd-bar-fill" [style.width]="ratingBarWidth(userRatingSummary.ratingBreakdown[s - 1] || 0, userRatingSummary.totalReviews)"></div>
+                  </div>
+                  <span class="bd-count">{{ userRatingSummary.ratingBreakdown[s - 1] || 0 }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="reviews-list" *ngIf="userReviews.length > 0">
+              <h4 class="reviews-list-title">Recent Reviews</h4>
+              <div *ngFor="let review of userReviews" class="review-card">
+                <div class="review-header">
+                  <span *ngFor="let i of starsArray" class="star sm" [class.filled]="starFilled(review.rating, i - 1)">★</span>
+                  <span class="review-author">{{ review.reviewerName }}</span>
+                  <span class="review-job" *ngIf="review.jobTitle">· {{ review.jobTitle }}</span>
+                  <span class="review-date">{{ review.createdAt | date:'d MMM yyyy' }}</span>
+                </div>
+                <p *ngIf="review.comment" class="review-comment">{{ review.comment }}</p>
+              </div>
+              <button *ngIf="userReviews.length < userReviewsTotal" class="btn-load-more" (click)="loadMoreUserReviews()">
+                Load more reviews
+              </button>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
 
     <!-- Edit Form -->
     <div class="profile-card edit-card" *ngIf="isEditing">
-      <h2 class="form-title">Edit Profile</h2>
-
       <div class="alert success-alert" *ngIf="successMessage">
         <mat-icon>check_circle</mat-icon><span>{{ successMessage }}</span>
       </div>
@@ -241,29 +308,40 @@
   <!-- ── PRO PROFILE ───────────────────────────────────────────── -->
   <ng-container *ngIf="userType === 'Pro'">
 
-    <!-- Header Card -->
-    <div class="profile-card hero-card">
-      <div class="avatar-wrap">
-        <div class="avatar-initials pro">{{ (pro.proName || '?')[0] }}</div>
-        <span class="active-dot"></span>
+    <!-- Compact hero strip -->
+    <div class="pro-hero-strip">
+      <div class="phs-avatar">{{ (pro.proName || '?')[0] }}</div>
+      <div class="phs-info">
+        <div class="phs-name">{{ pro.proName }}</div>
+        <div class="phs-sub">{{ pro.businessName }}<span *ngIf="pro.city"> · {{ pro.city }}</span></div>
       </div>
-      <div class="hero-info">
-        <h1>{{ pro.proName }}</h1>
-        <p class="hero-sub">{{ pro.businessName }} · Member since {{ pro.createdAt | date:'MMM yyyy' }}</p>
-        <div class="hero-meta">
-          <span class="meta-chip pro-chip"><mat-icon>engineering</mat-icon>Professional</span>
-          <span class="meta-chip" *ngIf="pro.city">
-            <mat-icon>place</mat-icon>{{ pro.city }}{{ pro.state ? ', ' + pro.state : '' }}
-          </span>
-          <span class="meta-chip verify-chip" [class.verified]="pro.isEmailVerified" [class.unverified]="!pro.isEmailVerified">
-            <mat-icon>{{ pro.isEmailVerified ? 'verified' : 'error_outline' }}</mat-icon>
-            {{ pro.isEmailVerified ? 'Email verified' : 'Email unverified' }}
-          </span>
-        </div>
-      </div>
-      <button class="btn btn-primary edit-btn" (click)="toggleEdit()" *ngIf="!isEditing">
-        <mat-icon>edit</mat-icon> Edit Profile
+      <span class="phs-badge" [class.verified]="pro.isEmailVerified">
+        <mat-icon>{{ pro.isEmailVerified ? 'verified' : 'error_outline' }}</mat-icon>
+      </span>
+    </div>
+
+    <!-- Tab bar -->
+    <nav class="pro-tab-bar" *ngIf="!isEditing">
+      <button class="ptb-tab" [class.active]="proSection === 'info'"     (click)="selectProSection('info')">
+        <mat-icon>person</mat-icon><span>Profile</span>
       </button>
+      <button class="ptb-tab" [class.active]="proSection === 'payout'"   (click)="selectProSection('payout')">
+        <mat-icon>account_balance</mat-icon><span>Payout</span>
+      </button>
+      <button class="ptb-tab" [class.active]="proSection === 'earnings'" (click)="selectProSection('earnings')">
+        <mat-icon>payments</mat-icon><span>Earnings</span>
+      </button>
+      <button class="ptb-tab" [class.active]="proSection === 'reviews'"  (click)="selectProSection('reviews')">
+        <mat-icon>star</mat-icon><span>Reviews</span>
+      </button>
+    </nav>
+
+    <!-- Edit mode header -->
+    <div class="pro-edit-header" *ngIf="isEditing">
+      <button class="btn btn-cancel btn-sm" (click)="cancelEdit()">
+        <mat-icon>arrow_back</mat-icon> Back
+      </button>
+      <span class="pro-edit-title">Edit Profile</span>
     </div>
 
     <!-- Alerts -->
@@ -271,134 +349,281 @@
       <mat-icon>check_circle</mat-icon><span>{{ successMessage }}</span>
     </div>
 
-    <!-- Info Sections (view mode) -->
-    <div class="sections-grid" *ngIf="!isEditing">
-      <!-- Business Info -->
-      <div class="profile-card info-card">
-        <h3 class="section-title"><mat-icon>store</mat-icon> Business</h3>
-        <div class="field">
-          <span class="field-label">Professional Name</span>
-          <span class="field-value">{{ pro.proName || '—' }}</span>
-        </div>
-        <div class="field">
-          <span class="field-label">Business Name</span>
-          <span class="field-value">{{ pro.businessName || '—' }}</span>
-        </div>
-        <div class="field">
-          <span class="field-label">Service Radius</span>
-          <span class="field-value">{{ pro.serviceRadiusKm ?? 25 }} km</span>
-        </div>
+    <!-- ── PROFILE section ──────────────────────────────────────── -->
+    <ng-container *ngIf="!isEditing && proSection === 'info'">
+      <div class="pro-section-actions">
+        <button class="btn btn-primary btn-sm" (click)="toggleEdit()">
+          <mat-icon>edit</mat-icon> Edit Profile
+        </button>
       </div>
-
-      <!-- Contact -->
-      <div class="profile-card info-card">
-        <h3 class="section-title"><mat-icon>contacts</mat-icon> Contact</h3>
-        <div class="field">
-          <span class="field-label">Email</span>
-          <div class="field-value contact-row">
-            <span>{{ pro.email }}</span>
-            <span class="badge" [class.badge-ok]="pro.isEmailVerified" [class.badge-warn]="!pro.isEmailVerified">
-              <mat-icon>{{ pro.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
-              {{ pro.isEmailVerified ? 'Verified' : 'Unverified' }}
-            </span>
-            <button *ngIf="!pro.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">Verify now</button>
-            <span *ngIf="emailVerifStep === 'sending'" class="muted-text">Sending…</span>
+      <div class="sections-grid">
+        <!-- Business Info -->
+        <div class="profile-card info-card">
+          <h3 class="section-title"><mat-icon>store</mat-icon> Business</h3>
+          <div class="field">
+            <span class="field-label">Professional Name</span>
+            <span class="field-value">{{ pro.proName || '—' }}</span>
           </div>
-          <div class="verif-panel" *ngIf="!pro.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
-            <p>Enter the 6-digit code sent to <strong>{{ pro.email }}</strong></p>
-            <div class="verif-row">
-              <input class="code-input" type="text" maxlength="6" placeholder="000000" [(ngModel)]="emailVerifCode" name="ecPro" />
-              <button class="btn btn-success btn-sm" (click)="confirmEmailCode()" [disabled]="emailVerifStep === 'verifying'">
-                {{ emailVerifStep === 'verifying' ? 'Verifying…' : 'Confirm' }}
-              </button>
-              <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">Cancel</button>
+          <div class="field">
+            <span class="field-label">Business Name</span>
+            <span class="field-value">{{ pro.businessName || '—' }}</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Service Radius</span>
+            <span class="field-value">{{ pro.serviceRadiusKm ?? 25 }} km</span>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="profile-card info-card">
+          <h3 class="section-title"><mat-icon>contacts</mat-icon> Contact</h3>
+          <div class="field">
+            <span class="field-label">Email</span>
+            <div class="field-value contact-row">
+              <span>{{ pro.email }}</span>
+              <span class="badge" [class.badge-ok]="pro.isEmailVerified" [class.badge-warn]="!pro.isEmailVerified">
+                <mat-icon>{{ pro.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
+                {{ pro.isEmailVerified ? 'Verified' : 'Unverified' }}
+              </span>
+              <button *ngIf="!pro.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">Verify now</button>
+              <span *ngIf="emailVerifStep === 'sending'" class="muted-text">Sending…</span>
             </div>
-            <span class="error-text" *ngIf="emailVerifError">{{ emailVerifError }}</span>
-            <button class="btn-link small" (click)="sendEmailVerification()">Resend code</button>
-          </div>
-        </div>
-        <div class="field">
-          <span class="field-label">Phone</span>
-          <div class="field-value contact-row">
-            <span>{{ pro.phoneNumber || 'Not set' }}</span>
-            <span *ngIf="pro.phoneNumber" class="badge" [class.badge-ok]="pro.isPhoneVerified" [class.badge-warn]="!pro.isPhoneVerified">
-              <mat-icon>{{ pro.isPhoneVerified ? 'check_circle' : 'cancel' }}</mat-icon>
-              {{ pro.isPhoneVerified ? 'Verified' : 'Unverified' }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Address -->
-      <div class="profile-card info-card full-width" *ngIf="pro.houseNameNumber || pro.street1 || pro.city">
-        <h3 class="section-title"><mat-icon>location_on</mat-icon> Address</h3>
-        <p class="address-text">
-          <ng-container *ngIf="pro.houseNameNumber">{{ pro.houseNameNumber }}, </ng-container>
-          <ng-container *ngIf="pro.street1">{{ pro.street1 }}<ng-container *ngIf="pro.street2">, {{ pro.street2 }}</ng-container>, </ng-container>
-          <ng-container *ngIf="pro.city">{{ pro.city }}<ng-container *ngIf="pro.state">, {{ pro.state }}</ng-container></ng-container>
-          <ng-container *ngIf="pro.country">, {{ pro.country }}</ng-container>
-          <ng-container *ngIf="pro.zipPostalCode"> — {{ pro.zipPostalCode }}</ng-container>
-        </p>
-      </div>
-    </div>
-
-    <!-- Reviews & Ratings -->
-    <div class="profile-card reviews-card" *ngIf="!isEditing">
-      <h3 class="section-title"><mat-icon>star</mat-icon> Reviews &amp; Ratings</h3>
-
-      <div *ngIf="reviewsLoading" class="reviews-loading">
-        <mat-spinner diameter="28"></mat-spinner>
-      </div>
-
-      <ng-container *ngIf="!reviewsLoading">
-        <div *ngIf="!ratingSummary || ratingSummary.totalReviews === 0" class="reviews-empty">
-          <mat-icon>rate_review</mat-icon>
-          <p>No reviews yet. Complete jobs to receive ratings from customers.</p>
-        </div>
-
-        <ng-container *ngIf="ratingSummary && ratingSummary.totalReviews > 0">
-          <div class="rating-summary">
-            <div class="rating-avg-block">
-              <div class="rating-avg-num">{{ ratingSummary.averageRating | number:'1.1-1' }}</div>
-              <div class="rating-stars-row">
-                <span *ngFor="let i of starsArray" class="star" [class.filled]="starFilled(ratingSummary.averageRating, i - 1)">★</span>
+            <div class="verif-panel" *ngIf="!pro.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
+              <p>Enter the 6-digit code sent to <strong>{{ pro.email }}</strong></p>
+              <div class="verif-row">
+                <input class="code-input" type="text" maxlength="6" placeholder="000000" [(ngModel)]="emailVerifCode" name="ecPro" />
+                <button class="btn btn-success btn-sm" (click)="confirmEmailCode()" [disabled]="emailVerifStep === 'verifying'">
+                  {{ emailVerifStep === 'verifying' ? 'Verifying…' : 'Confirm' }}
+                </button>
+                <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">Cancel</button>
               </div>
-              <div class="rating-count">{{ ratingSummary.totalReviews }} review{{ ratingSummary.totalReviews !== 1 ? 's' : '' }}</div>
+              <span class="error-text" *ngIf="emailVerifError">{{ emailVerifError }}</span>
+              <button class="btn-link small" (click)="sendEmailVerification()">Resend code</button>
             </div>
-            <div class="rating-breakdown">
-              <div *ngFor="let s of [5,4,3,2,1]" class="breakdown-row">
-                <span class="bd-label">{{ s }}★</span>
-                <div class="bd-bar-wrap">
-                  <div class="bd-bar-fill" [style.width]="ratingBarWidth(ratingSummary.ratingBreakdown[s - 1] || 0, ratingSummary.totalReviews)"></div>
+          </div>
+          <div class="field">
+            <span class="field-label">Phone</span>
+            <div class="field-value contact-row">
+              <span>{{ pro.phoneNumber || 'Not set' }}</span>
+              <span *ngIf="pro.phoneNumber" class="badge" [class.badge-ok]="pro.isPhoneVerified" [class.badge-warn]="!pro.isPhoneVerified">
+                <mat-icon>{{ pro.isPhoneVerified ? 'check_circle' : 'cancel' }}</mat-icon>
+                {{ pro.isPhoneVerified ? 'Verified' : 'Unverified' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="profile-card info-card full-width" *ngIf="pro.houseNameNumber || pro.street1 || pro.city">
+          <h3 class="section-title"><mat-icon>location_on</mat-icon> Address</h3>
+          <p class="address-text">
+            <ng-container *ngIf="pro.houseNameNumber">{{ pro.houseNameNumber }}, </ng-container>
+            <ng-container *ngIf="pro.street1">{{ pro.street1 }}<ng-container *ngIf="pro.street2">, {{ pro.street2 }}</ng-container>, </ng-container>
+            <ng-container *ngIf="pro.city">{{ pro.city }}<ng-container *ngIf="pro.state">, {{ pro.state }}</ng-container></ng-container>
+            <ng-container *ngIf="pro.country">, {{ pro.country }}</ng-container>
+            <ng-container *ngIf="pro.zipPostalCode"> — {{ pro.zipPostalCode }}</ng-container>
+          </p>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── PAYOUT section ───────────────────────────────────────── -->
+    <ng-container *ngIf="!isEditing && proSection === 'payout'">
+      <div class="profile-card bank-card">
+        <div class="bank-card-header">
+          <h3 class="section-title"><mat-icon>account_balance</mat-icon> Payout / Bank Details</h3>
+          <button class="btn btn-secondary btn-sm" (click)="startEditBank()" *ngIf="!isEditingBank">
+            <mat-icon>edit</mat-icon> {{ bankDetails?.hasBankDetails ? 'Edit' : 'Add' }}
+          </button>
+        </div>
+
+        <div *ngIf="bankDetailsLoading" class="bank-loading">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
+
+        <div class="alert success-alert sm" *ngIf="bankSuccessMessage">
+          <mat-icon>check_circle</mat-icon><span>{{ bankSuccessMessage }}</span>
+        </div>
+        <div class="alert error-alert sm" *ngIf="bankErrorMessage">
+          <mat-icon>error</mat-icon><span>{{ bankErrorMessage }}</span>
+        </div>
+
+        <ng-container *ngIf="!bankDetailsLoading && !isEditingBank">
+          <div *ngIf="!bankDetails?.hasBankDetails" class="bank-empty">
+            <mat-icon>warning</mat-icon>
+            <p>No payout details configured. Add your bank account or UPI to receive payments for completed jobs.</p>
+          </div>
+          <ng-container *ngIf="bankDetails?.hasBankDetails">
+            <div class="field-row">
+              <div class="field">
+                <span class="field-label">Payout Method</span>
+                <span class="field-value">{{ bankDetails?.payoutMethod }}</span>
+              </div>
+            </div>
+            <ng-container *ngIf="bankDetails?.payoutMethod === 'UPI'">
+              <div class="field">
+                <span class="field-label">UPI VPA</span>
+                <span class="field-value">{{ bankDetails?.upiVpa }}</span>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="bankDetails?.payoutMethod === 'Bank'">
+              <div class="field-row">
+                <div class="field">
+                  <span class="field-label">Account Holder</span>
+                  <span class="field-value">{{ bankDetails?.bankAccountHolderName || '—' }}</span>
                 </div>
-                <span class="bd-count">{{ ratingSummary.ratingBreakdown[s - 1] || 0 }}</span>
+                <div class="field">
+                  <span class="field-label">Account Number</span>
+                  <span class="field-value">****{{ (bankDetails?.bankAccountNumber ?? '').slice(-4) }}</span>
+                </div>
               </div>
+              <div class="field">
+                <span class="field-label">IFSC</span>
+                <span class="field-value">{{ bankDetails?.bankIfsc }}</span>
+              </div>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+
+        <!-- Edit bank form -->
+        <div class="bank-edit-form" *ngIf="isEditingBank">
+          <div class="form-group">
+            <label>Payout Method</label>
+            <div class="method-toggle">
+              <button class="method-btn" [class.active]="bankForm.payoutMethod === 'Bank'" (click)="bankForm.payoutMethod = 'Bank'">
+                <mat-icon>account_balance</mat-icon> Bank Account
+              </button>
+              <button class="method-btn" [class.active]="bankForm.payoutMethod === 'UPI'" (click)="bankForm.payoutMethod = 'UPI'">
+                <mat-icon>qr_code</mat-icon> UPI
+              </button>
             </div>
           </div>
 
-          <div class="reviews-list" *ngIf="reviews.length > 0">
-            <h4 class="reviews-list-title">Recent Reviews</h4>
-            <div *ngFor="let review of reviews" class="review-card">
-              <div class="review-header">
-                <span *ngFor="let i of starsArray" class="star sm" [class.filled]="starFilled(review.rating, i - 1)">★</span>
-                <span class="review-author">{{ review.reviewerName }}</span>
-                <span class="review-job" *ngIf="review.jobTitle">· {{ review.jobTitle }}</span>
-                <span class="review-date">{{ review.createdAt | date:'d MMM yyyy' }}</span>
+          <ng-container *ngIf="bankForm.payoutMethod === 'Bank'">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Account Holder Name</label>
+                <input type="text" [(ngModel)]="bankForm.bankAccountHolderName" name="bankHolderName" placeholder="As per bank records" />
               </div>
-              <p *ngIf="review.comment" class="review-comment">{{ review.comment }}</p>
+              <div class="form-group">
+                <label>Account Number</label>
+                <input type="text" [(ngModel)]="bankForm.bankAccountNumber" name="bankAccNum" placeholder="Bank account number" />
+              </div>
             </div>
-            <button *ngIf="reviews.length < reviewsTotal" class="btn-load-more" (click)="loadMoreReviews()">
-              Load more reviews
+            <div class="form-group half-width">
+              <label>IFSC Code</label>
+              <input type="text" [(ngModel)]="bankForm.bankIfsc" name="bankIfsc" placeholder="e.g. HDFC0001234" style="text-transform:uppercase" />
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="bankForm.payoutMethod === 'UPI'">
+            <div class="form-group half-width">
+              <label>UPI VPA</label>
+              <input type="text" [(ngModel)]="bankForm.upiVpa" name="upiVpa" placeholder="e.g. yourname@upi" />
+            </div>
+          </ng-container>
+
+          <div class="form-actions">
+            <button class="btn btn-success btn-sm" (click)="saveBankDetails()" [disabled]="bankSaveLoading">
+              <mat-icon>save</mat-icon>{{ bankSaveLoading ? 'Saving…' : 'Save' }}
+            </button>
+            <button class="btn btn-cancel btn-sm" (click)="cancelEditBank()">
+              <mat-icon>close</mat-icon> Cancel
             </button>
           </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── EARNINGS section ─────────────────────────────────────── -->
+    <ng-container *ngIf="!isEditing && proSection === 'earnings'">
+      <div class="profile-card earnings-card">
+        <h3 class="section-title"><mat-icon>payments</mat-icon> Earnings</h3>
+
+        <div *ngIf="payoutsLoading" class="payouts-loading">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
+
+        <div *ngIf="!payoutsLoading && payouts.length === 0" class="payouts-empty">
+          <mat-icon>inbox</mat-icon>
+          <p>No payouts yet. Complete jobs to earn money.</p>
+        </div>
+
+        <div class="payouts-list" *ngIf="!payoutsLoading && payouts.length > 0">
+          <div *ngFor="let p of payouts" class="payout-card">
+            <div class="payout-card-left">
+              <div class="payout-job">{{ p.jobTitle || ('Job #' + p.jobId) }}</div>
+              <div class="payout-meta">{{ p.createdAt | date:'d MMM yyyy' }} · {{ p.mode || 'Pending method' }}</div>
+            </div>
+            <div class="payout-card-right">
+              <span class="payout-amount">&#8377;{{ p.amount | number:'1.2-2' }}</span>
+              <span class="payout-status" [class]="'ps-' + (p.status | lowercase)">{{ p.status }}</span>
+            </div>
+            <div class="payout-failure" *ngIf="p.failureReason">
+              <mat-icon>error_outline</mat-icon> {{ p.failureReason }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── REVIEWS section ──────────────────────────────────────── -->
+    <ng-container *ngIf="!isEditing && proSection === 'reviews'">
+      <div class="profile-card reviews-card">
+        <h3 class="section-title"><mat-icon>star</mat-icon> Reviews &amp; Ratings</h3>
+
+        <div *ngIf="reviewsLoading" class="reviews-loading">
+          <mat-spinner diameter="28"></mat-spinner>
+        </div>
+
+        <ng-container *ngIf="!reviewsLoading">
+          <div *ngIf="!ratingSummary || ratingSummary.totalReviews === 0" class="reviews-empty">
+            <mat-icon>rate_review</mat-icon>
+            <p>No reviews yet. Complete jobs to receive ratings from customers.</p>
+          </div>
+
+          <ng-container *ngIf="ratingSummary && ratingSummary.totalReviews > 0">
+            <div class="rating-summary">
+              <div class="rating-avg-block">
+                <div class="rating-avg-num">{{ ratingSummary.averageRating | number:'1.1-1' }}</div>
+                <div class="rating-stars-row">
+                  <span *ngFor="let i of starsArray" class="star" [class.filled]="starFilled(ratingSummary.averageRating, i - 1)">★</span>
+                </div>
+                <div class="rating-count">{{ ratingSummary.totalReviews }} review{{ ratingSummary.totalReviews !== 1 ? 's' : '' }}</div>
+              </div>
+              <div class="rating-breakdown">
+                <div *ngFor="let s of [5,4,3,2,1]" class="breakdown-row">
+                  <span class="bd-label">{{ s }}★</span>
+                  <div class="bd-bar-wrap">
+                    <div class="bd-bar-fill" [style.width]="ratingBarWidth(ratingSummary.ratingBreakdown[s - 1] || 0, ratingSummary.totalReviews)"></div>
+                  </div>
+                  <span class="bd-count">{{ ratingSummary.ratingBreakdown[s - 1] || 0 }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="reviews-list" *ngIf="reviews.length > 0">
+              <h4 class="reviews-list-title">Recent Reviews</h4>
+              <div *ngFor="let review of reviews" class="review-card">
+                <div class="review-header">
+                  <span *ngFor="let i of starsArray" class="star sm" [class.filled]="starFilled(review.rating, i - 1)">★</span>
+                  <span class="review-author">{{ review.reviewerName }}</span>
+                  <span class="review-job" *ngIf="review.jobTitle">· {{ review.jobTitle }}</span>
+                  <span class="review-date">{{ review.createdAt | date:'d MMM yyyy' }}</span>
+                </div>
+                <p *ngIf="review.comment" class="review-comment">{{ review.comment }}</p>
+              </div>
+              <button *ngIf="reviews.length < reviewsTotal" class="btn-load-more" (click)="loadMoreReviews()">
+                Load more reviews
+              </button>
+            </div>
+          </ng-container>
         </ng-container>
-      </ng-container>
-    </div>
+      </div>
+    </ng-container>
 
     <!-- Edit Form -->
     <div class="profile-card edit-card" *ngIf="isEditing">
-      <h2 class="form-title">Edit Professional Profile</h2>
-
       <div class="alert success-alert" *ngIf="successMessage">
         <mat-icon>check_circle</mat-icon><span>{{ successMessage }}</span>
       </div>

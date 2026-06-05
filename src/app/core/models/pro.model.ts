@@ -18,6 +18,28 @@ export interface Pro {
     serviceRadiusKm?: number;
     latitude?: number;
     longitude?: number;
+    payoutMethod?: string;
+    bankAccountHolderName?: string;
+    bankAccountNumber?: string;
+    bankIfsc?: string;
+    upiVpa?: string;
+}
+
+export interface ProBankDetails {
+    payoutMethod?: string;
+    bankAccountHolderName?: string;
+    bankAccountNumber?: string;
+    bankIfsc?: string;
+    upiVpa?: string;
+    hasBankDetails: boolean;
+}
+
+export interface UpdateBankDetailsRequest {
+    payoutMethod: string;
+    bankAccountHolderName?: string;
+    bankAccountNumber?: string;
+    bankIfsc?: string;
+    upiVpa?: string;
 }
 
 export interface RegisterProRequest {

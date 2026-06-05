@@ -28,13 +28,14 @@
       <mat-icon>assignment</mat-icon>
       <span>My Jobs</span>
     </a>
-    <a class="nav-item" routerLink="/find-a-pro" routerLinkActive="active">
-      <mat-icon>engineering</mat-icon>
-      <span>Find a Pro</span>
-    </a>
     <a class="nav-item post-btn" routerLink="/post-job" routerLinkActive="active">
       <mat-icon>add_circle</mat-icon>
       <span>Post Job</span>
+    </a>
+    <a class="nav-item" routerLink="/notifications" routerLinkActive="active"
+       [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">
+      <mat-icon>notifications</mat-icon>
+      <span>Alerts</span>
     </a>
     <a class="nav-item" routerLink="/profile" routerLinkActive="active">
       <mat-icon>person</mat-icon>
