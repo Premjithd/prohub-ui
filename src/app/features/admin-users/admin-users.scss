@@ -211,6 +211,45 @@
     margin: 0.2rem 0;
   }
 
+  .dispute-payment-amount {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.88rem;
+    color: #1b5e20;
+    margin: 0.4rem 0 0;
+    mat-icon { font-size: 15px; width: 15px; height: 15px; }
+  }
+
+  .refund-confirm-form {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: #fff3e0;
+    border: 1px solid #ffb74d;
+    border-radius: 6px;
+
+    .refund-confirm-warning {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.88rem;
+      color: #e65100;
+      margin: 0 0 0.75rem;
+      mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    }
+
+    .refund-notes-field {
+      width: 100%;
+    }
+
+    .refund-confirm-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 0.5rem;
+    }
+  }
+
   .dispute-actions {
     display: flex;
     gap: 0.75rem;

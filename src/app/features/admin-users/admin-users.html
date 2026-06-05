@@ -50,7 +50,33 @@
         </div>
         <p class="dispute-reason"><strong>Reason:</strong> {{ d.disputeReason }}</p>
         <p *ngIf="d.completionNotes" class="dispute-completion-notes"><strong>Pro notes:</strong> {{ d.completionNotes }}</p>
-        <div class="dispute-actions">
+        <p *ngIf="d.paymentAmount != null" class="dispute-payment-amount">
+          <mat-icon>currency_rupee</mat-icon>
+          <strong>Payment amount:</strong> ₹{{ d.paymentAmount | number:'1.2-2' }}
+        </p>
+
+        <!-- Inline refund confirm form -->
+        <div *ngIf="refundConfirmJobId === d.jobId" class="refund-confirm-form">
+          <p class="refund-confirm-warning">
+            <mat-icon>warning</mat-icon>
+            This will refund <strong>₹{{ d.paymentAmount | number:'1.2-2' }}</strong> to the consumer and reopen the job for rebidding.
+          </p>
+          <mat-form-field appearance="outline" class="refund-notes-field">
+            <mat-label>Reason for refund</mat-label>
+            <textarea matInput [(ngModel)]="refundNotes" rows="2" placeholder="Briefly explain the reason for this refund..."></textarea>
+          </mat-form-field>
+          <div class="refund-confirm-actions">
+            <button mat-stroked-button (click)="refundConfirmJobId = null" [disabled]="resolvingDisputeId === d.jobId">
+              Cancel
+            </button>
+            <button mat-raised-button color="warn" (click)="confirmRefund(d.jobId)" [disabled]="resolvingDisputeId === d.jobId">
+              <mat-icon>{{ resolvingDisputeId === d.jobId ? 'hourglass_empty' : 'currency_rupee' }}</mat-icon>
+              {{ resolvingDisputeId === d.jobId ? 'Processing...' : 'Confirm Refund' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="dispute-actions" *ngIf="refundConfirmJobId !== d.jobId">
           <button
             mat-raised-button color="accent"
             (click)="resolveDispute(d.jobId, 'complete')"
@@ -61,7 +87,7 @@
           </button>
           <button
             mat-raised-button color="warn"
-            (click)="resolveDispute(d.jobId, 'refund')"
+            (click)="openRefundConfirm(d.jobId)"
             [disabled]="resolvingDisputeId === d.jobId"
             title="Reopen the job for rebidding in favour of the consumer">
             <mat-icon>replay</mat-icon>

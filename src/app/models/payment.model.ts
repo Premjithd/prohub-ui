@@ -14,6 +14,8 @@ export interface Payment {
   createdAt: Date;
   completedAt?: Date;
   refundedAt?: Date;
+  refundAmount?: number;
+  refundReason?: string;
 }
 
 export interface PaymentOrder {

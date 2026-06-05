@@ -114,6 +114,8 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   disputes: any[] = [];
   isLoadingDisputes = false;
   resolvingDisputeId: number | null = null;
+  refundConfirmJobId: number | null = null;
+  refundNotes = '';
 
   // ── Relationships ─────────────────────────────────────────────────────────
   linkedUsers: LinkedUser[] = [];
@@ -240,12 +242,23 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     });
   }
 
-  resolveDispute(jobId: number, resolution: 'complete' | 'refund'): void {
+  openRefundConfirm(jobId: number): void {
+    this.refundConfirmJobId = jobId;
+    this.refundNotes = '';
+  }
+
+  confirmRefund(jobId: number): void {
+    this.resolveDispute(jobId, 'refund', this.refundNotes.trim() || undefined);
+  }
+
+  resolveDispute(jobId: number, resolution: 'complete' | 'refund', notes?: string): void {
     this.resolvingDisputeId = jobId;
-    this.adminUsersService.resolveDispute(jobId, resolution).subscribe({
+    this.adminUsersService.resolveDispute(jobId, resolution, notes).subscribe({
       next: (result) => {
         this.disputes = this.disputes.filter(d => d.jobId !== jobId);
         this.resolvingDisputeId = null;
+        this.refundConfirmJobId = null;
+        this.refundNotes = '';
         this.snack.open(result.message, 'OK', { duration: 4000, panelClass: 'snack-success' });
         this.cdr.markForCheck();
       },
