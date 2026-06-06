@@ -18,9 +18,9 @@
     <!-- Show name only on desktop -->
     <span class="welcome-text">{{ auth.getName() }}</span>
     <!-- Notification bell — all authenticated users -->
-    <button mat-icon-button routerLink="/notifications" aria-label="Notifications"
-      [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">
+    <button mat-icon-button routerLink="/notifications" aria-label="Notifications" class="notif-bell">
       <mat-icon>notifications</mat-icon>
+      <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
     </button>
     <button mat-icon-button routerLink="/profile" aria-label="Profile">
       <mat-icon>person</mat-icon>

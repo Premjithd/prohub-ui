@@ -32,9 +32,11 @@
       <mat-icon>add_circle</mat-icon>
       <span>Post Job</span>
     </a>
-    <a class="nav-item" routerLink="/notifications" routerLinkActive="active"
-       [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">
-      <mat-icon>notifications</mat-icon>
+    <a class="nav-item" routerLink="/notifications" routerLinkActive="active">
+      <span class="notif-icon-wrap">
+        <mat-icon>notifications</mat-icon>
+        <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+      </span>
       <span>Alerts</span>
     </a>
     <a class="nav-item" routerLink="/profile" routerLinkActive="active">
@@ -53,9 +55,11 @@
       <mat-icon>task_alt</mat-icon>
       <span>My Work</span>
     </a>
-    <a class="nav-item" routerLink="/notifications" routerLinkActive="active"
-       [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">
-      <mat-icon>notifications</mat-icon>
+    <a class="nav-item" routerLink="/notifications" routerLinkActive="active">
+      <span class="notif-icon-wrap">
+        <mat-icon>notifications</mat-icon>
+        <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+      </span>
       <span>Alerts</span>
     </a>
     <a class="nav-item" routerLink="/profile" routerLinkActive="active">

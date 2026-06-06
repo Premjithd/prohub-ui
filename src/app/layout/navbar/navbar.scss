@@ -27,7 +27,6 @@
   color: rgba(255, 255, 255, 0.85);
   margin-right: 4px;
 
-  // Hide on mobile – icon buttons are enough
   @media (max-width: 768px) {
     display: none;
   }
@@ -35,6 +34,31 @@
 
 button {
   margin-left: 4px;
+}
+
+.notif-bell {
+  position: relative;
+  overflow: visible !important;
+
+  .notif-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: #f44336;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    pointer-events: none;
+    z-index: 10;
+  }
 }
 
 mat-icon {
