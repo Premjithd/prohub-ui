@@ -577,6 +577,28 @@
   .phs-info {
     flex: 1;
     min-width: 0;
+
+    .phs-business-name {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: linear-gradient(135deg, #764ba2, #667eea);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 2px;
+    }
+
+    .phs-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .phs-name {
       font-size: 1.05rem;
       font-weight: 700;
@@ -584,13 +606,59 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+
+      &.phs-name--sub {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #374151;
+      }
     }
+
+    .phs-role-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      flex-shrink: 0;
+
+      mat-icon { font-size: 13px; width: 13px; height: 13px; }
+
+      &.chip-pro {
+        background: linear-gradient(135deg, #764ba2, #667eea);
+        color: #fff;
+      }
+      &.chip-admin {
+        background: #dc2626;
+        color: #fff;
+      }
+      &.chip-user {
+        background: #e0e7ff;
+        color: #4338ca;
+      }
+    }
+
     .phs-sub {
       font-size: 0.8rem;
       color: #6b7280;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+  }
+
+  &.pro-hero-strip--pro {
+    .phs-avatar--pro {
+      width: 54px;
+      height: 54px;
+      font-size: 1.6rem;
+      background: linear-gradient(135deg, #764ba2, #667eea);
     }
   }
 

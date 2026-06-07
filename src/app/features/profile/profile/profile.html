@@ -7,7 +7,13 @@
     <div class="pro-hero-strip">
       <div class="phs-avatar">{{ (user.firstName || '?')[0] }}</div>
       <div class="phs-info">
-        <div class="phs-name">{{ user.firstName }} {{ user.lastName }}</div>
+        <div class="phs-name-row">
+          <span class="phs-name">{{ user.firstName }} {{ user.lastName }}</span>
+          <span class="phs-role-chip" [class.chip-admin]="userType === 'Admin'" [class.chip-user]="userType !== 'Admin'">
+            <mat-icon>{{ userType === 'Admin' ? 'admin_panel_settings' : 'person' }}</mat-icon>
+            {{ userType === 'Admin' ? 'Admin' : 'User' }}
+          </span>
+        </div>
         <div class="phs-sub">Member since {{ user.createdAt | date:'MMM yyyy' }}<span *ngIf="user.city"> · {{ user.city }}</span></div>
       </div>
       <span class="phs-badge" [class.verified]="user.isEmailVerified">
@@ -309,11 +315,17 @@
   <ng-container *ngIf="userType === 'Pro'">
 
     <!-- Compact hero strip -->
-    <div class="pro-hero-strip">
-      <div class="phs-avatar">{{ (pro.proName || '?')[0] }}</div>
+    <div class="pro-hero-strip pro-hero-strip--pro">
+      <div class="phs-avatar phs-avatar--pro">{{ (pro.businessName || pro.proName || '?')[0] }}</div>
       <div class="phs-info">
-        <div class="phs-name">{{ pro.proName }}</div>
-        <div class="phs-sub">{{ pro.businessName }}<span *ngIf="pro.city"> · {{ pro.city }}</span></div>
+        <div class="phs-business-name">{{ pro.businessName }}</div>
+        <div class="phs-name-row">
+          <span class="phs-name phs-name--sub">{{ pro.proName }}</span>
+          <span class="phs-role-chip chip-pro">
+            <mat-icon>engineering</mat-icon>Professional
+          </span>
+        </div>
+        <div class="phs-sub">Member since {{ pro.createdAt | date:'MMM yyyy' }}<span *ngIf="pro.city"> · {{ pro.city }}</span></div>
       </div>
       <span class="phs-badge" [class.verified]="pro.isEmailVerified">
         <mat-icon>{{ pro.isEmailVerified ? 'verified' : 'error_outline' }}</mat-icon>
