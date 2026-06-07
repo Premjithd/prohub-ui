@@ -59,4 +59,16 @@ export class ServiceCategoryService {
   getCategory(id: number): Observable<ServiceCategory> {
     return this.http.get<ServiceCategory>(`${this.baseUrl}/serviceCategories/${id}`);
   }
+
+  getAllCategories(): Observable<ServiceCategory[]> {
+    return this.http.get<ServiceCategory[]>(`${this.baseUrl}/serviceCategories/all`);
+  }
+
+  createCategory(data: { name: string; description?: string; icon?: string }): Observable<ServiceCategory> {
+    return this.http.post<ServiceCategory>(`${this.baseUrl}/serviceCategories`, data);
+  }
+
+  updateCategory(id: number, data: Partial<ServiceCategory>): Observable<ServiceCategory> {
+    return this.http.put<ServiceCategory>(`${this.baseUrl}/serviceCategories/${id}`, { id, ...data });
+  }
 }

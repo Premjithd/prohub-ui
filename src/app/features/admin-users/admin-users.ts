@@ -22,8 +22,10 @@ import { ServiceAreaService, ServiceArea } from '../../core/services/service-are
 import { PayoutService } from '../../services/payout.service';
 import { Payout } from '../../models/payout.model';
 import { SettingsService } from '../../core/services/settings.service';
+import { ServiceCategoryService } from '../../core/services/service-category.service';
+import { ServiceCategory } from '../../core/models/service-category.model';
 
-type AdminView = 'search' | 'service-areas' | 'invite-admin' | 'geocode' | 'settings';
+type AdminView = 'search' | 'service-areas' | 'invite-admin' | 'geocode' | 'settings' | 'categories';
 
 @Component({
   selector: 'app-admin-users',
@@ -53,6 +55,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   readonly navItems: { id: AdminView; label: string; icon: string }[] = [
     { id: 'search',        label: 'User / Pro Search', icon: 'manage_search' },
     { id: 'service-areas', label: 'Service Areas',     icon: 'location_on'   },
+    { id: 'categories',    label: 'Categories',        icon: 'category'      },
     { id: 'invite-admin',  label: 'Invite Admin',      icon: 'person_add'    },
     { id: 'geocode',       label: 'Geocode',           icon: 'my_location'   },
     { id: 'settings',      label: 'Settings',          icon: 'tune'          },
@@ -62,6 +65,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.activeView = view;
     this.showToolsMenu = false;
     if (view === 'settings') this.loadSettings();
+    if (view === 'categories') this.loadAdminCategories();
   }
 
   getActiveViewLabel(): string {
@@ -294,7 +298,119 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Settings ──────────────────────────────────────────────────────────────
+  // ── Categories ────────────────────────────────────────────────────────────
+  adminCategories: ServiceCategory[] = [];
+  categoriesLoading = false;
+  showAddCategoryForm = false;
+  addingCategory = false;
+  newCategory = { name: '', description: '', icon: '' };
+  newCategoryError = '';
+  editingCategoryId: number | null = null;
+  editCategory = { name: '', description: '', icon: '', isActive: true };
+  savingCategoryId: number | null = null;
+
+  get activeCategoryCount(): number {
+    return this.adminCategories.filter(c => c.isActive).length;
+  }
+
+  loadAdminCategories(): void {
+    this.categoriesLoading = true;
+    this.serviceCategoryService.getAllCategories().subscribe({
+      next: cats => {
+        this.adminCategories = cats;
+        this.categoriesLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.categoriesLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  submitNewCategory(): void {
+    if (!this.newCategory.name.trim()) return;
+    this.addingCategory = true;
+    this.newCategoryError = '';
+    this.serviceCategoryService.createCategory({
+      name: this.newCategory.name.trim(),
+      description: this.newCategory.description.trim() || undefined,
+      icon: this.newCategory.icon.trim() || undefined,
+    }).subscribe({
+      next: cat => {
+        cat.serviceCount = 0;
+        this.adminCategories = [...this.adminCategories, cat].sort((a, b) => a.name.localeCompare(b.name));
+        this.newCategory = { name: '', description: '', icon: '' };
+        this.showAddCategoryForm = false;
+        this.addingCategory = false;
+        this.cdr.detectChanges();
+        this.snack.open(`Category "${cat.name}" created`, 'OK', { duration: 2500, panelClass: 'snack-success' });
+      },
+      error: err => {
+        this.newCategoryError = err.error?.message || err.error?.title || 'Failed to create category.';
+        this.addingCategory = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  startEditCategory(cat: ServiceCategory): void {
+    this.editingCategoryId = cat.id;
+    this.editCategory = { name: cat.name, description: cat.description ?? '', icon: cat.icon ?? '', isActive: cat.isActive };
+    this.cdr.detectChanges();
+  }
+
+  cancelEditCategory(): void {
+    this.editingCategoryId = null;
+    this.cdr.detectChanges();
+  }
+
+  saveEditCategory(cat: ServiceCategory): void {
+    if (!this.editCategory.name.trim()) return;
+    this.savingCategoryId = cat.id;
+    this.serviceCategoryService.updateCategory(cat.id, {
+      ...cat,
+      name: this.editCategory.name.trim(),
+      description: this.editCategory.description.trim() || undefined,
+      icon: this.editCategory.icon.trim() || undefined,
+      isActive: this.editCategory.isActive,
+    }).subscribe({
+      next: updated => {
+        const idx = this.adminCategories.findIndex(c => c.id === cat.id);
+        if (idx >= 0) this.adminCategories[idx] = { ...updated, serviceCount: cat.serviceCount };
+        this.adminCategories = [...this.adminCategories].sort((a, b) => a.name.localeCompare(b.name));
+        this.editingCategoryId = null;
+        this.savingCategoryId = null;
+        this.cdr.detectChanges();
+        this.snack.open('Category updated', 'OK', { duration: 2000, panelClass: 'snack-success' });
+      },
+      error: () => {
+        this.savingCategoryId = null;
+        this.cdr.detectChanges();
+        this.snack.open('Failed to update category', 'OK', { duration: 3000, panelClass: 'snack-error' });
+      }
+    });
+  }
+
+  toggleCategoryActive(cat: ServiceCategory): void {
+    this.savingCategoryId = cat.id;
+    this.serviceCategoryService.updateCategory(cat.id, { ...cat, isActive: !cat.isActive }).subscribe({
+      next: updated => {
+        const idx = this.adminCategories.findIndex(c => c.id === cat.id);
+        if (idx >= 0) this.adminCategories[idx] = { ...updated, serviceCount: cat.serviceCount };
+        this.adminCategories = [...this.adminCategories];
+        this.savingCategoryId = null;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.savingCategoryId = null;
+        this.cdr.detectChanges();
+        this.snack.open('Failed to update category', 'OK', { duration: 3000, panelClass: 'snack-error' });
+      }
+    });
+  }
+
+  // ── Settings ──────────────────��───────────────────────────────────────────
   settingsLoading = false;
   settingsSaving = false;
   showProCountOnCategories = false;
@@ -338,7 +454,8 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     private bottomSheet: MatBottomSheet,
     private http: HttpClient,
     private payoutService: PayoutService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private serviceCategoryService: ServiceCategoryService
   ) {}
 
   ngOnInit(): void {

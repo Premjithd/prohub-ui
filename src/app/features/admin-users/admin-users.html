@@ -974,6 +974,134 @@
       </div>
     </ng-container>
 
+    <!-- ── CATEGORIES ───────────────────────────────────────────────────── -->
+    <ng-container *ngSwitchCase="'categories'">
+      <div class="cat-admin-panel">
+
+        <div class="cat-admin-header">
+          <div class="cat-admin-title">
+            <mat-icon>category</mat-icon>
+            <div>
+              <h2>Service Categories</h2>
+              <p>{{ adminCategories.length }} categories · {{ activeCategoryCount }} active</p>
+            </div>
+          </div>
+          <button class="cat-add-btn" (click)="showAddCategoryForm = !showAddCategoryForm; newCategoryError = ''">
+            <mat-icon>{{ showAddCategoryForm ? 'close' : 'add' }}</mat-icon>
+            {{ showAddCategoryForm ? 'Cancel' : 'Add Category' }}
+          </button>
+        </div>
+
+        <!-- Add form -->
+        <div class="cat-add-form" *ngIf="showAddCategoryForm">
+          <div class="cat-form-row">
+            <div class="cat-form-field cat-form-icon">
+              <label>Icon</label>
+              <input type="text" [(ngModel)]="newCategory.icon" placeholder="🔧" maxlength="10" />
+              <small>Paste an emoji</small>
+            </div>
+            <div class="cat-form-field cat-form-name">
+              <label>Name <span class="required">*</span></label>
+              <input type="text" [(ngModel)]="newCategory.name" placeholder="e.g. Plumbing" maxlength="100" />
+            </div>
+            <div class="cat-form-field cat-form-desc">
+              <label>Description</label>
+              <input type="text" [(ngModel)]="newCategory.description" placeholder="Short description (optional)" maxlength="500" />
+            </div>
+            <button class="cat-save-btn" [disabled]="!newCategory.name.trim() || addingCategory" (click)="submitNewCategory()">
+              {{ addingCategory ? 'Adding…' : 'Add' }}
+            </button>
+          </div>
+          <p class="cat-form-error" *ngIf="newCategoryError">{{ newCategoryError }}</p>
+        </div>
+
+        <!-- Loading -->
+        <div class="cat-loading" *ngIf="categoriesLoading">
+          <mat-spinner diameter="28"></mat-spinner>
+          <span>Loading categories…</span>
+        </div>
+
+        <!-- Category list -->
+        <div class="cat-list" *ngIf="!categoriesLoading">
+          <div class="cat-list-header">
+            <span class="col-icon">Icon</span>
+            <span class="col-name">Name</span>
+            <span class="col-desc">Description</span>
+            <span class="col-pros">Pros</span>
+            <span class="col-status">Status</span>
+            <span class="col-actions">Actions</span>
+          </div>
+
+          <div
+            *ngFor="let cat of adminCategories"
+            class="cat-row"
+            [class.inactive]="!cat.isActive"
+            [class.editing]="editingCategoryId === cat.id">
+
+            <!-- View mode -->
+            <ng-container *ngIf="editingCategoryId !== cat.id">
+              <span class="col-icon cat-icon-cell">{{ cat.icon || '—' }}</span>
+              <span class="col-name">{{ cat.name }}</span>
+              <span class="col-desc cat-desc-cell">{{ cat.description || '—' }}</span>
+              <span class="col-pros">{{ cat.serviceCount }}</span>
+              <span class="col-status">
+                <span class="status-badge" [class.active]="cat.isActive">
+                  {{ cat.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </span>
+              <span class="col-actions">
+                <button class="row-btn edit-btn" (click)="startEditCategory(cat)" title="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  class="row-btn toggle-btn"
+                  [class.deactivate]="cat.isActive"
+                  [disabled]="savingCategoryId === cat.id"
+                  (click)="toggleCategoryActive(cat)"
+                  [title]="cat.isActive ? 'Deactivate' : 'Activate'">
+                  <mat-icon>{{ cat.isActive ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+              </span>
+            </ng-container>
+
+            <!-- Edit mode -->
+            <ng-container *ngIf="editingCategoryId === cat.id">
+              <span class="col-icon">
+                <input class="edit-input icon-input" type="text" [(ngModel)]="editCategory.icon" maxlength="10" placeholder="🔧" />
+              </span>
+              <span class="col-name">
+                <input class="edit-input" type="text" [(ngModel)]="editCategory.name" maxlength="100" />
+              </span>
+              <span class="col-desc">
+                <input class="edit-input" type="text" [(ngModel)]="editCategory.description" maxlength="500" placeholder="Description" />
+              </span>
+              <span class="col-pros">{{ cat.serviceCount }}</span>
+              <span class="col-status">
+                <label class="toggle-label">
+                  <input type="checkbox" [(ngModel)]="editCategory.isActive" />
+                  Active
+                </label>
+              </span>
+              <span class="col-actions">
+                <button class="row-btn save-btn" [disabled]="!editCategory.name.trim() || savingCategoryId === cat.id" (click)="saveEditCategory(cat)">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button class="row-btn cancel-btn" (click)="cancelEditCategory()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </span>
+            </ng-container>
+
+          </div>
+
+          <div class="cat-empty" *ngIf="adminCategories.length === 0">
+            No categories yet. Add one above.
+          </div>
+        </div>
+
+      </div>
+    </ng-container>
+
     <!-- ── SETTINGS ──────────────────────────────────────────────────────── -->
     <ng-container *ngSwitchCase="'settings'">
       <div class="geocode-panel">
