@@ -8,6 +8,7 @@ import { Auth } from '../../../core/services/auth';
 import { ServiceCategoryService } from '../../../core/services/service-category.service';
 import { ServiceCategory } from '../../../core/models/service-category.model';
 import { BrowseServicesService, ServiceBrowseDto } from '../../../services/browse-services.service';
+import { SettingsService } from '../../../core/services/settings.service';
 
 type SortOrder = 'popular' | 'price-low' | 'price-high';
 
@@ -31,6 +32,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
   readonly skeletons = [1, 2, 3, 4, 5, 6];
   categories: ServiceCategory[] = [];
   categoriesLoading = true;
+  showProCount = false;
 
   private destroy$ = new Subject<void>();
   private search$ = new Subject<string>();
@@ -40,11 +42,18 @@ export class ServicesComponent implements OnInit, OnDestroy {
     private auth: Auth,
     private serviceCategoryService: ServiceCategoryService,
     private browseServicesService: BrowseServicesService,
+    private settingsService: SettingsService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadCategories();
+    this.settingsService.getSetting('show_pro_count_on_categories')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        this.showProCount = value === 'true';
+        this.cdr.detectChanges();
+      });
 
     this.search$.pipe(
       debounceTime(450),

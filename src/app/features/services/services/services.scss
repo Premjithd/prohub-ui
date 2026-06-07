@@ -252,28 +252,6 @@ $bg-light: #f9fafb;
   }
 }
 
-.hero-cat-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.hero-cat-pill {
-  background: rgba(255,255,255,0.13);
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-
-  &:hover {
-    background: rgba(255,255,255,0.22);
-    border-color: rgba(255,255,255,0.45);
-  }
-}
 
 // ── Categories ────────────────────────────────────────
 .categories-section {

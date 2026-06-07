@@ -21,8 +21,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ServiceAreaService, ServiceArea } from '../../core/services/service-area.service';
 import { PayoutService } from '../../services/payout.service';
 import { Payout } from '../../models/payout.model';
+import { SettingsService } from '../../core/services/settings.service';
 
-type AdminView = 'search' | 'service-areas' | 'invite-admin' | 'geocode';
+type AdminView = 'search' | 'service-areas' | 'invite-admin' | 'geocode' | 'settings';
 
 @Component({
   selector: 'app-admin-users',
@@ -54,11 +55,13 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     { id: 'service-areas', label: 'Service Areas',     icon: 'location_on'   },
     { id: 'invite-admin',  label: 'Invite Admin',      icon: 'person_add'    },
     { id: 'geocode',       label: 'Geocode',           icon: 'my_location'   },
+    { id: 'settings',      label: 'Settings',          icon: 'tune'          },
   ];
 
   setView(view: AdminView): void {
     this.activeView = view;
     this.showToolsMenu = false;
+    if (view === 'settings') this.loadSettings();
   }
 
   getActiveViewLabel(): string {
@@ -291,6 +294,37 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Settings ──────────────────────────────────────────────────────────────
+  settingsLoading = false;
+  settingsSaving = false;
+  showProCountOnCategories = false;
+
+  loadSettings(): void {
+    this.settingsLoading = true;
+    this.settingsService.getSetting('show_pro_count_on_categories').subscribe(value => {
+      this.showProCountOnCategories = value === 'true';
+      this.settingsLoading = false;
+      this.cdr.detectChanges();
+    });
+  }
+
+  toggleShowProCount(enabled: boolean): void {
+    this.settingsSaving = true;
+    this.settingsService.updateSetting('show_pro_count_on_categories', String(enabled)).subscribe({
+      next: () => {
+        this.showProCountOnCategories = enabled;
+        this.settingsSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open(`Pro count display ${enabled ? 'enabled' : 'disabled'}`, 'OK', { duration: 2500, panelClass: 'snack-success' });
+      },
+      error: () => {
+        this.settingsSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open('Failed to save setting', 'OK', { duration: 3000, panelClass: 'snack-error' });
+      }
+    });
+  }
+
   constructor(
     private adminUsersService: AdminUsersService,
     private auth: Auth,
@@ -303,7 +337,8 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     private serviceAreaService: ServiceAreaService,
     private bottomSheet: MatBottomSheet,
     private http: HttpClient,
-    private payoutService: PayoutService
+    private payoutService: PayoutService,
+    private settingsService: SettingsService
   ) {}
 
   ngOnInit(): void {

@@ -50,11 +50,6 @@
             <span class="trust-label">Verified Pros</span>
           </div>
         </div>
-        <div class="hero-cat-pills" *ngIf="!categoriesLoading && categories.length > 0">
-          <span *ngFor="let cat of categories.slice(0, 6)" class="hero-cat-pill" (click)="filterByCategory(cat.name)">
-            {{ cat.icon }} {{ cat.name }}
-          </span>
-        </div>
       </div>
     </div>
   </section>
@@ -83,7 +78,7 @@
           (click)="filterByCategory(cat.name)">
           <div class="cat-icon">{{ cat.icon }}</div>
           <span class="cat-name">{{ cat.name }}</span>
-          <span class="cat-count">{{ cat.serviceCount }} pros</span>
+          <span class="cat-count" *ngIf="showProCount && cat.serviceCount > 0">{{ cat.serviceCount }} pros</span>
         </button>
       </div>
     </div>

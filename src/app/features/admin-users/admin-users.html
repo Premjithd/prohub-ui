@@ -974,6 +974,45 @@
       </div>
     </ng-container>
 
+    <!-- ── SETTINGS ──────────────────────────────────────────────────────── -->
+    <ng-container *ngSwitchCase="'settings'">
+      <div class="geocode-panel">
+        <div class="geocode-header">
+          <mat-icon>tune</mat-icon>
+          <div>
+            <h2>Platform Settings</h2>
+            <p>Control site-wide display options.</p>
+          </div>
+        </div>
+
+        <div *ngIf="settingsLoading" class="geocode-loading">
+          <mat-spinner diameter="28"></mat-spinner>
+          <span>Loading settings…</span>
+        </div>
+
+        <div class="geocode-grid" *ngIf="!settingsLoading">
+          <div class="geocode-item">
+            <div class="geocode-item-header">
+              <mat-icon>groups</mat-icon>
+              <h3>Show Pro Count on Categories</h3>
+            </div>
+            <p>Display the number of registered professionals under each service category on the Services page.</p>
+            <div class="setting-toggle-row">
+              <span class="setting-status" [class.enabled]="showProCountOnCategories">
+                {{ showProCountOnCategories ? 'Enabled' : 'Disabled' }}
+              </span>
+              <button
+                class="geocode-run-btn"
+                [disabled]="settingsSaving"
+                (click)="toggleShowProCount(!showProCountOnCategories)">
+                {{ settingsSaving ? 'Saving…' : (showProCountOnCategories ? 'Turn Off' : 'Turn On') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
   </div><!-- /admin-panel-area -->
 
 
