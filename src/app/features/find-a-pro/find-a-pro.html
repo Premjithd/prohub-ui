@@ -32,6 +32,33 @@
         <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
       </select>
     </div>
+
+    <!-- Location filter row -->
+    <div class="location-filter-bar" *ngIf="isAuthenticated">
+      <select class="loc-select" [(ngModel)]="filterCountry" (change)="onCountryChange()"
+              [disabled]="uniqueCountries.length === 0">
+        <option value="">All countries</option>
+        <option *ngFor="let c of uniqueCountries" [value]="c">{{ c }}</option>
+      </select>
+      <select class="loc-select" [(ngModel)]="filterState" (change)="onStateChange()"
+              [disabled]="stateOptions.length === 0">
+        <option value="">All states</option>
+        <option *ngFor="let s of stateOptions" [value]="s">{{ s }}</option>
+      </select>
+      <select class="loc-select" [(ngModel)]="filterDistrict" (change)="onDistrictChange()"
+              [disabled]="districtOptions.length === 0">
+        <option value="">All districts</option>
+        <option *ngFor="let d of districtOptions" [value]="d">{{ d }}</option>
+      </select>
+      <select class="loc-select" [(ngModel)]="filterPin" (change)="onPinChange()"
+              [disabled]="pinOptions.length === 0">
+        <option value="">All PINs</option>
+        <option *ngFor="let p of pinOptions" [value]="p">{{ p }}</option>
+      </select>
+      <button *ngIf="hasLocationFilter" class="loc-clear-btn" (click)="clearLocationFilter()">
+        <span class="material-icons">close</span> Clear
+      </button>
+    </div>
   </div>
 
   <!-- Sign-in banner for unauthenticated users -->
@@ -68,11 +95,8 @@
         <p>No professionals found. Try a different search.</p>
       </div>
 
-      <div *ngIf="!loading && isAuthenticated && pros.length > 0" class="results-meta">
-        {{ pros.length }} professional{{ pros.length !== 1 ? 's' : '' }} found
-        <span *ngIf="mapMarkers.length < pros.length" class="no-loc-note">
-          ({{ pros.length - mapMarkers.length }} without location — not shown on map)
-        </span>
+      <div *ngIf="!loading && isAuthenticated && totalCount > 0" class="results-meta">
+        {{ totalCount }} professional{{ totalCount !== 1 ? 's' : '' }} found
       </div>
 
       <div class="pro-list" [class.preview-blur]="!isAuthenticated">
@@ -113,16 +137,29 @@
           </div>
         </div>
       </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="isAuthenticated && !loading && totalPages > 1">
+        <button class="pg-btn" [disabled]="page === 1" (click)="goToPage(page - 1)">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <ng-container *ngFor="let n of pageNumbers; let i = index">
+          <span *ngIf="showGapBefore(i, pageNumbers)" class="pg-gap">…</span>
+          <button class="pg-btn" [class.active]="n === page" (click)="goToPage(n)">{{ n }}</button>
+        </ng-container>
+        <button class="pg-btn" [disabled]="page === totalPages" (click)="goToPage(page + 1)">
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
     </div>
 
     <!-- Right: map — hidden when detail panel is open -->
     <div class="map-panel" *ngIf="isAuthenticated && showMap && !selectedPro">
-      <app-map-view
-        [markers]="mapMarkers"
-        [loading]="loading"
-        [highlightedId]="highlightedProId"
-        (markerClick)="onMapMarkerClick($event)"
-      ></app-map-view>
+      <div id="pro-map" class="pro-map-el"></div>
+      <div *ngIf="isGeocodingPros" class="map-geocoding-indicator">
+        <mat-spinner diameter="18"></mat-spinner>
+        <span>Locating professionals…</span>
+      </div>
     </div>
 
     <!-- Pro detail panel — replaces map on desktop, full-screen on mobile -->

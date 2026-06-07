@@ -9,6 +9,7 @@ import { ReviewService } from '../../../services/review.service';
 import { PayoutService } from '../../../services/payout.service';
 import { Review, ProRatingSummary, UserReview, UserRatingSummary } from '../../../models/review.model';
 import { Payout } from '../../../models/payout.model';
+import { ServiceAreaService, ServiceArea } from '../../../core/services/service-area.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -107,6 +108,18 @@ export class ProfileComponent implements OnInit {
   payouts: Payout[] = [];
   payoutsLoading = false;
 
+  // Service area cascading dropdowns for pro address
+  serviceAreas: ServiceArea[] = [];
+
+  get proDistrictOptions(): string[] {
+    if (!this.pro.state) return [];
+    return [...new Set(
+      this.serviceAreas
+        .filter(a => a.state?.toLowerCase() === this.pro.state!.toLowerCase() && a.district)
+        .map(a => a.district!)
+    )].sort();
+  }
+
   constructor(
     private userService: UserService,
     private proService: ProService,
@@ -114,12 +127,19 @@ export class ProfileComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private verificationService: VerificationService,
     private reviewService: ReviewService,
-    private payoutService: PayoutService
+    private payoutService: PayoutService,
+    private serviceAreaService: ServiceAreaService
   ) {}
 
   ngOnInit(): void {
     this.userType = this.auth.getUserType();
     this.loadProfile();
+    if (this.auth.getUserType() === 'Pro') {
+      this.serviceAreaService.getActive().subscribe({
+        next: areas => { this.serviceAreas = areas; this.cdr.markForCheck(); },
+        error: () => {}
+      });
+    }
   }
 
   loadProfile(): void {
@@ -483,6 +503,7 @@ export class ProfileComponent implements OnInit {
       street1: this.pro.street1,
       street2: this.pro.street2,
       city: this.pro.city,
+      district: this.pro.district,
       state: this.pro.state,
       country: this.pro.country,
       zipPostalCode: this.pro.zipPostalCode,

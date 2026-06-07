@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, OnDestroy, Output, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, OnInit, OnDestroy, Output, ChangeDetectorRef, NgZone } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -40,7 +40,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private notificationService: NotificationService,
     private signalRService: SignalRService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -111,12 +112,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   private _clearAndRedirect(): void {
     this.auth.logout();
-    this.snackBar.open('You have been signed out.', '', {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-      panelClass: ['snack-info']
+    this.ngZone.run(() => {
+      this.snackBar.open('You have been signed out.', '', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+        panelClass: ['snack-info']
+      });
     });
-    this.router.navigate(['/']);
+    setTimeout(() => { window.location.href = '/'; }, 800);
   }
 }

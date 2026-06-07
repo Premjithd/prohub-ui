@@ -419,7 +419,9 @@
           <p class="address-text">
             <ng-container *ngIf="pro.houseNameNumber">{{ pro.houseNameNumber }}, </ng-container>
             <ng-container *ngIf="pro.street1">{{ pro.street1 }}<ng-container *ngIf="pro.street2">, {{ pro.street2 }}</ng-container>, </ng-container>
-            <ng-container *ngIf="pro.city">{{ pro.city }}<ng-container *ngIf="pro.state">, {{ pro.state }}</ng-container></ng-container>
+            <ng-container *ngIf="pro.city">{{ pro.city }}</ng-container>
+            <ng-container *ngIf="pro.district">, {{ pro.district }}</ng-container>
+            <ng-container *ngIf="pro.state">, {{ pro.state }}</ng-container>
             <ng-container *ngIf="pro.country">, {{ pro.country }}</ng-container>
             <ng-container *ngIf="pro.zipPostalCode"> — {{ pro.zipPostalCode }}</ng-container>
           </p>
@@ -686,9 +688,19 @@
         </div>
         <div class="form-row">
           <div class="form-group">
+            <label>District</label>
+            <select *ngIf="proDistrictOptions.length > 0" name="district" [(ngModel)]="pro.district">
+              <option value="">— Select district —</option>
+              <option *ngFor="let d of proDistrictOptions" [value]="d">{{ d }}</option>
+            </select>
+            <input *ngIf="proDistrictOptions.length === 0" type="text" name="district" [(ngModel)]="pro.district" placeholder="District" />
+          </div>
+          <div class="form-group">
             <label>Country</label>
             <input type="text" name="country" [(ngModel)]="pro.country" placeholder="Country" />
           </div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
             <label>Postal Code</label>
             <input type="text" name="zipPostalCode" [(ngModel)]="pro.zipPostalCode" placeholder="ZIP / PIN" />

@@ -9,6 +9,7 @@ export interface BrowsePro {
   proName: string;
   businessName: string;
   city?: string;
+  district?: string;
   state?: string;
   country?: string;
   latitude?: number;
@@ -18,8 +19,26 @@ export interface BrowsePro {
   services?: Array<{ id: number; name: string; price: number }>;
 }
 
-function unwrap(response: any): any[] {
-  return Array.isArray(response) ? response : (response?.$values ?? []);
+export interface BrowseProResult {
+  total: number;
+  page: number;
+  pageSize: number;
+  items: BrowsePro[];
+}
+
+export interface BrowseProParams {
+  search?: string;
+  categoryId?: number | null;
+  country?: string;
+  state?: string;
+  district?: string;
+  pinCode?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+function unwrap(val: any): any[] {
+  return Array.isArray(val) ? val : (val?.$values ?? []);
 }
 
 @Injectable({ providedIn: 'root' })
@@ -28,19 +47,27 @@ export class ProBrowseService {
 
   constructor(private http: HttpClient) {}
 
-  browse(search?: string, categoryId?: number | null): Observable<BrowsePro[]> {
-    let params = new HttpParams();
-    if (search) params = params.set('search', search);
-    if (categoryId) params = params.set('categoryId', categoryId.toString());
-    return this.http.get<any>(this.base, { params }).pipe(
-      map(response => {
-        const items: any[] = unwrap(response);
-        return items.map(p => ({
-          ...p,
-          // services may also be wrapped in $values by ReferenceHandler.Preserve
-          services: unwrap(p.services)
-        })) as BrowsePro[];
-      })
+  browse(params?: BrowseProParams): Observable<BrowseProResult> {
+    let p = new HttpParams();
+    if (params?.search)      p = p.set('search',     params.search);
+    if (params?.categoryId)  p = p.set('categoryId', params.categoryId.toString());
+    if (params?.country)     p = p.set('country',    params.country);
+    if (params?.state)       p = p.set('state',      params.state);
+    if (params?.district)    p = p.set('district',   params.district);
+    if (params?.pinCode)     p = p.set('pinCode',    params.pinCode);
+    if (params?.page)        p = p.set('page',       params.page.toString());
+    if (params?.pageSize)    p = p.set('pageSize',   params.pageSize.toString());
+
+    return this.http.get<any>(this.base, { params: p }).pipe(
+      map(res => ({
+        total:    res.total    ?? 0,
+        page:     res.page     ?? 1,
+        pageSize: res.pageSize ?? 10,
+        items: unwrap(res.items).map((pro: any) => ({
+          ...pro,
+          services: unwrap(pro.services)
+        })) as BrowsePro[]
+      }))
     );
   }
 }

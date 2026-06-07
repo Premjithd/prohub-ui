@@ -192,4 +192,10 @@ export class MapViewComponent implements AfterViewInit, OnDestroy, OnChanges {
       });
     }
   }
+
+  flyTo(lat: number, lng: number, zoom: number): void {
+    this.zone.runOutsideAngular(() => {
+      this.map?.setView([lat, lng], zoom, { animate: true });
+    });
+  }
 }

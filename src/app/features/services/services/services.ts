@@ -7,16 +7,14 @@ import { takeUntil, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/o
 import { Auth } from '../../../core/services/auth';
 import { ServiceCategoryService } from '../../../core/services/service-category.service';
 import { ServiceCategory } from '../../../core/models/service-category.model';
-import { ProBrowseService } from '../../../services/pro-browse.service';
 import { BrowseServicesService, ServiceBrowseDto } from '../../../services/browse-services.service';
-import { MapViewComponent, MapMarker } from '../../../shared/map-view/map-view';
 
 type SortOrder = 'popular' | 'price-low' | 'price-high';
 
 @Component({
   selector: 'app-services',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MapViewComponent],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './services.html',
   styleUrls: ['./services.scss']
 })
@@ -28,14 +26,11 @@ export class ServicesComponent implements OnInit, OnDestroy {
   selectedCategory: string | null = null;
   selectedCategoryId: number | null = null;
   sortOrder: SortOrder = 'popular';
+  showResults = false;
 
   readonly skeletons = [1, 2, 3, 4, 5, 6];
   categories: ServiceCategory[] = [];
   categoriesLoading = true;
-
-  prosMapMarkers: MapMarker[] = [];
-  prosLoading = false;
-  private allProsMarkers: MapMarker[] = [];
 
   private destroy$ = new Subject<void>();
   private search$ = new Subject<string>();
@@ -44,15 +39,12 @@ export class ServicesComponent implements OnInit, OnDestroy {
     private router: Router,
     private auth: Auth,
     private serviceCategoryService: ServiceCategoryService,
-    private proBrowseService: ProBrowseService,
     private browseServicesService: BrowseServicesService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadCategories();
-    this.loadProsMap();
-    this.loadServices();
 
     this.search$.pipe(
       debounceTime(450),
@@ -124,49 +116,31 @@ export class ServicesComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadProsMap(): void {
-    this.prosLoading = true;
-    this.proBrowseService.browse().pipe(takeUntil(this.destroy$)).subscribe({
-      next: pros => {
-        this.allProsMarkers = pros
-          .filter(p => p.latitude != null && p.longitude != null)
-          .map(p => ({
-            id: p.id,
-            lat: p.latitude!,
-            lng: p.longitude!,
-            title: p.businessName || p.proName,
-            subtitle: [p.city, p.state].filter(Boolean).join(', '),
-            type: 'pro' as const,
-            radiusKm: p.serviceRadiusKm
-          }));
-        this.prosLoading = false;
-        this.syncMapMarkers();
-        this.cdr.detectChanges();
-      },
-      error: () => { this.prosLoading = false; this.cdr.detectChanges(); }
-    });
-  }
-
-  private syncMapMarkers(): void {
-    const proIds = new Set(this.filteredServices.map(s => s.proId));
-    this.prosMapMarkers = proIds.size > 0
-      ? this.allProsMarkers.filter(m => proIds.has(m.id))
-      : this.allProsMarkers;
-  }
-
   filterByCategory(categoryName: string): void {
     if (this.selectedCategory === categoryName) {
       this.selectedCategory = null;
       this.selectedCategoryId = null;
+      if (!this.searchQuery.trim()) {
+        this.showResults = false;
+        this.filteredServices = [];
+        return;
+      }
     } else {
       this.selectedCategory = categoryName;
       const cat = this.categories.find(c => c.name === categoryName);
       this.selectedCategoryId = cat ? cat.id : null;
     }
+    this.showResults = true;
     this.loadServices();
   }
 
   onSearch(): void {
+    if (!this.searchQuery.trim() && !this.selectedCategory) {
+      this.showResults = false;
+      this.filteredServices = [];
+      return;
+    }
+    this.showResults = true;
     this.search$.next(this.searchQuery);
   }
 
@@ -186,7 +160,6 @@ export class ServicesComponent implements OnInit, OnDestroy {
         break;
     }
     this.filteredServices = sorted;
-    this.syncMapMarkers();
   }
 
   getCategoryImage(name: string): string {

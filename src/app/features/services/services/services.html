@@ -90,66 +90,71 @@
   </section>
 
   <!-- Services List -->
-  <section class="services-section">
+  <section class="services-section" *ngIf="showResults">
     <div class="section-inner">
-      <div class="services-header">
-        <div class="services-title">
-          <h2>{{ selectedCategory ? selectedCategory : 'All Services' }}</h2>
-          <span class="count-badge">{{ filteredServices.length }} services</span>
-        </div>
-        <div class="sort-row">
-          <button (click)="sortBy('popular')" [class.active]="sortOrder === 'popular'">Popular</button>
-          <button (click)="sortBy('price-low')" [class.active]="sortOrder === 'price-low'">Price ↑</button>
-          <button (click)="sortBy('price-high')" [class.active]="sortOrder === 'price-high'">Price ↓</button>
-        </div>
-      </div>
 
-      <!-- Services skeleton -->
-      <div class="services-grid" *ngIf="servicesLoading">
-        <div class="service-skeleton" *ngFor="let i of skeletons">
-          <div class="skel-img"></div>
-          <div class="skel-body">
-            <div class="skel-line wide"></div>
-            <div class="skel-line med"></div>
-            <div class="skel-line short"></div>
+      <!-- Results: shown after user picks a category or searches -->
+      <ng-container>
+        <div class="services-header">
+          <div class="services-title">
+            <h2>{{ selectedCategory ? selectedCategory : 'Search Results' }}</h2>
+            <span class="count-badge">{{ filteredServices.length }} services</span>
+          </div>
+          <div class="sort-row">
+            <button (click)="sortBy('popular')" [class.active]="sortOrder === 'popular'">Popular</button>
+            <button (click)="sortBy('price-low')" [class.active]="sortOrder === 'price-low'">Price ↑</button>
+            <button (click)="sortBy('price-high')" [class.active]="sortOrder === 'price-high'">Price ↓</button>
           </div>
         </div>
-      </div>
 
-      <div class="services-grid" *ngIf="!servicesLoading">
-        <article class="service-card" *ngFor="let s of filteredServices">
-          <div class="card-image">
-            <img [src]="s.imageUrl || getCategoryImage(s.categoryName || '')" [alt]="s.name" (error)="onImgError($event)" loading="lazy" />
-            <span class="category-tag">{{ s.categoryName }}</span>
-          </div>
-          <div class="card-body">
-            <h3>{{ s.name }}</h3>
-            <p>{{ s.description }}</p>
-            <div class="pro-info">
-              <span class="pro-name">{{ s.businessName || s.proName }}</span>
-              <span class="pro-location" *ngIf="s.city">
-                <span class="material-icons">place</span>{{ s.city }}{{ s.state ? ', ' + s.state : '' }}
-              </span>
+        <!-- Services skeleton -->
+        <div class="services-grid" *ngIf="servicesLoading">
+          <div class="service-skeleton" *ngFor="let i of skeletons">
+            <div class="skel-img"></div>
+            <div class="skel-body">
+              <div class="skel-line wide"></div>
+              <div class="skel-line med"></div>
+              <div class="skel-line short"></div>
             </div>
-            <div class="card-footer">
-              <div class="price" *ngIf="s.price">from ₹{{ s.price | number }}</div>
-              <div class="card-actions">
-                <button class="btn-outline" (click)="openService(s); $event.stopPropagation()">Details</button>
-                <button class="btn-primary" (click)="bookService(s); $event.stopPropagation()">Book Now</button>
+          </div>
+        </div>
+
+        <div class="services-grid" *ngIf="!servicesLoading">
+          <article class="service-card" *ngFor="let s of filteredServices">
+            <div class="card-image">
+              <img [src]="s.imageUrl || getCategoryImage(s.categoryName || '')" [alt]="s.name" (error)="onImgError($event)" loading="lazy" />
+              <span class="category-tag">{{ s.categoryName }}</span>
+            </div>
+            <div class="card-body">
+              <h3>{{ s.name }}</h3>
+              <p>{{ s.description }}</p>
+              <div class="pro-info">
+                <span class="pro-name">{{ s.businessName || s.proName }}</span>
+                <span class="pro-location" *ngIf="s.city">
+                  <span class="material-icons">place</span>{{ s.city }}{{ s.state ? ', ' + s.state : '' }}
+                </span>
+              </div>
+              <div class="card-footer">
+                <div class="price" *ngIf="s.price">from ₹{{ s.price | number }}</div>
+                <div class="card-actions">
+                  <button class="btn-outline" (click)="openService(s); $event.stopPropagation()">Details</button>
+                  <button class="btn-primary" (click)="bookService(s); $event.stopPropagation()">Book Now</button>
+                </div>
               </div>
             </div>
-          </div>
-        </article>
-      </div>
+          </article>
+        </div>
 
-      <div class="empty-state" *ngIf="!servicesLoading && filteredServices.length === 0">
-        <div class="empty-icon">🔍</div>
-        <h3>No services found</h3>
-        <p>Try a different search or clear the category filter</p>
-        <button *ngIf="selectedCategory" class="btn-primary" (click)="filterByCategory(selectedCategory!)">
-          Clear Filter
-        </button>
-      </div>
+        <div class="empty-state" *ngIf="!servicesLoading && filteredServices.length === 0">
+          <div class="empty-icon">🔍</div>
+          <h3>No services found</h3>
+          <p>Try a different search or select another category</p>
+          <button *ngIf="selectedCategory" class="btn-primary" (click)="filterByCategory(selectedCategory!)">
+            Clear Filter
+          </button>
+        </div>
+      </ng-container>
+
     </div>
   </section>
 
@@ -178,28 +183,6 @@
           <h3>Hire & Pay Securely</h3>
           <p>Choose your pro and pay through our secure platform.</p>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pros Map -->
-  <section class="map-section" *ngIf="!prosLoading && prosMapMarkers.length > 0">
-    <div class="section-inner">
-      <div class="map-header">
-        <div>
-          <h2>Professionals Near You</h2>
-          <p>Click a pin to view their profile and ratings</p>
-        </div>
-        <a routerLink="/find-a-pro" class="find-pro-btn">
-          <span class="material-icons">engineering</span> Browse All Pros
-        </a>
-      </div>
-      <div class="map-body">
-        <app-map-view
-          [markers]="prosMapMarkers"
-          [loading]="prosLoading"
-          style="display:block;height:440px">
-        </app-map-view>
       </div>
     </div>
   </section>
