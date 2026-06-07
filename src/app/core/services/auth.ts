@@ -10,11 +10,12 @@ import { StorageService } from './storage';
   providedIn: 'root'
 })
 export class Auth {
-  private readonly AUTH_TOKEN_KEY    = 'auth_token';
-  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
-  private readonly USER_TYPE_KEY     = 'user_type';
-  private readonly USER_NAME_KEY     = 'user_name';
-  private readonly USER_ID_KEY       = 'user_id';
+  private readonly AUTH_TOKEN_KEY         = 'auth_token';
+  private readonly REFRESH_TOKEN_KEY      = 'refresh_token';
+  private readonly USER_TYPE_KEY          = 'user_type';
+  private readonly USER_NAME_KEY          = 'user_name';
+  private readonly USER_ID_KEY            = 'user_id';
+  private readonly IS_PROFILE_COMPLETE_KEY = 'is_profile_complete';
 
   // Keys used to preserve admin session while impersonating
   private readonly ADMIN_TOKEN_KEY   = 'admin_restore_token';
@@ -48,12 +49,23 @@ export class Auth {
     return this.api.post<void>('auth/pro/register', proData);
   }
 
+  registerProStep1(data: { Name: string; Email: string; Password: string; PhoneNumber: string; BusinessName: string }): Observable<{ proId: number }> {
+    return this.api.postRaw<{ proId: number }>('auth/pro/register/draft', data);
+  }
+
+  registerProStep2(proId: number, data: any): Observable<LoginResponse> {
+    return this.api.postRaw<LoginResponse>(`auth/pro/register/complete/${proId}`, data).pipe(
+      tap(response => { if (response) this.storeSession(response); })
+    );
+  }
+
   logout(): void {
     this.storage.removeItem(this.AUTH_TOKEN_KEY);
     this.storage.removeItem(this.REFRESH_TOKEN_KEY);
     this.storage.removeItem(this.USER_TYPE_KEY);
     this.storage.removeItem(this.USER_NAME_KEY);
     this.storage.removeItem(this.USER_ID_KEY);
+    this.storage.removeItem(this.IS_PROFILE_COMPLETE_KEY);
     // Clear any stale impersonation state
     this.storage.removeItem(this.ADMIN_TOKEN_KEY);
     this.storage.removeItem(this.ADMIN_REFRESH_KEY);
@@ -157,6 +169,10 @@ export class Auth {
     return !!this.storage.getItem(this.ADMIN_TOKEN_KEY);
   }
 
+  isProfileComplete(): boolean {
+    return this.storage.getItem(this.IS_PROFILE_COMPLETE_KEY) !== 'false';
+  }
+
   private storeSession(response: LoginResponse): void {
     this.storage.setItem(this.AUTH_TOKEN_KEY, response.token);
     this.storage.setItem(this.USER_TYPE_KEY,  response.role);
@@ -164,6 +180,11 @@ export class Auth {
     this.storage.setItem(this.USER_ID_KEY,    response.id?.toString() ?? '');
     if (response.refreshToken) {
       this.storage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+    }
+    if (response.isProfileComplete === false) {
+      this.storage.setItem(this.IS_PROFILE_COMPLETE_KEY, 'false');
+    } else {
+      this.storage.removeItem(this.IS_PROFILE_COMPLETE_KEY);
     }
   }
 }

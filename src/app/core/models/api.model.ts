@@ -24,6 +24,7 @@ export interface LoginResponse {
     lastName: string;
     userType: string;
     role: string;
+    isProfileComplete?: boolean;
 }
 
 export interface GetUserResponse {

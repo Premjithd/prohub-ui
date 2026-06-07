@@ -12,6 +12,7 @@ export interface Pro {
     street1?: string;
     street2?: string;
     city?: string;
+    district?: string;
     state?: string;
     country?: string;
     zipPostalCode?: string;

@@ -32,6 +32,10 @@ export class ApiService {
     return this.http.post<LoginResponse>(`${this.baseUrl}/${path}`, body);
   }
 
+  postRaw<T>(path: string, body: any): Observable<T> {
+    return this.http.post<T>(`${this.baseUrl}/${path}`, body);
+  }
+
   getUserById(path: string): Observable<GetUserResponse> {
     return this.http.get<GetUserResponse>(`${this.baseUrl}/${path}`);
   }
