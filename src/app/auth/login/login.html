@@ -42,10 +42,17 @@
           id="email"
           name="email"
           class="form-control"
+          #emailField="ngModel"
+          [class.is-invalid]="emailField.invalid && (emailField.dirty || emailField.touched)"
           ngModel
           required
+          email
           placeholder="Enter your email"
         />
+        <small class="field-error" *ngIf="emailField.invalid && (emailField.dirty || emailField.touched)">
+          <span *ngIf="emailField.hasError('required')">Email is required</span>
+          <span *ngIf="emailField.hasError('email')">Enter a valid email address</span>
+        </small>
       </div>
 
       <div class="form-group">
@@ -55,10 +62,17 @@
           id="password"
           name="password"
           class="form-control"
+          #passwordField="ngModel"
+          [class.is-invalid]="passwordField.invalid && (passwordField.dirty || passwordField.touched)"
           ngModel
           required
+          minlength="6"
           placeholder="Enter your password"
         />
+        <small class="field-error" *ngIf="passwordField.invalid && (passwordField.dirty || passwordField.touched)">
+          <span *ngIf="passwordField.hasError('required')">Password is required</span>
+          <span *ngIf="passwordField.hasError('minlength')">Password must be at least 6 characters</span>
+        </small>
         <div class="forgot-link">
           <a [routerLink]="['/auth/forgot-password']">Forgot password?</a>
         </div>

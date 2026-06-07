@@ -97,6 +97,18 @@
   &::placeholder {
     color: #9ca3af;
   }
+
+  &.is-invalid {
+    border-color: #ef4444;
+    &:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12); }
+  }
+}
+
+.field-error {
+  display: block;
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 .text-muted {

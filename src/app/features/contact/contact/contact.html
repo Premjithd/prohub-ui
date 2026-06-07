@@ -17,40 +17,43 @@
           <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
             <div class="form-group">
               <label for="name">Full Name *</label>
-              <input 
-                type="text" 
-                id="name" 
+              <input
+                type="text"
+                id="name"
                 formControlName="name"
                 placeholder="Your name"
                 required>
-              <span class="error" *ngIf="isSubmitted && contactForm.get('name')?.hasError('required')">
+              <span class="error" *ngIf="(isSubmitted || contactForm.get('name')?.touched) && contactForm.get('name')?.hasError('required')">
                 Name is required
               </span>
             </div>
 
             <div class="form-group">
               <label for="email">Email Address *</label>
-              <input 
-                type="email" 
-                id="email" 
+              <input
+                type="email"
+                id="email"
                 formControlName="email"
                 placeholder="your.email@example.com"
                 required>
-              <span class="error" *ngIf="isSubmitted && contactForm.get('email')?.hasError('required')">
+              <span class="error" *ngIf="(isSubmitted || contactForm.get('email')?.touched) && contactForm.get('email')?.hasError('required')">
                 Email is required
               </span>
-              <span class="error" *ngIf="isSubmitted && contactForm.get('email')?.hasError('email')">
+              <span class="error" *ngIf="(isSubmitted || contactForm.get('email')?.touched) && contactForm.get('email')?.hasError('email')">
                 Please enter a valid email
               </span>
             </div>
 
             <div class="form-group">
               <label for="phone">Phone Number</label>
-              <input 
-                type="tel" 
-                id="phone" 
+              <input
+                type="tel"
+                id="phone"
                 formControlName="phone"
-                placeholder="(555) 123-4567">
+                placeholder="10-digit number">
+              <span class="error" *ngIf="(isSubmitted || contactForm.get('phone')?.touched) && contactForm.get('phone')?.hasError('pattern')">
+                Enter a valid 10-digit phone number
+              </span>
             </div>
 
             <div class="form-group">
@@ -64,32 +67,38 @@
                 <option value="feedback">Feedback</option>
                 <option value="other">Other</option>
               </select>
-              <span class="error" *ngIf="isSubmitted && contactForm.get('subject')?.hasError('required')">
+              <span class="error" *ngIf="(isSubmitted || contactForm.get('subject')?.touched) && contactForm.get('subject')?.hasError('required')">
                 Please select a subject
               </span>
             </div>
 
             <div class="form-group">
               <label for="message">Message *</label>
-              <textarea 
-                id="message" 
+              <textarea
+                id="message"
                 formControlName="message"
-                placeholder="Tell us more about your inquiry..."
+                placeholder="Tell us more about your inquiry... (at least 20 characters)"
                 rows="6"
                 required></textarea>
-              <span class="error" *ngIf="isSubmitted && contactForm.get('message')?.hasError('required')">
+              <span class="error" *ngIf="(isSubmitted || contactForm.get('message')?.touched) && contactForm.get('message')?.hasError('required')">
                 Message is required
+              </span>
+              <span class="error" *ngIf="(isSubmitted || contactForm.get('message')?.touched) && contactForm.get('message')?.hasError('minlength')">
+                Message must be at least 20 characters
+              </span>
+              <span class="error" *ngIf="(isSubmitted || contactForm.get('message')?.touched) && contactForm.get('message')?.hasError('maxlength')">
+                Message must not exceed 1000 characters
               </span>
             </div>
 
             <div class="form-checkbox">
-              <input 
-                type="checkbox" 
-                id="terms" 
+              <input
+                type="checkbox"
+                id="terms"
                 formControlName="terms"
                 required>
               <label for="terms">I agree to be contacted about my inquiry *</label>
-              <span class="error" *ngIf="isSubmitted && contactForm.get('terms')?.hasError('required')">
+              <span class="error" *ngIf="(isSubmitted || contactForm.get('terms')?.touched) && contactForm.get('terms')?.hasError('required')">
                 You must agree to be contacted
               </span>
             </div>

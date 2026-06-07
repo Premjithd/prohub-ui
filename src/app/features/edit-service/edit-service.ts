@@ -113,9 +113,9 @@ export class EditServiceComponent implements OnInit, OnDestroy {
     this.serviceForm = this.fb.group({
       name: [service.name, [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
       description: [service.description, [Validators.required, Validators.minLength(20), Validators.maxLength(2000)]],
-      price: [service.price, [Validators.required, Validators.min(1)]],
+      price: [service.price, [Validators.required, Validators.min(1), Validators.max(9999999)]],
       serviceCategoryId: [service.serviceCategoryId || '', Validators.required],
-      imageUrl: [service.imageUrl || ''],
+      imageUrl: [service.imageUrl || '', [Validators.pattern('^https?://.+')]],
       agreeToTerms: [true, Validators.required]
     });
   }

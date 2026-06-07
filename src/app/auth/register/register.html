@@ -17,9 +17,14 @@
             id="FirstName"
             name="FirstName"
             class="form-control"
+            #firstNameField="ngModel"
+            [class.is-invalid]="firstNameField.invalid && (firstNameField.dirty || firstNameField.touched)"
             ngModel
             required
           />
+          <small class="field-error" *ngIf="firstNameField.invalid && (firstNameField.dirty || firstNameField.touched)">
+            First name is required
+          </small>
         </div>
         <div class="form-group">
           <label for="LastName">Last Name</label>
@@ -28,9 +33,14 @@
             id="LastName"
             name="LastName"
             class="form-control"
+            #lastNameField="ngModel"
+            [class.is-invalid]="lastNameField.invalid && (lastNameField.dirty || lastNameField.touched)"
             ngModel
             required
           />
+          <small class="field-error" *ngIf="lastNameField.invalid && (lastNameField.dirty || lastNameField.touched)">
+            Last name is required
+          </small>
         </div>
       </div>
 
@@ -41,11 +51,17 @@
           id="email"
           name="Email"
           class="form-control"
+          #emailField="ngModel"
+          [class.is-invalid]="emailField.invalid && (emailField.dirty || emailField.touched)"
           ngModel
           required
           email
           placeholder="name@example.com"
         />
+        <small class="field-error" *ngIf="emailField.invalid && (emailField.dirty || emailField.touched)">
+          <span *ngIf="emailField.hasError('required')">Email is required</span>
+          <span *ngIf="emailField.hasError('email')">Enter a valid email address</span>
+        </small>
       </div>
 
       <div class="form-group">
@@ -55,12 +71,17 @@
           id="phone"
           name="PhoneNumber"
           class="form-control"
+          #phoneField="ngModel"
+          [class.is-invalid]="phoneField.invalid && (phoneField.dirty || phoneField.touched)"
           ngModel
           required
           pattern="^[0-9]{10}$"
           placeholder="10-digit number"
         />
-        <small class="text-muted">Format: 10 digits (e.g., 9876543210)</small>
+        <small class="field-error" *ngIf="phoneField.invalid && (phoneField.dirty || phoneField.touched)">
+          <span *ngIf="phoneField.hasError('required')">Phone number is required</span>
+          <span *ngIf="phoneField.hasError('pattern')">Enter a valid 10-digit phone number</span>
+        </small>
       </div>
 
       <div class="form-group">
@@ -70,11 +91,17 @@
           id="password"
           name="Password"
           class="form-control"
+          #passwordField="ngModel"
+          [class.is-invalid]="passwordField.invalid && (passwordField.dirty || passwordField.touched)"
           ngModel
           required
           minlength="6"
           placeholder="At least 6 characters"
         />
+        <small class="field-error" *ngIf="passwordField.invalid && (passwordField.dirty || passwordField.touched)">
+          <span *ngIf="passwordField.hasError('required')">Password is required</span>
+          <span *ngIf="passwordField.hasError('minlength')">Password must be at least 6 characters</span>
+        </small>
       </div>
 
       <div class="address-section">
@@ -110,12 +137,18 @@
 
         <div class="form-group">
           <label for="houseNameNumber">House Name/Number <span class="required">*</span></label>
-          <input type="text" id="houseNameNumber" name="houseNameNumber" class="form-control" ngModel required />
+          <input type="text" id="houseNameNumber" name="houseNameNumber" class="form-control"
+            #houseField="ngModel" [class.is-invalid]="houseField.invalid && (houseField.dirty || houseField.touched)"
+            ngModel required />
+          <small class="field-error" *ngIf="houseField.invalid && (houseField.dirty || houseField.touched)">House name/number is required</small>
         </div>
 
         <div class="form-group">
           <label for="street1">Street 1 <span class="required">*</span></label>
-          <input type="text" id="street1" name="street1" class="form-control" ngModel required />
+          <input type="text" id="street1" name="street1" class="form-control"
+            #street1Field="ngModel" [class.is-invalid]="street1Field.invalid && (street1Field.dirty || street1Field.touched)"
+            ngModel required />
+          <small class="field-error" *ngIf="street1Field.invalid && (street1Field.dirty || street1Field.touched)">Street is required</small>
         </div>
 
         <div class="form-group">
@@ -125,22 +158,34 @@
 
         <div class="form-group">
           <label for="city">City <span class="required">*</span></label>
-          <input type="text" id="city" name="city" class="form-control" ngModel required />
+          <input type="text" id="city" name="city" class="form-control"
+            #cityField="ngModel" [class.is-invalid]="cityField.invalid && (cityField.dirty || cityField.touched)"
+            ngModel required />
+          <small class="field-error" *ngIf="cityField.invalid && (cityField.dirty || cityField.touched)">City is required</small>
         </div>
 
         <div class="form-group">
           <label for="state">State <span class="required">*</span></label>
-          <input type="text" id="state" name="state" class="form-control" ngModel required />
+          <input type="text" id="state" name="state" class="form-control"
+            #stateField="ngModel" [class.is-invalid]="stateField.invalid && (stateField.dirty || stateField.touched)"
+            ngModel required />
+          <small class="field-error" *ngIf="stateField.invalid && (stateField.dirty || stateField.touched)">State is required</small>
         </div>
 
         <div class="form-group">
           <label for="country">Country <span class="required">*</span></label>
-          <input type="text" id="country" name="country" class="form-control" ngModel required />
+          <input type="text" id="country" name="country" class="form-control"
+            #countryField="ngModel" [class.is-invalid]="countryField.invalid && (countryField.dirty || countryField.touched)"
+            ngModel required />
+          <small class="field-error" *ngIf="countryField.invalid && (countryField.dirty || countryField.touched)">Country is required</small>
         </div>
 
         <div class="form-group">
           <label for="zipPostalCode">Zip/Postal Code <span class="required">*</span></label>
-          <input type="text" id="zipPostalCode" name="zipPostalCode" class="form-control" ngModel required />
+          <input type="text" id="zipPostalCode" name="zipPostalCode" class="form-control"
+            #zipField="ngModel" [class.is-invalid]="zipField.invalid && (zipField.dirty || zipField.touched)"
+            ngModel required />
+          <small class="field-error" *ngIf="zipField.invalid && (zipField.dirty || zipField.touched)">Postal code is required</small>
         </div>
       </div>
 

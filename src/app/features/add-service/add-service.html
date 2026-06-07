@@ -81,7 +81,8 @@
             </div>
             <small *ngIf="(submitted || f['price'].touched) && f['price'].errors" class="error-text">
               <span *ngIf="f['price'].errors['required']">Price is required</span>
-              <span *ngIf="f['price'].errors['min']">Price must be greater than 0</span>
+              <span *ngIf="f['price'].errors['min']">Price must be at least ₹1</span>
+              <span *ngIf="f['price'].errors['max']">Price cannot exceed ₹99,99,999</span>
             </small>
           </div>
 
@@ -128,6 +129,9 @@
               [class.is-invalid]="(submitted || f['imageUrl'].touched) && f['imageUrl'].errors"
             />
             <small class="hint-text">Paste a direct link to a photo that best represents your service</small>
+            <small *ngIf="(submitted || f['imageUrl'].touched) && f['imageUrl'].errors" class="error-text">
+              URL must start with http:// or https://
+            </small>
           </div>
 
           <!-- Terms & Conditions -->

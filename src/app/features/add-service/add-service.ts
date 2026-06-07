@@ -74,9 +74,9 @@ export class AddServiceComponent implements OnInit, OnDestroy {
     this.serviceForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
       description: ['', [Validators.required, Validators.minLength(20), Validators.maxLength(2000)]],
-      price: ['', [Validators.required, Validators.min(1)]],
+      price: ['', [Validators.required, Validators.min(1), Validators.max(9999999)]],
       serviceCategoryId: ['', Validators.required],
-      imageUrl: [''],
+      imageUrl: ['', [Validators.pattern('^https?://.+')]],
       agreeToTerms: [false, Validators.required]
     });
   }
