@@ -21,6 +21,8 @@ export class AddServiceComponent implements OnInit, OnDestroy {
   successMessage = '';
   errorMessage = '';
   categories: any[] = [];
+  categoriesLoading = false;
+  categoriesError = false;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -49,16 +51,21 @@ export class AddServiceComponent implements OnInit, OnDestroy {
   }
 
   loadCategories(): void {
+    this.categoriesLoading = true;
+    this.categoriesError = false;
+    this.cdr.detectChanges();
     this.serviceCategoryService.getCategories()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (categories: any[]) => {
           this.categories = categories;
-          console.log('Categories loaded:', this.categories);
+          this.categoriesLoading = false;
+          this.cdr.detectChanges();
         },
-        error: (error: any) => {
-          console.error('Error loading categories:', error);
-          this.categories = [];
+        error: () => {
+          this.categoriesLoading = false;
+          this.categoriesError = true;
+          this.cdr.detectChanges();
         }
       });
   }

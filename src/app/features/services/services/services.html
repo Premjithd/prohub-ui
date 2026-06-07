@@ -69,8 +69,21 @@
         <div class="cat-skeleton" *ngFor="let i of skeletons"></div>
       </div>
 
+      <!-- Categories error -->
+      <div *ngIf="!categoriesLoading && categoriesError" class="section-error">
+        <span class="material-icons">error_outline</span>
+        <span>Couldn't load categories. Please try again.</span>
+        <button (click)="loadCategories()">Retry</button>
+      </div>
+
+      <!-- Empty categories -->
+      <div *ngIf="!categoriesLoading && !categoriesError && categories.length === 0" class="section-empty">
+        <span class="empty-icon">📂</span>
+        <p>No service categories available yet.</p>
+      </div>
+
       <!-- Category cards -->
-      <div class="categories-grid" *ngIf="!categoriesLoading">
+      <div class="categories-grid" *ngIf="!categoriesLoading && !categoriesError && categories.length > 0">
         <button
           *ngFor="let cat of categories"
           class="cat-card"
@@ -114,7 +127,14 @@
           </div>
         </div>
 
-        <div class="services-grid" *ngIf="!servicesLoading">
+        <!-- Services error -->
+        <div *ngIf="!servicesLoading && servicesError" class="section-error">
+          <span class="material-icons">error_outline</span>
+          <span>Couldn't load services. Please try again.</span>
+          <button (click)="loadServices()">Retry</button>
+        </div>
+
+        <div class="services-grid" *ngIf="!servicesLoading && !servicesError">
           <article class="service-card" *ngFor="let s of filteredServices">
             <div class="card-image">
               <img [src]="s.imageUrl || getCategoryImage(s.categoryName || '')" [alt]="s.name" (error)="onImgError($event)" loading="lazy" />
@@ -140,7 +160,7 @@
           </article>
         </div>
 
-        <div class="empty-state" *ngIf="!servicesLoading && filteredServices.length === 0">
+        <div class="empty-state" *ngIf="!servicesLoading && !servicesError && filteredServices.length === 0">
           <div class="empty-icon">🔍</div>
           <h3>No services found</h3>
           <p>Try a different search or select another category</p>

@@ -32,6 +32,8 @@ export class ServicesComponent implements OnInit, OnDestroy {
   readonly skeletons = [1, 2, 3, 4, 5, 6];
   categories: ServiceCategory[] = [];
   categoriesLoading = true;
+  categoriesError = false;
+  servicesError = false;
   showProCount = false;
 
   private destroy$ = new Subject<void>();
@@ -76,6 +78,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.servicesLoading = false;
+        this.servicesError = true;
         this.cdr.detectChanges();
       }
     });
@@ -88,6 +91,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
 
   loadCategories(): void {
     this.categoriesLoading = true;
+    this.categoriesError = false;
     this.serviceCategoryService.getCategories()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -99,6 +103,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         error: () => {
           this.categories = [];
           this.categoriesLoading = false;
+          this.categoriesError = true;
           this.cdr.detectChanges();
         }
       });
@@ -106,6 +111,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
 
   loadServices(): void {
     this.servicesLoading = true;
+    this.servicesError = false;
     this.browseServicesService.getServices({
       categoryId: this.selectedCategoryId || undefined,
       search: this.searchQuery.trim() || undefined,
@@ -120,6 +126,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         this.services = [];
         this.filteredServices = [];
         this.servicesLoading = false;
+        this.servicesError = true;
         this.cdr.detectChanges();
       }
     });

@@ -88,17 +88,29 @@
           <!-- Service Category -->
           <div class="form-group">
             <label for="serviceCategoryId">Service Category *</label>
-            <select
-              id="serviceCategoryId"
-              formControlName="serviceCategoryId"
-              class="form-control"
-              [class.is-invalid]="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors"
-            >
-              <option value="">-- Select a Category --</option>
-              <option *ngFor="let category of categories" [value]="category.id">
-                {{ category.icon }} {{ category.name }}
-              </option>
-            </select>
+            <div *ngIf="categoriesLoading" class="cat-inline-loading">
+              <div class="cat-inline-skeleton" *ngFor="let i of [1,2,3]"></div>
+            </div>
+            <div *ngIf="!categoriesLoading && categoriesError" class="cat-inline-error">
+              <span class="material-icons">error_outline</span>
+              Couldn't load categories.
+              <button type="button" (click)="loadCategories()">Retry</button>
+            </div>
+            <ng-container *ngIf="!categoriesLoading && !categoriesError">
+              <p *ngIf="categories.length === 0" class="cat-inline-empty">No categories available yet.</p>
+              <select
+                *ngIf="categories.length > 0"
+                id="serviceCategoryId"
+                formControlName="serviceCategoryId"
+                class="form-control"
+                [class.is-invalid]="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors"
+              >
+                <option value="">-- Select a Category --</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.icon }} {{ category.name }}
+                </option>
+              </select>
+            </ng-container>
             <small *ngIf="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors" class="error-text">
               <span *ngIf="f['serviceCategoryId'].errors['required']">Please select a service category</span>
             </small>

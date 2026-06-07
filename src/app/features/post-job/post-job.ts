@@ -38,6 +38,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
 
   serviceCategories: ServiceCategory[] = [];
   categoriesLoading = true;
+  categoriesError = false;
 
   // Address autofill state
   addressPredictions: AddressPrediction[] = [];
@@ -141,6 +142,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
 
   loadCategories(): void {
     this.categoriesLoading = true;
+    this.categoriesError = false;
     this.cdr.detectChanges();
     this.serviceCategoryService.getCategories()
       .pipe(takeUntil(this.destroy$))
@@ -161,6 +163,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.categoriesLoading = false;
+          this.categoriesError = true;
           this.cdr.detectChanges();
         }
       });

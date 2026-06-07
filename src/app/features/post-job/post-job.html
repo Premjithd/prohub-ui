@@ -66,10 +66,18 @@
             <!-- Service Category -->
             <div class="form-group">
               <label>Service Category *</label>
-              <div *ngIf="categoriesLoading" class="loading-placeholder">
-                <p>Loading categories...</p>
+              <div *ngIf="categoriesLoading" class="category-grid cat-skel-grid">
+                <div class="cat-skeleton" *ngFor="let i of [1,2,3,4,5,6]"></div>
               </div>
-              <div *ngIf="!categoriesLoading" class="category-grid">
+              <div *ngIf="!categoriesLoading && categoriesError" class="cat-load-error">
+                <span class="material-icons">error_outline</span>
+                <span>Couldn't load categories.</span>
+                <button type="button" (click)="loadCategories()">Retry</button>
+              </div>
+              <p *ngIf="!categoriesLoading && !categoriesError && serviceCategories.length === 0" class="cat-empty">
+                No categories available yet.
+              </p>
+              <div *ngIf="!categoriesLoading && !categoriesError && serviceCategories.length > 0" class="category-grid">
                 <button
                   *ngFor="let category of serviceCategories"
                   type="button"
