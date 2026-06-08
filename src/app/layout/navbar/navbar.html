@@ -1,32 +1,43 @@
 <mat-toolbar color="primary">
-  <button mat-icon-button (click)="onToggleSidenav()" aria-label="Open menu">
+  <button mat-icon-button (click)="onToggleSidenav()" [attr.aria-label]="'NAV.HOME' | translate">
     <mat-icon>menu</mat-icon>
   </button>
 
-  <a routerLink="/" class="brand" aria-label="yProHub home">
+  <a routerLink="/" class="brand" [attr.aria-label]="'NAV.HOME' | translate">
     <img src="assets/logo/logo-mark-white.svg" alt="" class="brand-logo" />
     <span>yProHub</span>
   </a>
   <span class="spacer"></span>
 
   <ng-container *ngIf="!auth.isAuthenticated()">
-    <button mat-button routerLink="/auth/login">Login</button>
-    <button mat-raised-button color="accent" class="custom-btn" routerLink="/auth/register">Register</button>
+    <button mat-button routerLink="/auth/login">{{ 'NAV.LOGIN' | translate }}</button>
+    <button mat-raised-button color="accent" class="custom-btn" routerLink="/auth/register">{{ 'NAV.REGISTER' | translate }}</button>
   </ng-container>
 
   <ng-container *ngIf="auth.isAuthenticated()">
-    <!-- Show name only on desktop -->
     <span class="welcome-text">{{ auth.getName() }}</span>
-    <!-- Notification bell — all authenticated users -->
-    <button mat-icon-button routerLink="/notifications" aria-label="Notifications" class="notif-bell">
+    <button mat-icon-button routerLink="/notifications" [attr.aria-label]="'NAV.NOTIFICATIONS' | translate" class="notif-bell">
       <mat-icon>notifications</mat-icon>
       <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
     </button>
-    <button mat-icon-button routerLink="/profile" aria-label="Profile">
+    <button mat-icon-button routerLink="/profile" [attr.aria-label]="'NAV.PROFILE' | translate">
       <mat-icon>person</mat-icon>
     </button>
-    <button mat-icon-button (click)="onLogout()" aria-label="Sign out">
+    <button mat-icon-button (click)="onLogout()" [attr.aria-label]="'NAV.SIGN_OUT' | translate">
       <mat-icon>logout</mat-icon>
     </button>
   </ng-container>
+
+  <!-- Language switcher -->
+  <button mat-button [matMenuTriggerFor]="langMenu" class="lang-btn" aria-label="Language">
+    <mat-icon>language</mat-icon>
+    <span class="lang-code">{{ langService.current | uppercase }}</span>
+  </button>
+  <mat-menu #langMenu="matMenu">
+    <button mat-menu-item *ngFor="let l of langs" (click)="switchLang(l.code)"
+            [class.lang-active]="langService.current === l.code">
+      {{ 'LANG.' + l.code.toUpperCase() | translate }}
+    </button>
+  </mat-menu>
+
 </mat-toolbar>

@@ -87,3 +87,22 @@ mat-icon {
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
   }
 }
+
+.lang-btn {
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: unset;
+  padding: 0 6px;
+
+  .lang-code { font-size: 12px; letter-spacing: 0.05em; }
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+::ng-deep .lang-active {
+  font-weight: 700 !important;
+  color: #764ba2 !important;
+}

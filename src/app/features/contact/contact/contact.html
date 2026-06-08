@@ -2,8 +2,8 @@
   <!-- Hero Section -->
   <section class="contact-hero">
     <div class="hero-content">
-      <h1>Get In Touch</h1>
-      <p>Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+      <h1>{{ 'CONTACT.HERO_TITLE' | translate }}</h1>
+      <p>{{ 'CONTACT.HERO_SUB' | translate }}</p>
     </div>
   </section>
 
@@ -13,81 +13,81 @@
       <div class="contact-grid">
         <!-- Contact Form -->
         <div class="contact-form-section">
-          <h2>Send us a Message</h2>
+          <h2>{{ 'CONTACT.FORM_TITLE' | translate }}</h2>
           <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
             <div class="form-group">
-              <label for="name">Full Name *</label>
+              <label for="name">{{ 'CONTACT.NAME' | translate }} *</label>
               <input
                 type="text"
                 id="name"
                 formControlName="name"
-                placeholder="Your name"
+                [placeholder]="'CONTACT.NAME_PLACEHOLDER' | translate"
                 required>
               <span class="error" *ngIf="(isSubmitted || contactForm.get('name')?.touched) && contactForm.get('name')?.hasError('required')">
-                Name is required
+                {{ 'CONTACT.NAME_REQUIRED' | translate }}
               </span>
             </div>
 
             <div class="form-group">
-              <label for="email">Email Address *</label>
+              <label for="email">{{ 'CONTACT.EMAIL' | translate }} *</label>
               <input
                 type="email"
                 id="email"
                 formControlName="email"
-                placeholder="your.email@example.com"
+                [placeholder]="'CONTACT.EMAIL_PLACEHOLDER' | translate"
                 required>
               <span class="error" *ngIf="(isSubmitted || contactForm.get('email')?.touched) && contactForm.get('email')?.hasError('required')">
-                Email is required
+                {{ 'CONTACT.EMAIL_REQUIRED' | translate }}
               </span>
               <span class="error" *ngIf="(isSubmitted || contactForm.get('email')?.touched) && contactForm.get('email')?.hasError('email')">
-                Please enter a valid email
+                {{ 'CONTACT.EMAIL_INVALID' | translate }}
               </span>
             </div>
 
             <div class="form-group">
-              <label for="phone">Phone Number</label>
+              <label for="phone">{{ 'CONTACT.PHONE' | translate }}</label>
               <input
                 type="tel"
                 id="phone"
                 formControlName="phone"
-                placeholder="10-digit number">
+                [placeholder]="'CONTACT.PHONE_PLACEHOLDER' | translate">
               <span class="error" *ngIf="(isSubmitted || contactForm.get('phone')?.touched) && contactForm.get('phone')?.hasError('pattern')">
-                Enter a valid 10-digit phone number
+                {{ 'CONTACT.PHONE_INVALID' | translate }}
               </span>
             </div>
 
             <div class="form-group">
-              <label for="subject">Subject *</label>
+              <label for="subject">{{ 'CONTACT.SUBJECT' | translate }} *</label>
               <select id="subject" formControlName="subject" required>
-                <option value="">Select a subject</option>
-                <option value="general">General Inquiry</option>
-                <option value="support">Technical Support</option>
-                <option value="billing">Billing Question</option>
-                <option value="partnership">Partnership Opportunity</option>
-                <option value="feedback">Feedback</option>
-                <option value="other">Other</option>
+                <option value="">{{ 'CONTACT.SUBJECT_PLACEHOLDER' | translate }}</option>
+                <option value="general">{{ 'CONTACT.SUBJECT_GENERAL' | translate }}</option>
+                <option value="support">{{ 'CONTACT.SUBJECT_SUPPORT' | translate }}</option>
+                <option value="billing">{{ 'CONTACT.SUBJECT_BILLING' | translate }}</option>
+                <option value="partnership">{{ 'CONTACT.SUBJECT_PARTNERSHIP' | translate }}</option>
+                <option value="feedback">{{ 'CONTACT.SUBJECT_FEEDBACK' | translate }}</option>
+                <option value="other">{{ 'CONTACT.SUBJECT_OTHER' | translate }}</option>
               </select>
               <span class="error" *ngIf="(isSubmitted || contactForm.get('subject')?.touched) && contactForm.get('subject')?.hasError('required')">
-                Please select a subject
+                {{ 'CONTACT.SUBJECT_REQUIRED' | translate }}
               </span>
             </div>
 
             <div class="form-group">
-              <label for="message">Message *</label>
+              <label for="message">{{ 'CONTACT.MESSAGE' | translate }} *</label>
               <textarea
                 id="message"
                 formControlName="message"
-                placeholder="Tell us more about your inquiry... (at least 20 characters)"
+                [placeholder]="'CONTACT.MESSAGE_PLACEHOLDER' | translate"
                 rows="6"
                 required></textarea>
               <span class="error" *ngIf="(isSubmitted || contactForm.get('message')?.touched) && contactForm.get('message')?.hasError('required')">
-                Message is required
+                {{ 'CONTACT.MESSAGE_REQUIRED' | translate }}
               </span>
               <span class="error" *ngIf="(isSubmitted || contactForm.get('message')?.touched) && contactForm.get('message')?.hasError('minlength')">
-                Message must be at least 20 characters
+                {{ 'CONTACT.MESSAGE_MIN' | translate }}
               </span>
               <span class="error" *ngIf="(isSubmitted || contactForm.get('message')?.touched) && contactForm.get('message')?.hasError('maxlength')">
-                Message must not exceed 1000 characters
+                {{ 'CONTACT.MESSAGE_MAX' | translate }}
               </span>
             </div>
 
@@ -97,59 +97,58 @@
                 id="terms"
                 formControlName="terms"
                 required>
-              <label for="terms">I agree to be contacted about my inquiry *</label>
+              <label for="terms">{{ 'CONTACT.AGREE' | translate }} *</label>
               <span class="error" *ngIf="(isSubmitted || contactForm.get('terms')?.touched) && contactForm.get('terms')?.hasError('required')">
-                You must agree to be contacted
+                {{ 'CONTACT.AGREE_REQUIRED' | translate }}
               </span>
             </div>
 
             <button type="submit" class="submit-btn" [disabled]="isSubmitting">
-              {{ isSubmitting ? 'Sending...' : 'Send Message' }}
+              {{ isSubmitting ? ('CONTACT.SENDING' | translate) : ('CONTACT.SEND' | translate) }}
             </button>
 
             <div class="success-message" *ngIf="submitSuccess">
-              ✓ Thank you! Your message has been sent successfully. We'll get back to you soon.
+              {{ 'CONTACT.SUCCESS' | translate }}
             </div>
             <div class="error-message" *ngIf="submitError">
-              ✗ There was an error sending your message. Please try again.
+              {{ 'CONTACT.ERROR' | translate }}
             </div>
           </form>
         </div>
 
         <!-- Contact Information -->
         <div class="contact-info-section">
-          <h2>Contact Information</h2>
+          <h2>{{ 'CONTACT.INFO_TITLE' | translate }}</h2>
 
           <div class="info-card">
             <div class="info-icon">📍</div>
-            <h3>Our Office</h3>
-            <p>yProHub Headquarters<br>San Francisco, CA 94102<br>United States</p>
+            <h3>{{ 'CONTACT.OFFICE_TITLE' | translate }}</h3>
+            <p>{{ 'CONTACT.OFFICE_TEXT' | translate }}</p>
           </div>
 
           <div class="info-card">
             <div class="info-icon">📧</div>
-            <h3>Email Us</h3>
+            <h3>{{ 'CONTACT.EMAIL_US_TITLE' | translate }}</h3>
             <p><a href="mailto:support@yprohub.com">support@yprohub.com</a><br>
             <a href="mailto:partnerships@yprohub.com">partnerships@yprohub.com</a></p>
           </div>
 
           <div class="info-card">
             <div class="info-icon">📞</div>
-            <h3>Call Us</h3>
+            <h3>{{ 'CONTACT.CALL_TITLE' | translate }}</h3>
             <p><a href="tel:+1-555-123-4567">(555) 123-4567</a><br>
-            Mon - Fri, 9AM - 6PM PST</p>
+            {{ 'CONTACT.CALL_HOURS' | translate }}</p>
           </div>
 
           <div class="info-card">
             <div class="info-icon">💬</div>
-            <h3>Live Chat</h3>
-            <p>Available on our website<br>
-            during business hours<br>
-            <button class="chat-btn">Start Chat</button></p>
+            <h3>{{ 'CONTACT.CHAT_TITLE' | translate }}</h3>
+            <p>{{ 'CONTACT.CHAT_DESC' | translate }}<br>
+            <button class="chat-btn">{{ 'CONTACT.CHAT_BTN' | translate }}</button></p>
           </div>
 
           <div class="social-section">
-            <h3>Follow Us</h3>
+            <h3>{{ 'CONTACT.FOLLOW_TITLE' | translate }}</h3>
             <div class="social-links">
               <a href="#" class="social-link" title="Facebook">f</a>
               <a href="#" class="social-link" title="Twitter">𝕏</a>
@@ -165,23 +164,23 @@
   <!-- FAQ Section -->
   <section class="faq-section">
     <div class="section-container">
-      <h2>Frequently Asked Questions</h2>
+      <h2>{{ 'CONTACT.FAQ_TITLE' | translate }}</h2>
       <div class="faq-grid">
         <div class="faq-item">
-          <h3>How quickly will I hear back?</h3>
-          <p>We aim to respond to all inquiries within 24 business hours. Urgent support requests may be prioritized.</p>
+          <h3>{{ 'CONTACT.FAQ1_Q' | translate }}</h3>
+          <p>{{ 'CONTACT.FAQ1_A' | translate }}</p>
         </div>
         <div class="faq-item">
-          <h3>What's the best way to report an issue?</h3>
-          <p>Use our contact form above and select "Technical Support" as the subject. Include as much detail as possible about the issue you're experiencing.</p>
+          <h3>{{ 'CONTACT.FAQ2_Q' | translate }}</h3>
+          <p>{{ 'CONTACT.FAQ2_A' | translate }}</p>
         </div>
         <div class="faq-item">
-          <h3>How can I become a partner?</h3>
-          <p>We're always interested in partnerships! Select "Partnership Opportunity" when contacting us, and let us know how you'd like to collaborate.</p>
+          <h3>{{ 'CONTACT.FAQ3_Q' | translate }}</h3>
+          <p>{{ 'CONTACT.FAQ3_A' | translate }}</p>
         </div>
         <div class="faq-item">
-          <h3>Do you have a physical office I can visit?</h3>
-          <p>Yes! Our headquarters is in San Francisco. Contact us to schedule a visit or learn about our other office locations.</p>
+          <h3>{{ 'CONTACT.FAQ4_Q' | translate }}</h3>
+          <p>{{ 'CONTACT.FAQ4_A' | translate }}</p>
         </div>
       </div>
     </div>

@@ -21,6 +21,7 @@ import { AddressService } from '../../core/services/address.service';
 import { MyServicesService, Service } from '../../services/my-services.service';
 import { ReviewService } from '../../services/review.service';
 import { Review, ProRatingSummary } from '../../models/review.model';
+import { TranslateModule } from '@ngx-translate/core';
 
 const PREVIEW_PROS: BrowsePro[] = [
   {
@@ -56,7 +57,8 @@ const PREVIEW_PROS: BrowsePro[] = [
   imports: [
     CommonModule, FormsModule, RouterModule,
     MatIconModule, MatButtonModule, MatProgressSpinnerModule,
-    MatFormFieldModule, MatInputModule, MatSelectModule
+    MatFormFieldModule, MatInputModule, MatSelectModule,
+    TranslateModule
   ],
   templateUrl: './find-a-pro.html',
   styleUrl: './find-a-pro.scss'

@@ -3,22 +3,22 @@
   <!-- Home — always visible for non-admin users -->
   <a class="nav-item" *ngIf="!isAdmin()" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
     <mat-icon>home</mat-icon>
-    <span>Home</span>
+    <span>{{ 'NAV.HOME' | translate }}</span>
   </a>
 
   <!-- ── Unauthenticated ──────────────────────────────── -->
   <ng-container *ngIf="!auth.isAuthenticated()">
     <a class="nav-item" routerLink="/services" routerLinkActive="active">
       <mat-icon>build</mat-icon>
-      <span>Services</span>
+      <span>{{ 'NAV.SERVICES' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/find-a-pro" routerLinkActive="active">
       <mat-icon>engineering</mat-icon>
-      <span>Find a Pro</span>
+      <span>{{ 'NAV.FIND_A_PRO' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/auth/login" routerLinkActive="active">
       <mat-icon>login</mat-icon>
-      <span>Login</span>
+      <span>{{ 'NAV.LOGIN' | translate }}</span>
     </a>
   </ng-container>
 
@@ -26,22 +26,22 @@
   <ng-container *ngIf="auth.isAuthenticated() && !isProUser() && !isAdmin()">
     <a class="nav-item" routerLink="/pending-jobs" routerLinkActive="active">
       <mat-icon>assignment</mat-icon>
-      <span>My Jobs</span>
+      <span>{{ 'NAV.MY_JOBS' | translate }}</span>
     </a>
     <a class="nav-item post-btn" routerLink="/post-job" routerLinkActive="active">
       <mat-icon>add_circle</mat-icon>
-      <span>Post Job</span>
+      <span>{{ 'NAV.POST_JOB' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/notifications" routerLinkActive="active">
       <span class="notif-icon-wrap">
         <mat-icon>notifications</mat-icon>
         <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
       </span>
-      <span>Alerts</span>
+      <span>{{ 'NAV.ALERTS' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/profile" routerLinkActive="active">
       <mat-icon>person</mat-icon>
-      <span>Profile</span>
+      <span>{{ 'NAV.PROFILE' | translate }}</span>
     </a>
   </ng-container>
 
@@ -49,22 +49,22 @@
   <ng-container *ngIf="auth.isAuthenticated() && isProUser()">
     <a class="nav-item" routerLink="/available-jobs" routerLinkActive="active">
       <mat-icon>search</mat-icon>
-      <span>Find Jobs</span>
+      <span>{{ 'NAV.FIND_JOBS' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/my-jobs-pro" routerLinkActive="active">
       <mat-icon>task_alt</mat-icon>
-      <span>My Work</span>
+      <span>{{ 'NAV.MY_WORK' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/notifications" routerLinkActive="active">
       <span class="notif-icon-wrap">
         <mat-icon>notifications</mat-icon>
         <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
       </span>
-      <span>Alerts</span>
+      <span>{{ 'NAV.ALERTS' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/profile" routerLinkActive="active">
       <mat-icon>person</mat-icon>
-      <span>Profile</span>
+      <span>{{ 'NAV.PROFILE' | translate }}</span>
     </a>
   </ng-container>
 
@@ -72,19 +72,19 @@
   <ng-container *ngIf="auth.isAuthenticated() && isAdmin()">
     <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
       <mat-icon>home</mat-icon>
-      <span>Home</span>
+      <span>{{ 'NAV.HOME' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/admin-users" routerLinkActive="active">
       <mat-icon>admin_panel_settings</mat-icon>
-      <span>Dashboard</span>
+      <span>{{ 'NAV.DASHBOARD' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/notifications" routerLinkActive="active">
       <mat-icon>notifications</mat-icon>
-      <span>Notifications</span>
+      <span>{{ 'NAV.NOTIFICATIONS' | translate }}</span>
     </a>
     <a class="nav-item" routerLink="/profile" routerLinkActive="active">
       <mat-icon>person</mat-icon>
-      <span>Profile</span>
+      <span>{{ 'NAV.PROFILE' | translate }}</span>
     </a>
   </ng-container>
 

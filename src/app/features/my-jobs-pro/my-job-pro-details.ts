@@ -14,6 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { TranslateModule } from '@ngx-translate/core';
 import { JobService, Job, JobPhase, Message, JobBid } from '../../services/job.service.js';
 import { Auth } from '../../core/services/auth';
 import { ReviewService } from '../../services/review.service';
@@ -39,7 +40,8 @@ import { takeUntil, switchMap, filter } from 'rxjs/operators';
     MatFormFieldModule,
     MatInputModule,
     MatTooltipModule,
-    MatDialogModule
+    MatDialogModule,
+    TranslateModule
   ],
   templateUrl: './my-job-pro-details.html',
   styleUrl: './my-job-pro-details.scss'

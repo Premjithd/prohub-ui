@@ -6,7 +6,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Auth } from '../../core/services/auth';
+import { LanguageService, AppLang } from '../../core/services/language.service';
 import { NotificationService } from '../../services/notification.service';
 import { SignalRService } from '../../services/signalr.service';
 import { Subject, interval, of } from 'rxjs';
@@ -22,7 +24,8 @@ import { takeUntil, startWith, switchMap, catchError, filter, map, distinctUntil
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    TranslateModule
   ],
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss'
@@ -34,14 +37,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private signalRConnected = false;
 
+  readonly langs = [
+    { code: 'en' as AppLang, label: 'EN' },
+    { code: 'ml' as AppLang, label: 'ML' },
+    { code: 'hi' as AppLang, label: 'HI' },
+  ];
+
   constructor(
     public auth: Auth,
+    public langService: LanguageService,
     private router: Router,
     private snackBar: MatSnackBar,
     private notificationService: NotificationService,
     private signalRService: SignalRService,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -110,10 +121,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
   }
 
+  switchLang(lang: AppLang): void {
+    this.langService.use(lang);
+    this.cdr.detectChanges();
+  }
+
   private _clearAndRedirect(): void {
     this.auth.logout();
     this.ngZone.run(() => {
-      this.snackBar.open('You have been signed out.', '', {
+      this.snackBar.open(this.translate.instant('NAV.SIGN_OUT') + '.', '', {
         duration: 3000,
         horizontalPosition: 'center',
         verticalPosition: 'bottom',

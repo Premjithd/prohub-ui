@@ -3,17 +3,17 @@
   <div class="page-header">
     <div class="header-content">
       <div>
-        <h1>Available Jobs</h1>
-        <p class="subtitle">Find jobs posted by customers. Search by keyword, filter by category, budget &amp; distance.</p>
+        <h1>{{ 'AVAILABLE_JOBS.TITLE' | translate }}</h1>
+        <p class="subtitle">{{ 'AVAILABLE_JOBS.SUBTITLE' | translate }}</p>
       </div>
       <div class="header-actions">
         <button mat-stroked-button (click)="toggleMap()" class="map-toggle-btn">
           <mat-icon>{{ showMap ? 'view_list' : 'map' }}</mat-icon>
-          {{ showMap ? 'List only' : 'Show map' }}
+          {{ showMap ? ('AVAILABLE_JOBS.LIST_ONLY' | translate) : ('AVAILABLE_JOBS.SHOW_MAP' | translate) }}
         </button>
         <button mat-raised-button color="primary" (click)="goHome()">
           <mat-icon>home</mat-icon>
-          Back to Home
+          {{ 'AVAILABLE_JOBS.BACK_TO_HOME' | translate }}
         </button>
       </div>
     </div>
@@ -30,47 +30,47 @@
     <mat-expansion-panel-header>
       <mat-panel-title>
         <mat-icon>tune</mat-icon>
-        Filters &amp; Sorting
+        {{ 'AVAILABLE_JOBS.FILTERS_TITLE' | translate }}
       </mat-panel-title>
     </mat-expansion-panel-header>
 
     <div class="filters-grid">
       <mat-form-field appearance="outline" class="filter-field search-field">
-        <mat-label>Search jobs</mat-label>
+        <mat-label>{{ 'AVAILABLE_JOBS.SEARCH_LABEL' | translate }}</mat-label>
         <mat-icon matPrefix>search</mat-icon>
-        <input matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" placeholder="Title or description...">
+        <input matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" [placeholder]="'AVAILABLE_JOBS.SEARCH_PLACEHOLDER' | translate">
         <button *ngIf="searchText" matSuffix mat-icon-button (click)="searchText=''; onFilterChange()">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Category</mat-label>
+        <mat-label>{{ 'AVAILABLE_JOBS.CATEGORY_LABEL' | translate }}</mat-label>
         <mat-select [(ngModel)]="selectedCategoryId" (selectionChange)="onFilterChange()">
-          <mat-option [value]="null">All Categories</mat-option>
+          <mat-option [value]="null">{{ 'AVAILABLE_JOBS.CATEGORY_ALL' | translate }}</mat-option>
           <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</mat-option>
         </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="filter-field budget-field">
-        <mat-label>Min Budget (₹)</mat-label>
+        <mat-label>{{ 'AVAILABLE_JOBS.MIN_BUDGET' | translate }}</mat-label>
         <input matInput type="number" [(ngModel)]="minBudget" (ngModelChange)="onBudgetFilterChange()" min="0" placeholder="0">
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="filter-field budget-field">
-        <mat-label>Max Budget (₹)</mat-label>
-        <input matInput type="number" [(ngModel)]="maxBudget" (ngModelChange)="onBudgetFilterChange()" min="0" placeholder="Any">
+        <mat-label>{{ 'AVAILABLE_JOBS.MAX_BUDGET' | translate }}</mat-label>
+        <input matInput type="number" [(ngModel)]="maxBudget" (ngModelChange)="onBudgetFilterChange()" min="0">
       </mat-form-field>
 
       <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
         <mat-icon>restart_alt</mat-icon>
-        Reset
+        {{ 'AVAILABLE_JOBS.RESET' | translate }}
       </button>
     </div>
 
     <div class="radius-row">
       <mat-icon class="radius-icon">my_location</mat-icon>
-      <span class="radius-label">Distance:</span>
+      <span class="radius-label">{{ 'AVAILABLE_JOBS.DISTANCE' | translate }}</span>
       <div class="radius-chips">
         <button
           *ngFor="let opt of radiusOptions"
@@ -85,18 +85,18 @@
 
     <div *ngIf="proximityFilterApplied && activeRadiusKm" class="proximity-banner">
       <mat-icon>my_location</mat-icon>
-      <span>Showing jobs within <strong>{{ activeRadiusKm }} km</strong> of your location</span>
+      <span>{{ 'AVAILABLE_JOBS.PROXIMITY_WITHIN' | translate: {km: activeRadiusKm} }}</span>
     </div>
     <div *ngIf="selectedRadiusKm != null && !proLocationSet" class="proximity-warning">
       <mat-icon>location_off</mat-icon>
-      <span>Set your location in your profile to enable distance filtering</span>
+      <span>{{ 'AVAILABLE_JOBS.PROXIMITY_SET_LOCATION' | translate }}</span>
     </div>
   </mat-expansion-panel>
 
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <mat-spinner></mat-spinner>
-    <p>Loading available jobs...</p>
+    <p>{{ 'AVAILABLE_JOBS.LOADING' | translate }}</p>
   </div>
 
   <!-- Split layout: list + map -->
@@ -106,24 +106,23 @@
       <!-- Empty State -->
       <div *ngIf="filteredJobs.length === 0" class="empty-state">
         <mat-icon class="empty-icon">assignment</mat-icon>
-        <h2>No Jobs Found</h2>
+        <h2>{{ 'AVAILABLE_JOBS.EMPTY_TITLE' | translate }}</h2>
         <p *ngIf="proximityFilterApplied">
-          No jobs are within <strong>{{ activeRadiusKm }} km</strong> of your location.
-          Try widening the distance filter or selecting <strong>All</strong>.
+          {{ 'AVAILABLE_JOBS.EMPTY_PROXIMITY' | translate: {km: activeRadiusKm} }}
         </p>
         <p *ngIf="!proximityFilterApplied">
-          No open jobs match your current filters. Try adjusting your search or category.
+          {{ 'AVAILABLE_JOBS.EMPTY_FILTERS' | translate }}
         </p>
         <button mat-raised-button color="primary" (click)="resetFilters()">
           <mat-icon>restart_alt</mat-icon>
-          Clear All Filters
+          {{ 'AVAILABLE_JOBS.CLEAR_FILTERS' | translate }}
         </button>
       </div>
 
       <div *ngIf="filteredJobs.length > 0" class="jobs-count-bar">
-        Showing {{ filteredJobs.length }} of {{ total }} jobs
+        {{ 'AVAILABLE_JOBS.SHOWING_COUNT' | translate: {showing: filteredJobs.length, total: total} }}
         <span *ngIf="mapMarkers.length < filteredJobs.length" class="no-loc-note">
-          ({{ filteredJobs.length - mapMarkers.length }} without coordinates)
+          {{ 'AVAILABLE_JOBS.NO_COORDS' | translate: {count: filteredJobs.length - mapMarkers.length} }}
         </span>
       </div>
 
@@ -151,14 +150,14 @@
               </div>
             </div>
             <div class="job-budget">
-              <span class="budget-label">Budget</span>
+              <span class="budget-label">{{ 'AVAILABLE_JOBS.BUDGET' | translate }}</span>
               <span class="price">{{ formatPrice(job.budget) }}</span>
             </div>
           </div>
 
           <div class="job-content">
             <div class="job-section">
-              <h3>Description</h3>
+              <h3>{{ 'AVAILABLE_JOBS.DESCRIPTION' | translate }}</h3>
               <p class="description">{{ (job.description | slice:0:150) }}{{ (job.description && job.description.length > 150) ? '...' : '' }}</p>
             </div>
 
@@ -173,7 +172,7 @@
               </div>
               <div class="detail-item distance-item" *ngIf="job.distanceKm != null">
                 <mat-icon>directions</mat-icon>
-                <span class="distance-badge">{{ job.distanceKm | number:'1.1-1' }} km away</span>
+                <span class="distance-badge">{{ job.distanceKm | number:'1.1-1' }} {{ 'AVAILABLE_JOBS.KM_AWAY' | translate }}</span>
               </div>
               <div class="detail-item">
                 <mat-icon>schedule</mat-icon>
@@ -181,7 +180,7 @@
               </div>
               <div class="detail-item">
                 <mat-icon>calendar_today</mat-icon>
-                <span>Posted: {{ job.createdAt | date: 'MMM dd, yyyy' }}</span>
+                <span>{{ 'AVAILABLE_JOBS.POSTED' | translate }} {{ job.createdAt | date: 'MMM dd, yyyy' }}</span>
               </div>
             </div>
           </div>
@@ -189,7 +188,7 @@
           <div class="job-actions">
             <button mat-raised-button color="primary" (click)="viewJobDetails(job.id)">
               <mat-icon>visibility</mat-icon>
-              View Details &amp; Bid
+              {{ 'AVAILABLE_JOBS.VIEW_DETAILS' | translate }}
             </button>
           </div>
         </div>
@@ -201,7 +200,7 @@
           <button mat-icon-button (click)="prevPage()" [disabled]="page === 1">
             <mat-icon>chevron_left</mat-icon>
           </button>
-          <span class="page-info">Page {{ page }} of {{ totalPages }}</span>
+          <span class="page-info">{{ 'AVAILABLE_JOBS.PAGE_INFO' | translate: {page: page, total: totalPages} }}</span>
           <button mat-icon-button (click)="nextPage()" [disabled]="page >= totalPages">
             <mat-icon>chevron_right</mat-icon>
           </button>

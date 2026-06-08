@@ -14,10 +14,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-profile',
-  imports: [ FormsModule, CommonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [ FormsModule, CommonModule, MatIconModule, MatProgressSpinnerModule, TranslateModule],
   templateUrl: './profile.html',
   styleUrl: './profile.scss'
 })

@@ -1,27 +1,27 @@
 <mat-nav-list>
   <a mat-list-item routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="onMenuItemClick()">
     <mat-icon>home</mat-icon>
-    <span>Home</span>
+    <span>{{ 'NAV.HOME' | translate }}</span>
   </a>
 
   <a mat-list-item routerLink="/services" routerLinkActive="active" (click)="onMenuItemClick()">
     <mat-icon>work</mat-icon>
-    <span>Services</span>
+    <span>{{ 'NAV.SERVICES' | translate }}</span>
   </a>
 
   <a *ngIf="!isProUser() && !isAdmin()" mat-list-item routerLink="/find-a-pro" routerLinkActive="active" (click)="onMenuItemClick()">
     <mat-icon>engineering</mat-icon>
-    <span>Find a Pro</span>
+    <span>{{ 'NAV.FIND_A_PRO' | translate }}</span>
   </a>
 
   <a mat-list-item routerLink="/about" routerLinkActive="active" (click)="onMenuItemClick()">
     <mat-icon>info</mat-icon>
-    <span>About</span>
+    <span>{{ 'NAV.ABOUT' | translate }}</span>
   </a>
 
   <a mat-list-item routerLink="/contact" routerLinkActive="active" (click)="onMenuItemClick()">
     <mat-icon>contact_support</mat-icon>
-    <span>Contact</span>
+    <span>{{ 'NAV.CONTACT' | translate }}</span>
   </a>
 
   <mat-divider></mat-divider>
@@ -29,12 +29,12 @@
   <ng-container *ngIf="!auth.isAuthenticated()">
     <a mat-list-item routerLink="/auth/login" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>login</mat-icon>
-      <span>Login</span>
+      <span>{{ 'NAV.LOGIN' | translate }}</span>
     </a>
 
     <a mat-list-item routerLink="/auth/register" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>person_add</mat-icon>
-      <span>Register</span>
+      <span>{{ 'NAV.REGISTER' | translate }}</span>
     </a>
   </ng-container>
 
@@ -42,11 +42,11 @@
     <!-- Admin links -->
     <a *ngIf="isAdmin()" mat-list-item routerLink="/admin-users" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>admin_panel_settings</mat-icon>
-      <span>Admin Dashboard</span>
+      <span>{{ 'NAV.ADMIN_DASHBOARD' | translate }}</span>
     </a>
     <a *ngIf="isAdmin()" mat-list-item routerLink="/admin-materials" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>inventory_2</mat-icon>
-      <span>Materials</span>
+      <span>{{ 'NAV.MATERIALS' | translate }}</span>
     </a>
 
     <mat-divider *ngIf="isAdmin()"></mat-divider>
@@ -54,47 +54,47 @@
     <!-- Show "My Jobs" for regular users -->
     <a *ngIf="!isProUser() && !isAdmin()" mat-list-item routerLink="/pending-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>assignment</mat-icon>
-      <span>My Jobs</span>
+      <span>{{ 'NAV.MY_JOBS' | translate }}</span>
     </a>
-    
+
     <!-- Show "My Jobs" link for Pro users (assigned jobs) -->
     <a *ngIf="isProUser()" mat-list-item routerLink="/my-jobs-pro" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>task_alt</mat-icon>
-      <span>Assigned Jobs</span>
+      <span>{{ 'NAV.ASSIGNED_JOBS' | translate }}</span>
     </a>
-    
+
     <!-- Show "Available Jobs" link for Pro users -->
     <a *ngIf="isProUser()" mat-list-item routerLink="/available-jobs" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>assignment</mat-icon>
-      <span>Available Jobs</span>
+      <span>{{ 'NAV.AVAILABLE_JOBS' | translate }}</span>
     </a>
 
     <!-- Show "My Services" for Pro users -->
     <a *ngIf="isProUser()" mat-list-item routerLink="/my-services" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>build</mat-icon>
-      <span>My Services</span>
+      <span>{{ 'NAV.MY_SERVICES' | translate }}</span>
     </a>
 
     <!-- Show "Add Service" link for Pro users -->
     <a *ngIf="isProUser()" mat-list-item routerLink="/add-service" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>add_circle</mat-icon>
-      <span>Add Service</span>
+      <span>{{ 'NAV.ADD_SERVICE' | translate }}</span>
     </a>
 
     <!-- Show "Post Job" link for regular users only -->
     <a *ngIf="!isProUser() && !isAdmin()" mat-list-item routerLink="/post-job" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>add_circle</mat-icon>
-      <span>Post Job</span>
+      <span>{{ 'NAV.POST_JOB' | translate }}</span>
     </a>
 
     <a mat-list-item routerLink="/profile" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>person</mat-icon>
-      <span>Profile</span>
+      <span>{{ 'NAV.PROFILE' | translate }}</span>
     </a>
 
     <a mat-list-item routerLink="/messages" routerLinkActive="active" (click)="onMenuItemClick()">
       <mat-icon>mail</mat-icon>
-      <span>Messages</span>
+      <span>{{ 'NAV.MESSAGES' | translate }}</span>
     </a>
   </ng-container>
 </mat-nav-list>

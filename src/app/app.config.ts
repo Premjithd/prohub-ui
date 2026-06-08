@@ -3,6 +3,8 @@ import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS, withXsrfConfiguration, withFetch } from '@angular/common/http';
 import { MSAL_INSTANCE, MsalService } from '@azure/msal-angular';
 import { PublicClientApplication, BrowserCacheLocation, Configuration } from '@azure/msal-browser';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
@@ -46,6 +48,8 @@ export const appConfig: ApplicationConfig = {
       provide: MSAL_INSTANCE,
       useValue: msalInstance
     },
-    MsalService
+    MsalService,
+    provideTranslateService({ defaultLanguage: 'en' }),
+    ...provideTranslateHttpLoader({ prefix: './assets/i18n/', suffix: '.json' })
   ]
 };

@@ -2,8 +2,8 @@
   <!-- Hero Section -->
   <section class="edit-service-hero">
     <div class="hero-content">
-      <h1>Edit Service</h1>
-      <p>Update your professional service details</p>
+      <h1>{{ 'EDIT_SERVICE.HERO_TITLE' | translate }}</h1>
+      <p>{{ 'EDIT_SERVICE.HERO_SUB' | translate }}</p>
     </div>
   </section>
 
@@ -26,78 +26,78 @@
         <!-- Loading State -->
         <div *ngIf="loading" class="loading-container">
           <mat-spinner></mat-spinner>
-          <p>Loading service details...</p>
+          <p>{{ 'EDIT_SERVICE.LOADING' | translate }}</p>
         </div>
 
         <form *ngIf="serviceForm && !loading" [formGroup]="serviceForm" (ngSubmit)="onSubmit()">
           <!-- Service Name -->
           <div class="form-group">
-            <label for="name">Service Name *</label>
+            <label for="name">{{ 'ADD_SERVICE.NAME_LABEL' | translate }} *</label>
             <input
               type="text"
               id="name"
               formControlName="name"
-              placeholder="e.g., Plumbing Installation"
+              [placeholder]="'ADD_SERVICE.NAME_PLACEHOLDER' | translate"
               class="form-control"
               [class.is-invalid]="(submitted || f['name'].touched) && f['name'].errors"
             />
             <small *ngIf="(submitted || f['name'].touched) && f['name'].errors" class="error-text">
-              <span *ngIf="f['name'].errors['required']">Service name is required</span>
-              <span *ngIf="f['name'].errors['minlength']">Service name must be at least 5 characters</span>
-              <span *ngIf="f['name'].errors['maxlength']">Service name must not exceed 100 characters</span>
+              <span *ngIf="f['name'].errors['required']">{{ 'ADD_SERVICE.NAME_REQUIRED' | translate }}</span>
+              <span *ngIf="f['name'].errors['minlength']">{{ 'ADD_SERVICE.NAME_MIN' | translate }}</span>
+              <span *ngIf="f['name'].errors['maxlength']">{{ 'ADD_SERVICE.NAME_MAX' | translate }}</span>
             </small>
           </div>
 
           <!-- Service Description -->
           <div class="form-group">
-            <label for="description">Service Description *</label>
+            <label for="description">{{ 'ADD_SERVICE.DESC_LABEL' | translate }} *</label>
             <textarea
               id="description"
               formControlName="description"
-              placeholder="Describe your service in detail. What services do you offer? What are your qualifications?"
+              [placeholder]="'ADD_SERVICE.DESC_PLACEHOLDER' | translate"
               class="form-control textarea"
               rows="8"
               [class.is-invalid]="(submitted || f['description'].touched) && f['description'].errors"
             ></textarea>
             <div class="char-count">
-              {{ serviceForm.get('description')?.value?.length || 0 }} / 2000 characters
+              {{ serviceForm.get('description')?.value?.length || 0 }} / 2000 {{ 'ADD_SERVICE.CHARS' | translate }}
             </div>
             <small *ngIf="(submitted || f['description'].touched) && f['description'].errors" class="error-text">
-              <span *ngIf="f['description'].errors['required']">Service description is required</span>
-              <span *ngIf="f['description'].errors['minlength']">Description must be at least 20 characters</span>
-              <span *ngIf="f['description'].errors['maxlength']">Description must not exceed 2000 characters</span>
+              <span *ngIf="f['description'].errors['required']">{{ 'ADD_SERVICE.DESC_REQUIRED' | translate }}</span>
+              <span *ngIf="f['description'].errors['minlength']">{{ 'ADD_SERVICE.DESC_MIN' | translate }}</span>
+              <span *ngIf="f['description'].errors['maxlength']">{{ 'ADD_SERVICE.DESC_MAX' | translate }}</span>
             </small>
           </div>
 
           <!-- Service Category -->
           <div class="form-group">
-            <label for="serviceCategoryId">Service Category *</label>
+            <label for="serviceCategoryId">{{ 'ADD_SERVICE.CAT_LABEL' | translate }} *</label>
             <select
               id="serviceCategoryId"
               formControlName="serviceCategoryId"
               class="form-control"
               [class.is-invalid]="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors"
             >
-              <option value="">-- Select a Category --</option>
+              <option value="">{{ 'ADD_SERVICE.CAT_SELECT' | translate }}</option>
               <option *ngFor="let category of categories" [value]="category.id">
                 {{ category.icon }} {{ category.name }}
               </option>
             </select>
             <small *ngIf="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors" class="error-text">
-              <span *ngIf="f['serviceCategoryId'].errors['required']">Please select a service category</span>
+              <span *ngIf="f['serviceCategoryId'].errors['required']">{{ 'ADD_SERVICE.CAT_REQUIRED' | translate }}</span>
             </small>
           </div>
 
           <!-- Service Price -->
           <div class="form-group">
-            <label for="price">Starting Price (₹) *</label>
+            <label for="price">{{ 'ADD_SERVICE.PRICE_LABEL' | translate }} *</label>
             <div class="price-input-wrapper">
               <span class="currency">₹</span>
               <input
                 type="number"
                 id="price"
                 formControlName="price"
-                placeholder="e.g., 500"
+                [placeholder]="'ADD_SERVICE.PRICE_PLACEHOLDER' | translate"
                 class="form-control price-input"
                 step="1"
                 min="1"
@@ -105,26 +105,26 @@
               />
             </div>
             <small *ngIf="(submitted || f['price'].touched) && f['price'].errors" class="error-text">
-              <span *ngIf="f['price'].errors['required']">Price is required</span>
-              <span *ngIf="f['price'].errors['min']">Price must be at least ₹1</span>
-              <span *ngIf="f['price'].errors['max']">Price cannot exceed ₹99,99,999</span>
+              <span *ngIf="f['price'].errors['required']">{{ 'ADD_SERVICE.PRICE_REQUIRED' | translate }}</span>
+              <span *ngIf="f['price'].errors['min']">{{ 'ADD_SERVICE.PRICE_MIN' | translate }}</span>
+              <span *ngIf="f['price'].errors['max']">{{ 'ADD_SERVICE.PRICE_MAX' | translate }}</span>
             </small>
           </div>
 
           <!-- Service Photo URL (Optional) -->
           <div class="form-group">
-            <label for="imageUrl">Service Photo URL <span class="optional-label">(optional)</span></label>
+            <label for="imageUrl">{{ 'ADD_SERVICE.IMAGE_LABEL' | translate }} <span class="optional-label">({{ 'COMMON.OPTIONAL' | translate }})</span></label>
             <input
               type="url"
               id="imageUrl"
               formControlName="imageUrl"
-              placeholder="https://example.com/your-photo.jpg"
+              [placeholder]="'ADD_SERVICE.IMAGE_PLACEHOLDER' | translate"
               class="form-control"
               [class.is-invalid]="(submitted || f['imageUrl'].touched) && f['imageUrl'].errors"
             />
-            <small class="hint-text">Paste a direct link to a photo that best represents your service</small>
+            <small class="hint-text">{{ 'ADD_SERVICE.IMAGE_HINT' | translate }}</small>
             <small *ngIf="(submitted || f['imageUrl'].touched) && f['imageUrl'].errors" class="error-text">
-              URL must start with http:// or https://
+              {{ 'ADD_SERVICE.IMAGE_INVALID' | translate }}
             </small>
           </div>
 
@@ -136,10 +136,10 @@
                 formControlName="agreeToTerms"
                 [class.is-invalid]="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors"
               />
-              <span>I agree to the Terms of Service and confirm that all information provided is accurate</span>
+              <span>{{ 'COMMON.AGREE_TERMS' | translate }}</span>
             </label>
             <small *ngIf="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors" class="error-text">
-              You must agree to the Terms of Service
+              {{ 'COMMON.TERMS_REQUIRED' | translate }}
             </small>
           </div>
 
@@ -150,27 +150,27 @@
               class="btn btn-secondary"
               routerLink="/my-services"
             >
-              Cancel
+              {{ 'EDIT_SERVICE.CANCEL' | translate }}
             </button>
             <button
               type="submit"
               class="btn btn-primary"
               [disabled]="submitted"
             >
-              <span *ngIf="!submitted">Update Service</span>
-              <span *ngIf="submitted">Updating Service...</span>
+              <span *ngIf="!submitted">{{ 'EDIT_SERVICE.SUBMIT' | translate }}</span>
+              <span *ngIf="submitted">{{ 'EDIT_SERVICE.SUBMITTING' | translate }}</span>
             </button>
           </div>
         </form>
 
         <!-- Form Tips -->
         <div *ngIf="!loading" class="form-tips">
-          <h3>Tips for Updating Your Service</h3>
+          <h3>{{ 'EDIT_SERVICE.TIPS_TITLE' | translate }}</h3>
           <ul>
-            <li>Keep your service name clear and descriptive</li>
-            <li>Update your description if you've expanded your services</li>
-            <li>Adjust pricing based on market changes and your experience</li>
-            <li>Review and update regularly to maintain visibility</li>
+            <li>{{ 'EDIT_SERVICE.TIP1' | translate }}</li>
+            <li>{{ 'EDIT_SERVICE.TIP2' | translate }}</li>
+            <li>{{ 'EDIT_SERVICE.TIP3' | translate }}</li>
+            <li>{{ 'EDIT_SERVICE.TIP4' | translate }}</li>
           </ul>
         </div>
       </div>

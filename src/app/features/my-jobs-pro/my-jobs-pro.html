@@ -3,12 +3,12 @@
   <div class="page-header">
     <div class="header-row">
       <div>
-        <h1>My Assigned Jobs</h1>
-        <p class="subtitle">View and manage jobs assigned to you</p>
+        <h1>{{ 'MY_JOBS_PRO.TITLE' | translate }}</h1>
+        <p class="subtitle">{{ 'MY_JOBS_PRO.SUBTITLE' | translate }}</p>
       </div>
       <a routerLink="/my-clients" class="clients-link">
         <mat-icon>group</mat-icon>
-        My Clients
+        {{ 'MY_JOBS_PRO.MY_CLIENTS' | translate }}
       </a>
     </div>
   </div>
@@ -28,17 +28,17 @@
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <mat-spinner></mat-spinner>
-    <p>Loading your assigned jobs...</p>
+    <p>{{ 'MY_JOBS_PRO.LOADING' | translate }}</p>
   </div>
 
   <!-- Empty State -->
   <div *ngIf="!loading && assignedJobs.length === 0" class="empty-state">
     <mat-icon class="empty-icon">assignment</mat-icon>
-    <h2>No Assigned Jobs</h2>
-    <p>You don't have any jobs assigned to you yet. Check out available jobs and submit bids to get started!</p>
+    <h2>{{ 'MY_JOBS_PRO.EMPTY_TITLE' | translate }}</h2>
+    <p>{{ 'MY_JOBS_PRO.EMPTY_SUB' | translate }}</p>
     <button mat-raised-button color="primary" routerLink="/available-jobs">
       <mat-icon>search</mat-icon>
-      Browse Available Jobs
+      {{ 'MY_JOBS_PRO.BROWSE_JOBS' | translate }}
     </button>
   </div>
 
@@ -46,9 +46,9 @@
   <div *ngIf="!loading && assignedJobs.length > 0" class="jobs-list-container">
     <!-- Status Filter -->
     <div class="status-filter">
-      <span class="filter-label">Filter by Status:</span>
-      <mat-button-toggle-group 
-        [value]="selectedStatus" 
+      <span class="filter-label">{{ 'MY_JOBS_PRO.FILTER_STATUS' | translate }}</span>
+      <mat-button-toggle-group
+        [value]="selectedStatus"
         (change)="onStatusFilterChange($event.value)"
         class="status-toggle-group">
         <mat-button-toggle *ngFor="let s of availableStatuses" [value]="s.value">
@@ -59,19 +59,19 @@
 
     <mat-card class="jobs-list-card">
       <mat-card-header>
-        <h2>Your Assigned Jobs ({{ filteredJobs.length }})</h2>
+        <h2>{{ 'MY_JOBS_PRO.TITLE' | translate }} ({{ filteredJobs.length }})</h2>
       </mat-card-header>
       <mat-card-content>
         <table class="jobs-table">
           <thead>
             <tr>
-              <th>Job Title</th>
-              <th>Category</th>
-              <th>Status</th>
+              <th>{{ 'MY_JOBS_PRO.JOB_TITLE_COL' | translate }}</th>
+              <th>{{ 'MY_JOBS_PRO.CATEGORY_COL' | translate }}</th>
+              <th>{{ 'MY_JOBS_PRO.STATUS_COL' | translate }}</th>
               <!-- <th>Budget</th> -->
               <!-- <th>Timeline</th> -->
-              <th>Progress</th>
-              <th class="actions">Actions</th>
+              <th>{{ 'MY_JOBS_PRO.PROGRESS_COL' | translate }}</th>
+              <th class="actions">{{ 'MY_JOBS_PRO.ACTIONS_COL' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -97,8 +97,8 @@
               </td> -->
               <td>
                 <div class="progress-cell">
-                  <mat-progress-bar 
-                    mode="determinate" 
+                  <mat-progress-bar
+                    mode="determinate"
                     [value]="getPhaseProgress(job)"
                     color="accent">
                   </mat-progress-bar>
@@ -106,16 +106,16 @@
                 </div>
               </td>
               <td class="actions">
-                <button 
-                  mat-raised-button 
+                <button
+                  mat-raised-button
                   class="view-button"
                   matTooltip="View Details"
                   (click)="viewJobDetails(job.id)">
                   <mat-icon>visibility</mat-icon>
-                  View
+                  {{ 'MY_JOBS_PRO.VIEW' | translate }}
                 </button>
-                <button 
-                  mat-raised-button 
+                <button
+                  mat-raised-button
                   color="accent"
                   matTooltip="Mark Completed"
                   *ngIf="job.status !== 'Completed'"
@@ -130,4 +130,3 @@
     </mat-card>
   </div>
 </div>
-

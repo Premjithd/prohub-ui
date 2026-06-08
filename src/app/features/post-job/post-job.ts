@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule, MatSnackBarRef } from '@angular/material/snack-bar';
+import { TranslateModule } from '@ngx-translate/core';
 import { JobService } from '../../services/job.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { AddressService, AddressPrediction } from '../../core/services/address.service';
@@ -21,7 +22,7 @@ interface ServiceCategory {
 @Component({
   selector: 'app-post-job',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MatIconModule, MatSnackBarModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MatIconModule, MatSnackBarModule, TranslateModule],
   templateUrl: './post-job.html',
   styleUrls: ['./post-job.scss']
 })

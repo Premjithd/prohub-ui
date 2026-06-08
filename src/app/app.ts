@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IdleTimeoutService } from './core/services/idle-timeout.service';
+import { LanguageService } from './core/services/language.service';
 // import { HttpClientModule } from '@angular/common/http';
 
 // import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -18,10 +19,13 @@ import { IdleTimeoutService } from './core/services/idle-timeout.service';
 export class App implements OnInit {
   protected readonly title = signal('prohub-ui');
 
-  constructor(private idleTimeoutService: IdleTimeoutService) {}
+  constructor(
+    private idleTimeoutService: IdleTimeoutService,
+    private languageService: LanguageService
+  ) {}
 
   ngOnInit(): void {
-    // Initialize idle timeout service when app starts
     this.idleTimeoutService.startIdleTimer();
+    this.languageService.init();
   }
 }

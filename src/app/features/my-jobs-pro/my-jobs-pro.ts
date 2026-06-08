@@ -12,6 +12,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { TranslateModule } from '@ngx-translate/core';
 import { JobService, Job, JobPhase } from '../../services/job.service';
 import { Auth } from '../../core/services/auth';
 import { Subject } from 'rxjs';
@@ -33,7 +34,8 @@ import { takeUntil } from 'rxjs/operators';
     MatCheckboxModule,
     MatProgressBarModule,
     MatTooltipModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    TranslateModule
   ],
   templateUrl: './my-jobs-pro.html',
   styleUrl: './my-jobs-pro.scss'

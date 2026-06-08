@@ -11,6 +11,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { TranslateModule } from '@ngx-translate/core';
 import { JobService, Job, JobBid, JobPhase } from '../../services/job.service';
 import { PaymentService } from '../../services/payment.service';
 import { RazorpayCheckoutComponent } from '../payments/razorpay-checkout.component';
@@ -33,7 +34,8 @@ import { takeUntil } from 'rxjs/operators';
     MatDialogModule,
     MatProgressBarModule,
     MatTooltipModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    TranslateModule
   ],
   templateUrl: './pending-jobs.html',
   styleUrl: './pending-jobs.scss'

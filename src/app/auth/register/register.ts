@@ -1,13 +1,14 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { Auth } from '../../core/services/auth';
 import { AddressService, AddressPrediction, AddressDetails } from '../../core/services/address.service';
 
 @Component({
   selector: 'app-register-user',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })

@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
+import { TranslateModule } from '@ngx-translate/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { JobService, Message } from '../../services/job.service';
 import { Auth } from '../../core/services/auth';
@@ -43,7 +44,8 @@ interface ConversationSummary {
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatBadgeModule
+    MatBadgeModule,
+    TranslateModule
   ],
   templateUrl: './messages.html',
   styleUrl: './messages.scss'

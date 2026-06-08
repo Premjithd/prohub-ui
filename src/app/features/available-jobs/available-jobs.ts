@@ -19,6 +19,7 @@ import { ServiceCategory } from '../../core/models/service-category.model';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { MapViewComponent, MapMarker } from '../../shared/map-view/map-view';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-available-jobs',
@@ -37,7 +38,8 @@ import { MapViewComponent, MapMarker } from '../../shared/map-view/map-view';
     MatExpansionModule,
     MatTooltipModule,
     FormsModule,
-    MapViewComponent
+    MapViewComponent,
+    TranslateModule
   ],
   templateUrl: './available-jobs.html',
   styleUrls: ['./available-jobs.scss']

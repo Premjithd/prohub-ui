@@ -6,8 +6,8 @@
         <mat-icon>arrow_back</mat-icon>
       </button>
       <div class="header-title">
-        <h1>{{ job?.title || 'Job Details' }}</h1>
-        <p class="subtitle">View and manage job progress</p>
+        <h1>{{ job?.title || ('MY_JOB_PRO_DETAILS.JOB_DETAILS_FALLBACK' | translate) }}</h1>
+        <p class="subtitle">{{ 'MY_JOB_PRO_DETAILS.SUBTITLE' | translate }}</p>
       </div>
     </div>
   </div>
@@ -15,7 +15,7 @@
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <mat-spinner></mat-spinner>
-    <p>Loading job details...</p>
+    <p>{{ 'MY_JOB_PRO_DETAILS.LOADING' | translate }}</p>
   </div>
 
   <!-- Error State -->
@@ -35,16 +35,16 @@
     <mat-card>
       <!-- Job Header -->
       <mat-card-header class="job-card-header">
-        <div class="job-header-content">            
+        <div class="job-header-content">
           <div class="job-category-section">
-            <span class="category-label">Category</span>
+            <span class="category-label">{{ 'MY_JOB_PRO_DETAILS.CATEGORY' | translate }}</span>
             <div class="job-category">
               <mat-icon>layers</mat-icon>
               <span>{{ job.category?.name || 'Uncategorized' }}</span>
             </div>
           </div>
           <div class="job-status-section">
-            <span class="status-label">Status</span>
+            <span class="status-label">{{ 'MY_JOB_PRO_DETAILS.STATUS_LABEL' | translate }}</span>
             <mat-chip-set>
               <mat-chip [color]="getStatusColor(job.status)" selected>
                 {{ job.status }}
@@ -57,17 +57,17 @@
       <mat-card-content>
         <!-- Description -->
         <div class="job-section">
-          <h3>Description</h3>
+          <h3>{{ 'MY_JOB_PRO_DETAILS.DESCRIPTION' | translate }}</h3>
           <p class="description">{{ job.description }}</p>
         </div>
 
-        <h3>Details Grid</h3>        
+        <h3>{{ 'MY_JOB_PRO_DETAILS.DETAILS_GRID' | translate }}</h3>
         <div class="details-grid">
           <!-- Location -->
           <div class="detail-item">
             <mat-icon>location_on</mat-icon>
             <div>
-              <span class="label">Location</span>
+              <span class="label">{{ 'MY_JOB_PRO_DETAILS.LOCATION' | translate }}</span>
               <p class="value">{{ job.location }}</p>
             </div>
           </div>
@@ -76,7 +76,7 @@
           <div class="detail-item">
             <mat-icon>attach_money</mat-icon>
             <div>
-              <span class="label">Budget</span>
+              <span class="label">{{ 'MY_JOB_PRO_DETAILS.BUDGET' | translate }}</span>
               <p class="value">{{ job.budget }}</p>
             </div>
           </div>
@@ -85,7 +85,7 @@
           <div class="detail-item">
             <mat-icon>schedule</mat-icon>
             <div>
-              <span class="label">Timeline</span>
+              <span class="label">{{ 'MY_JOB_PRO_DETAILS.TIMELINE' | translate }}</span>
               <p class="value">{{ formatTimeline(job.timeline) }}</p>
             </div>
           </div>
@@ -94,7 +94,7 @@
           <div class="detail-item">
             <mat-icon>calendar_today</mat-icon>
             <div>
-              <span class="label">Posted</span>
+              <span class="label">{{ 'MY_JOB_PRO_DETAILS.POSTED' | translate }}</span>
               <p class="value">{{ job.createdAt | date: 'MMM dd, yyyy' }}</p>
             </div>
           </div>
@@ -116,7 +116,7 @@
 
         <!-- Attachments -->
         <div *ngIf="job.attachments" class="job-section">
-          <h3>Attachments</h3>
+          <h3>{{ 'MY_JOB_PRO_DETAILS.ATTACHMENTS' | translate }}</h3>
           <div class="attachments">
             <mat-icon>attach_file</mat-icon>
             <a href="#" target="_blank">{{ job.attachments }}</a>
@@ -128,9 +128,9 @@
           <div class="dispute-notice">
             <mat-icon class="dispute-icon">warning</mat-icon>
             <div>
-              <h3>Customer Raised a Dispute</h3>
-              <p *ngIf="disputeReason"><strong>Reason:</strong> {{ disputeReason }}</p>
-              <p>Address the customer's concerns and resubmit your completion.</p>
+              <h3>{{ 'MY_JOB_PRO_DETAILS.DISPUTE_TITLE' | translate }}</h3>
+              <p *ngIf="disputeReason"><strong>{{ 'MY_JOB_PRO_DETAILS.DISPUTE_REASON' | translate }}</strong> {{ disputeReason }}</p>
+              <p>{{ 'MY_JOB_PRO_DETAILS.DISPUTE_SUB' | translate }}</p>
             </div>
           </div>
           <button
@@ -139,7 +139,7 @@
             (click)="resubmitCompletion()"
             [disabled]="resubmittingCompletion">
             <mat-icon>refresh</mat-icon>
-            {{ resubmittingCompletion ? 'Resubmitting...' : 'Resubmit Completion' }}
+            {{ resubmittingCompletion ? ('MY_JOB_PRO_DETAILS.RESUBMITTING' | translate) : ('MY_JOB_PRO_DETAILS.RESUBMIT' | translate) }}
           </button>
         </div>
 
@@ -148,8 +148,8 @@
           <div class="confirm-notice">
             <mat-icon>payment</mat-icon>
             <div>
-              <h3>Payment Received</h3>
-              <p>The customer has completed payment. Confirm to start work on this job.</p>
+              <h3>{{ 'MY_JOB_PRO_DETAILS.PAYMENT_TITLE' | translate }}</h3>
+              <p>{{ 'MY_JOB_PRO_DETAILS.PAYMENT_SUB' | translate }}</p>
             </div>
           </div>
           <button
@@ -158,7 +158,7 @@
             (click)="confirmJob()"
             [disabled]="confirmingJob">
             <mat-icon>play_circle</mat-icon>
-            {{ confirmingJob ? 'Confirming...' : 'Confirm & Start Job' }}
+            {{ confirmingJob ? ('MY_JOB_PRO_DETAILS.CONFIRMING' | translate) : ('MY_JOB_PRO_DETAILS.CONFIRM_START' | translate) }}
           </button>
         </div>
 
@@ -166,7 +166,7 @@
         <div *ngIf="job.status === 'Payment Made' || job.status === 'Pro Confirmed' || job.status === 'In Progress' || job.status === 'Completion Submitted' || job.status === 'Completed'" class="customer-communication-section">
           <h3>
             <mat-icon>mail</mat-icon>
-            Communication
+            {{ 'MY_JOB_PRO_DETAILS.COMM_TITLE' | translate }}
           </h3>
 
           <div class="pro-card-inprogress">
@@ -176,30 +176,30 @@
             </div>
             <div class="bid-details-grid">
               <div class="detail-item">
-                <span class="label">Job ID:</span>
+                <span class="label">{{ 'MY_JOB_PRO_DETAILS.JOB_ID' | translate }}</span>
                 <span class="value">#{{ job.id }}</span>
               </div>
               <div class="detail-item">
-                <span class="label">Posted Date:</span>
+                <span class="label">{{ 'MY_JOB_PRO_DETAILS.POSTED_DATE' | translate }}</span>
                 <span class="value">{{ job.createdAt | date: 'MMM dd, yyyy' }}</span>
               </div>
               <div class="detail-item" *ngIf="getProBid() as proBid">
-                <span class="label">Bid Amount:</span>
+                <span class="label">{{ 'MY_JOB_PRO_DETAILS.BID_AMOUNT' | translate }}</span>
                 <span class="value bid-amount">${{ proBid.bidAmount | number: '1.2-2' }}</span>
               </div>
               <div class="detail-item" *ngIf="getProBid() as proBid">
-                <span class="label">Bid Status:</span>
+                <span class="label">{{ 'MY_JOB_PRO_DETAILS.BID_STATUS' | translate }}</span>
                 <span class="value">{{ getBidStatus(proBid.status) }}</span>
               </div>
               <div class="detail-item" *ngIf="getProBid() as proBid">
-                <span class="label">Bid Date:</span>
+                <span class="label">{{ 'MY_JOB_PRO_DETAILS.BID_DATE' | translate }}</span>
                 <span class="value">{{ proBid.createdAt | date: 'MMM dd, yyyy' }}</span>
               </div>
             </div>
             <div class="bid-actions">
               <button mat-raised-button color="primary" (click)="goToMessagesPage()" class="message-btn">
                 <mat-icon>message</mat-icon>
-                Message
+                {{ 'MY_JOB_PRO_DETAILS.MESSAGE' | translate }}
               </button>
               <button
                 *ngIf="getProBid()?.status === 'Pending'"
@@ -210,7 +210,7 @@
                 class="withdraw-btn"
                 matTooltip="Withdraw your bid">
                 <mat-icon>undo</mat-icon>
-                {{ withdrawingBid ? 'Withdrawing...' : 'Withdraw Bid' }}
+                {{ withdrawingBid ? ('MY_JOB_PRO_DETAILS.WITHDRAWING' | translate) : ('MY_JOB_PRO_DETAILS.WITHDRAW_BID' | translate) }}
               </button>
             </div>
           </div>
@@ -221,40 +221,40 @@
           <div class="phases-header">
             <h3>
               <mat-icon>flag</mat-icon>
-              Progress Tracking
-            </h3>  
-            <div class="phases-title-row" *ngIf="job.status !== 'Completed'">            
-              <button 
-                mat-raised-button 
+              {{ 'MY_JOB_PRO_DETAILS.PROGRESS_TITLE' | translate }}
+            </h3>
+            <div class="phases-title-row" *ngIf="job.status !== 'Completed'">
+              <button
+                mat-raised-button
                 (click)="openPhaseSelectionDialog(job)"
                 matTooltip="Edit project phases"
                 color="primary">
-                <mat-icon >edit</mat-icon>
-                {{ 'Add Phases' }}
+                <mat-icon>edit</mat-icon>
+                {{ 'MY_JOB_PRO_DETAILS.ADD_PHASES' | translate }}
               </button>
               <div class="unsaved-indicator" *ngIf="hasUnsavedChanges(job.id)">
                 <mat-icon class="warning-icon">info</mat-icon>
-                <span>Unsaved changes</span>
-              </div>            
-            </div>  
-            <p *ngIf="job.status !== 'Completed'" class="subtitle">Define project phases to help the customer track your work progress</p>          
+                <span>{{ 'MY_JOB_PRO_DETAILS.UNSAVED' | translate }}</span>
+              </div>
+            </div>
+            <p *ngIf="job.status !== 'Completed'" class="subtitle">{{ 'MY_JOB_PRO_DETAILS.PHASES_SUBTITLE' | translate }}</p>
             <div class="phase-progress">
-              <mat-progress-bar 
-                mode="determinate" 
+              <mat-progress-bar
+                mode="determinate"
                 [value]="getPhaseProgress(job)"
                 color="accent">
               </mat-progress-bar>
-              <span class="progress-text">{{ getPhaseProgress(job) }}% Complete</span>
+              <span class="progress-text">{{ getPhaseProgress(job) }}{{ 'MY_JOB_PRO_DETAILS.PERCENT_COMPLETE' | translate }}</span>
             </div>
           </div>
-          
+
           <div class="phases-list">
-            <div 
-              *ngFor="let phase of getJobPhases(job)" 
+            <div
+              *ngFor="let phase of getJobPhases(job)"
               class="phase-item"
               [class.completed]="phase.isCompleted">
               <div class="phase-checkbox">
-                <mat-checkbox 
+                <mat-checkbox
                   [checked]="phase.isCompleted"
                   (change)="togglePhaseCompletion(job, phase.id)"
                   color="accent">
@@ -265,7 +265,7 @@
                 <p class="phase-description">{{ phase.description }}</p>
                 <p *ngIf="phase.isCompleted && phase.completedAt" class="phase-completed-date">
                   <mat-icon>check_circle</mat-icon>
-                  Completed on {{ phase.completedAt | date: 'MMM dd, yyyy HH:mm' }}
+                  {{ 'MY_JOB_PRO_DETAILS.COMPLETED_ON' | translate }} {{ phase.completedAt | date: 'MMM dd, yyyy HH:mm' }}
                 </p>
               </div>
             </div>
@@ -273,14 +273,14 @@
 
           <!-- Save Button -->
           <div class="phases-footer" *ngIf="hasUnsavedChanges(job.id)">
-            <button 
-              mat-raised-button 
+            <button
+              mat-raised-button
               color="accent"
               (click)="savePhaseChanges(job)"
               [disabled]="savingJobId === job.id">
               <mat-icon *ngIf="savingJobId !== job.id">save</mat-icon>
               <mat-icon *ngIf="savingJobId === job.id" class="spinner">schedule</mat-icon>
-              {{ savingJobId === job.id ? 'Saving...' : 'Save Changes' }}
+              {{ savingJobId === job.id ? ('MY_JOB_PRO_DETAILS.SAVING' | translate) : ('MY_JOB_PRO_DETAILS.SAVE_CHANGES' | translate) }}
             </button>
           </div>
         </div>
@@ -289,7 +289,7 @@
         <div *ngIf="job.status === 'Completed'" class="review-customer-section">
           <h3>
             <mat-icon>rate_review</mat-icon>
-            Rate the Customer
+            {{ 'MY_JOB_PRO_DETAILS.RATE_CUSTOMER_TITLE' | translate }}
           </h3>
 
           <div *ngIf="userReviewLoading" class="review-loading">
@@ -300,7 +300,7 @@
           <div *ngIf="!userReviewLoading && userReview" class="review-submitted">
             <mat-icon class="review-done-icon">check_circle</mat-icon>
             <div class="review-done-body">
-              <p class="review-done-msg">You rated this customer</p>
+              <p class="review-done-msg">{{ 'MY_JOB_PRO_DETAILS.YOU_RATED' | translate }}</p>
               <div class="review-stars-row">
                 <span *ngFor="let i of starsArray" class="r-star" [class.filled]="reviewStarFilled(userReview.rating, i - 1)">★</span>
                 <span class="review-rating-num">{{ userReview.rating }}/5</span>
@@ -311,7 +311,7 @@
 
           <!-- Review form -->
           <div *ngIf="!userReviewLoading && !userReview" class="review-form">
-            <p class="review-prompt">How was your experience working with this customer?</p>
+            <p class="review-prompt">{{ 'MY_JOB_PRO_DETAILS.REVIEW_PROMPT' | translate }}</p>
             <div class="review-stars-picker">
               <span
                 *ngFor="let i of starsArray"
@@ -324,7 +324,7 @@
             </div>
             <textarea
               class="review-comment-input"
-              placeholder="Add a comment (optional)..."
+              [placeholder]="'MY_JOB_PRO_DETAILS.REVIEW_PLACEHOLDER' | translate"
               [(ngModel)]="reviewComment"
               rows="3"></textarea>
             <button
@@ -333,7 +333,7 @@
               (click)="submitUserReview()"
               [disabled]="reviewRating === 0 || submittingReview">
               <mat-icon>send</mat-icon>
-              {{ submittingReview ? 'Submitting...' : 'Submit Review' }}
+              {{ submittingReview ? ('MY_JOB_PRO_DETAILS.SUBMITTING_REVIEW' | translate) : ('MY_JOB_PRO_DETAILS.SUBMIT_REVIEW' | translate) }}
             </button>
           </div>
         </div>
@@ -347,11 +347,11 @@
           *ngIf="(job.status === 'In Progress' || job.status === 'Pro Confirmed') && getPhaseProgress(job) === 100 && !unsavedJobIds.has(job.id)"
           (click)="markAsCompleted(job.id)">
           <mat-icon>check_circle</mat-icon>
-          Mark Completed
+          {{ 'MY_JOB_PRO_DETAILS.MARK_COMPLETED' | translate }}
         </button>
         <button mat-button color="warn" *ngIf="job.status === 'Completed'" disabled>
           <mat-icon>done_all</mat-icon>
-          Completed
+          {{ 'MY_JOB_PRO_DETAILS.COMPLETED' | translate }}
         </button>
       </mat-card-actions>
     </mat-card>

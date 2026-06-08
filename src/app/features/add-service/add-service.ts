@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { MyServicesService } from '../../services/my-services.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { Auth } from '../../core/services/auth';
@@ -11,7 +12,7 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-add-service',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslateModule],
   templateUrl: './add-service.html',
   styleUrls: ['./add-service.scss']
 })

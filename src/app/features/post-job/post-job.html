@@ -2,8 +2,8 @@
   <!-- Hero Section -->
   <section class="post-job-hero">
     <div class="hero-content">
-      <h1>Post Your Job</h1>
-      <p>Describe your project and connect with qualified professionals who can help</p>
+      <h1>{{ 'POST_JOB.HERO_TITLE' | translate }}</h1>
+      <p>{{ 'POST_JOB.HERO_SUB' | translate }}</p>
     </div>
   </section>
 
@@ -27,17 +27,17 @@
         <div class="steps-indicator">
           <div [class.active]="currentStep === 1" [class.completed]="currentStep > 1" class="step">
             <span class="step-num">1</span>
-            <span class="step-label">Job Details</span>
+            <span class="step-label">{{ 'POST_JOB.STEP1' | translate }}</span>
           </div>
           <div class="step-line" [class.active]="currentStep > 1"></div>
           <div [class.active]="currentStep === 2" [class.completed]="currentStep > 2" class="step">
             <span class="step-num">2</span>
-            <span class="step-label">Budget & Timeline</span>
+            <span class="step-label">{{ 'POST_JOB.STEP2' | translate }}</span>
           </div>
           <div class="step-line" [class.active]="currentStep > 2"></div>
           <div [class.active]="currentStep === 3" class="step">
             <span class="step-num">3</span>
-            <span class="step-label">Review & Submit</span>
+            <span class="step-label">{{ 'POST_JOB.STEP3' | translate }}</span>
           </div>
         </div>
 
@@ -48,34 +48,34 @@
 
             <!-- Job Title -->
             <div class="form-group">
-              <label for="title">Job Title *</label>
+              <label for="title">{{ 'POST_JOB.TITLE_LABEL' | translate }} *</label>
               <input
                 type="text"
                 id="title"
                 formControlName="title"
-                placeholder="e.g., Fix Kitchen Faucet Leak"
+                [placeholder]="'POST_JOB.TITLE_PLACEHOLDER' | translate"
                 class="form-control"
                 [class.is-invalid]="(submitted || f['title'].touched) && f['title'].errors"
               />
               <small *ngIf="(submitted || f['title'].touched) && f['title'].errors" class="error-text">
-                <span *ngIf="f['title'].errors['required']">Job title is required</span>
-                <span *ngIf="f['title'].errors['minlength']">Job title must be at least 10 characters</span>
+                <span *ngIf="f['title'].errors['required']">{{ 'POST_JOB.TITLE_REQUIRED' | translate }}</span>
+                <span *ngIf="f['title'].errors['minlength']">{{ 'POST_JOB.TITLE_MIN' | translate }}</span>
               </small>
             </div>
 
             <!-- Service Category -->
             <div class="form-group">
-              <label>Service Category *</label>
+              <label>{{ 'POST_JOB.CATEGORY_LABEL' | translate }} *</label>
               <div *ngIf="categoriesLoading" class="category-grid cat-skel-grid">
                 <div class="cat-skeleton" *ngFor="let i of [1,2,3,4,5,6]"></div>
               </div>
               <div *ngIf="!categoriesLoading && categoriesError" class="cat-load-error">
                 <span class="material-icons">error_outline</span>
-                <span>Couldn't load categories.</span>
-                <button type="button" (click)="loadCategories()">Retry</button>
+                <span>{{ 'POST_JOB.CAT_LOAD_ERROR' | translate }}</span>
+                <button type="button" (click)="loadCategories()">{{ 'COMMON.RETRY' | translate }}</button>
               </div>
               <p *ngIf="!categoriesLoading && !categoriesError && serviceCategories.length === 0" class="cat-empty">
-                No categories available yet.
+                {{ 'POST_JOB.CAT_EMPTY' | translate }}
               </p>
               <div *ngIf="!categoriesLoading && !categoriesError && serviceCategories.length > 0" class="category-grid">
                 <button
@@ -90,30 +90,30 @@
                 </button>
               </div>
               <small *ngIf="(submitted || f['category'].touched) && f['category'].errors" class="error-text">
-                Please select a service category
+                {{ 'POST_JOB.CATEGORY_REQUIRED' | translate }}
               </small>
             </div>
 
             <!-- Job Description -->
             <div class="form-group">
-              <label for="description">Job Description *</label>
+              <label for="description">{{ 'POST_JOB.DESCRIPTION_LABEL' | translate }} *</label>
               <textarea
                 id="description"
                 formControlName="description"
-                placeholder="Describe your job in detail. What needs to be done? Any specific requirements?"
+                [placeholder]="'POST_JOB.DESCRIPTION_PLACEHOLDER' | translate"
                 class="form-control textarea"
                 rows="6"
                 [class.is-invalid]="(submitted || f['description'].touched) && f['description'].errors"
               ></textarea>
               <small *ngIf="(submitted || f['description'].touched) && f['description'].errors" class="error-text">
-                <span *ngIf="f['description'].errors['required']">Job description is required</span>
-                <span *ngIf="f['description'].errors['minlength']">Description must be at least 50 characters</span>
+                <span *ngIf="f['description'].errors['required']">{{ 'POST_JOB.DESCRIPTION_REQUIRED' | translate }}</span>
+                <span *ngIf="f['description'].errors['minlength']">{{ 'POST_JOB.DESCRIPTION_MIN' | translate }}</span>
               </small>
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" disabled>Back</button>
-              <button type="button" class="btn btn-primary" (click)="nextStep()">Next</button>
+              <button type="button" class="btn btn-secondary" disabled>{{ 'POST_JOB.BACK' | translate }}</button>
+              <button type="button" class="btn btn-primary" (click)="nextStep()">{{ 'POST_JOB.NEXT' | translate }}</button>
             </div>
           </div>
 
@@ -138,7 +138,7 @@
                     (blur)="hideAddressList()"
                     autocomplete="off"
                   />
-                  <div *ngIf="addressLoading" class="address-loading">Searching...</div>
+                  <div *ngIf="addressLoading" class="address-loading">{{ 'COMMON.SEARCHING' | translate }}</div>
                   <div class="address-dropdown" *ngIf="showAddressList && addressPredictions.length > 0">
                     <div
                       *ngFor="let prediction of addressPredictions"
@@ -205,8 +205,8 @@
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="previousStep()">Back</button>
-              <button type="button" class="btn btn-primary" (click)="nextStep()">Next</button>
+              <button type="button" class="btn btn-secondary" (click)="previousStep()">{{ 'POST_JOB.BACK' | translate }}</button>
+              <button type="button" class="btn btn-primary" (click)="nextStep()">{{ 'POST_JOB.NEXT' | translate }}</button>
             </div>
           </div>
 
@@ -248,17 +248,17 @@
                   type="checkbox"
                   formControlName="agreeToTerms"
                 />
-                <span class="checkbox-text">I agree to yProHub's <a routerLink="/terms" target="_blank">Terms of Service</a> and understand that professionals will see this posting</span>
+                <span class="checkbox-text">{{ 'COMMON.AGREE_TERMS' | translate }} <a routerLink="/terms" target="_blank">Terms of Service</a></span>
               </label>
               <small *ngIf="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors" class="error-text">
-                ✓ You must agree to the terms and conditions to post a job
+                {{ 'COMMON.TERMS_REQUIRED' | translate }}
               </small>
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="previousStep()">Back</button>
+              <button type="button" class="btn btn-secondary" (click)="previousStep()">{{ 'POST_JOB.BACK' | translate }}</button>
               <button type="submit" class="btn btn-success" [disabled]="submitted">
-                {{ submitted ? 'Posting...' : 'Post Your Job' }}
+                {{ submitted ? ('POST_JOB.SUBMITTING' | translate) : ('POST_JOB.SUBMIT' | translate) }}
               </button>
             </div>
           </div>

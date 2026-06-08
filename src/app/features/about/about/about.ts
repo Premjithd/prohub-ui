@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { Auth } from '../../../core/services/auth';
 import { ReviewService } from '../../../services/review.service';
 import { PlatformRatingStats } from '../../../models/review.model';
@@ -8,7 +9,7 @@ import { PlatformRatingStats } from '../../../models/review.model';
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './about.html',
   styleUrl: './about.scss'
 })

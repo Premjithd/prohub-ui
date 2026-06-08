@@ -2,8 +2,8 @@
   <!-- Hero Section -->
   <section class="hero">
     <div class="hero-content">
-      <h1>Join yProHub</h1>
-      <p>Choose how you want to get started</p>
+      <h1>{{ 'AUTH.REGISTER_CHOICE.HERO_TITLE' | translate }}</h1>
+      <p>{{ 'AUTH.REGISTER_CHOICE.HERO_SUB' | translate }}</p>
     </div>
   </section>
 
@@ -14,40 +14,36 @@
         <!-- Register as User -->
         <div class="option-card user-card">
           <div class="card-icon user-icon">U</div>
-          <h2>Looking for a Professional?</h2>
-          <p class="card-subtitle">Register as a User</p>
-          <p class="card-description">
-            Find and hire verified professionals for your projects. Post jobs, compare bids, and manage your work all in one place.
-          </p>
+          <h2>{{ 'AUTH.REGISTER_CHOICE.USER_HEADING' | translate }}</h2>
+          <p class="card-subtitle">{{ 'AUTH.REGISTER_CHOICE.USER_SUBTITLE' | translate }}</p>
+          <p class="card-description">{{ 'AUTH.REGISTER_CHOICE.USER_DESC' | translate }}</p>
           <ul class="features-list">
-            <li>Post unlimited jobs</li>
-            <li>Get multiple quotes</li>
-            <li>Secure payment system</li>
-            <li>Direct messaging</li>
-            <li>Project tracking</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.USER_FEAT1' | translate }}</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.USER_FEAT2' | translate }}</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.USER_FEAT3' | translate }}</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.USER_FEAT4' | translate }}</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.USER_FEAT5' | translate }}</li>
           </ul>
           <button class="btn-primary" (click)="navigateTo('/auth/register/user')">
-            Register as User
+            {{ 'AUTH.REGISTER_CHOICE.USER_BTN' | translate }}
           </button>
         </div>
 
         <!-- Register as Professional -->
         <div class="option-card pro-card">
           <div class="card-icon pro-icon">P</div>
-          <h2>Ready to Work?</h2>
-          <p class="card-subtitle">Register as a Professional</p>
-          <p class="card-description">
-            Grow your business and reach thousands of potential clients. Showcase your skills, manage bids, and build your reputation.
-          </p>
+          <h2>{{ 'AUTH.REGISTER_CHOICE.PRO_HEADING' | translate }}</h2>
+          <p class="card-subtitle">{{ 'AUTH.REGISTER_CHOICE.PRO_SUBTITLE' | translate }}</p>
+          <p class="card-description">{{ 'AUTH.REGISTER_CHOICE.PRO_DESC' | translate }}</p>
           <ul class="features-list">
-            <li>Build your portfolio</li>
-            <li>Receive job bids</li>
-            <li>Secure payments</li>
-            <li>Professional reviews</li>
-            <li>Business analytics</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.PRO_FEAT1' | translate }}</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.PRO_FEAT2' | translate }}</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.PRO_FEAT3' | translate }}</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.PRO_FEAT4' | translate }}</li>
+            <li>{{ 'AUTH.REGISTER_CHOICE.PRO_FEAT5' | translate }}</li>
           </ul>
           <button class="btn-secondary" (click)="navigateTo('/auth/register/pro')">
-            Register as Professional
+            {{ 'AUTH.REGISTER_CHOICE.PRO_BTN' | translate }}
           </button>
         </div>
       </div>
@@ -56,8 +52,8 @@
       <div class="info-section">
         <div class="login-links">
           <p>
-            Already have an account?
-            <a href="javascript:void(0)" (click)="navigateTo('/auth/login')">Sign in here</a>
+            {{ 'AUTH.REGISTER_CHOICE.HAVE_ACCOUNT' | translate }}
+            <a href="javascript:void(0)" (click)="navigateTo('/auth/login')">{{ 'AUTH.REGISTER_CHOICE.SIGN_IN' | translate }}</a>
           </p>
         </div>
       </div>

@@ -11,10 +11,10 @@
           <span class="phs-name">{{ user.firstName }} {{ user.lastName }}</span>
           <span class="phs-role-chip" [class.chip-admin]="userType === 'Admin'" [class.chip-user]="userType !== 'Admin'">
             <mat-icon>{{ userType === 'Admin' ? 'admin_panel_settings' : 'person' }}</mat-icon>
-            {{ userType === 'Admin' ? 'Admin' : 'User' }}
+            {{ userType === 'Admin' ? ('PROFILE.ADMIN' | translate) : ('PROFILE.USER' | translate) }}
           </span>
         </div>
-        <div class="phs-sub">Member since {{ user.createdAt | date:'MMM yyyy' }}<span *ngIf="user.city"> · {{ user.city }}</span></div>
+        <div class="phs-sub">{{ 'PROFILE.MEMBER_SINCE' | translate }} {{ user.createdAt | date:'MMM yyyy' }}<span *ngIf="user.city"> · {{ user.city }}</span></div>
       </div>
       <span class="phs-badge" [class.verified]="user.isEmailVerified">
         <mat-icon>{{ user.isEmailVerified ? 'verified' : 'error_outline' }}</mat-icon>
@@ -24,22 +24,22 @@
     <!-- Tab bar -->
     <nav class="pro-tab-bar" *ngIf="!isEditing">
       <button class="ptb-tab" [class.active]="userSection === 'info'"    (click)="selectUserSection('info')">
-        <mat-icon>person</mat-icon><span>Profile</span>
+        <mat-icon>person</mat-icon><span>{{ 'PROFILE.TAB_PROFILE' | translate }}</span>
       </button>
       <button class="ptb-tab" [class.active]="userSection === 'payment'" (click)="selectUserSection('payment')">
-        <mat-icon>account_balance_wallet</mat-icon><span>Payment</span>
+        <mat-icon>account_balance_wallet</mat-icon><span>{{ 'PROFILE.TAB_PAYMENT' | translate }}</span>
       </button>
       <button class="ptb-tab" [class.active]="userSection === 'reviews'" (click)="selectUserSection('reviews')">
-        <mat-icon>star</mat-icon><span>Reviews</span>
+        <mat-icon>star</mat-icon><span>{{ 'PROFILE.TAB_REVIEWS' | translate }}</span>
       </button>
     </nav>
 
     <!-- Edit mode header -->
     <div class="pro-edit-header" *ngIf="isEditing">
       <button class="btn btn-cancel btn-sm" (click)="cancelEdit()">
-        <mat-icon>arrow_back</mat-icon> Back
+        <mat-icon>arrow_back</mat-icon> {{ 'PROFILE.BACK' | translate }}
       </button>
-      <span class="pro-edit-title">Edit Profile</span>
+      <span class="pro-edit-title">{{ 'PROFILE.EDIT_PROFILE' | translate }}</span>
     </div>
 
     <!-- Alerts -->
@@ -51,20 +51,20 @@
     <ng-container *ngIf="!isEditing && userSection === 'info'">
       <div class="pro-section-actions">
         <button class="btn btn-primary btn-sm" (click)="toggleEdit()">
-          <mat-icon>edit</mat-icon> Edit Profile
+          <mat-icon>edit</mat-icon> {{ 'PROFILE.EDIT_PROFILE' | translate }}
         </button>
       </div>
       <div class="sections-grid">
         <!-- Personal -->
         <div class="profile-card info-card">
-          <h3 class="section-title"><mat-icon>person</mat-icon> Personal</h3>
+          <h3 class="section-title"><mat-icon>person</mat-icon> {{ 'PROFILE.PERSONAL' | translate }}</h3>
           <div class="field-row">
             <div class="field">
-              <span class="field-label">First Name</span>
+              <span class="field-label">{{ 'PROFILE.FIRST_NAME' | translate }}</span>
               <span class="field-value">{{ user.firstName || '—' }}</span>
             </div>
             <div class="field">
-              <span class="field-label">Last Name</span>
+              <span class="field-label">{{ 'PROFILE.LAST_NAME' | translate }}</span>
               <span class="field-value">{{ user.lastName || '—' }}</span>
             </div>
           </div>
@@ -72,38 +72,38 @@
 
         <!-- Contact -->
         <div class="profile-card info-card">
-          <h3 class="section-title"><mat-icon>contacts</mat-icon> Contact</h3>
+          <h3 class="section-title"><mat-icon>contacts</mat-icon> {{ 'PROFILE.CONTACT' | translate }}</h3>
           <div class="field">
-            <span class="field-label">Email</span>
+            <span class="field-label">{{ 'PROFILE.EMAIL' | translate }}</span>
             <div class="field-value contact-row">
               <span>{{ user.email }}</span>
               <span class="badge" [class.badge-ok]="user.isEmailVerified" [class.badge-warn]="!user.isEmailVerified">
                 <mat-icon>{{ user.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
-                {{ user.isEmailVerified ? 'Verified' : 'Unverified' }}
+                {{ user.isEmailVerified ? ('PROFILE.VERIFIED' | translate) : ('PROFILE.UNVERIFIED' | translate) }}
               </span>
-              <button *ngIf="!user.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">Verify now</button>
-              <span *ngIf="emailVerifStep === 'sending'" class="muted-text">Sending…</span>
+              <button *ngIf="!user.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">{{ 'PROFILE.VERIFY_NOW' | translate }}</button>
+              <span *ngIf="emailVerifStep === 'sending'" class="muted-text">{{ 'PROFILE.SENDING' | translate }}</span>
             </div>
             <div class="verif-panel" *ngIf="!user.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
-              <p>Enter the 6-digit code sent to <strong>{{ user.email }}</strong></p>
+              <p>{{ 'PROFILE.EMAIL_CODE_PROMPT' | translate }} <strong>{{ user.email }}</strong></p>
               <div class="verif-row">
                 <input class="code-input" type="text" maxlength="6" placeholder="000000" [(ngModel)]="emailVerifCode" name="ecUser" />
                 <button class="btn btn-success btn-sm" (click)="confirmEmailCode()" [disabled]="emailVerifStep === 'verifying'">
-                  {{ emailVerifStep === 'verifying' ? 'Verifying…' : 'Confirm' }}
+                  {{ emailVerifStep === 'verifying' ? ('PROFILE.VERIFYING' | translate) : ('PROFILE.CONFIRM' | translate) }}
                 </button>
-                <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">Cancel</button>
+                <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">{{ 'PROFILE.CANCEL' | translate }}</button>
               </div>
               <span class="error-text" *ngIf="emailVerifError">{{ emailVerifError }}</span>
-              <button class="btn-link small" (click)="sendEmailVerification()">Resend code</button>
+              <button class="btn-link small" (click)="sendEmailVerification()">{{ 'PROFILE.RESEND_CODE' | translate }}</button>
             </div>
           </div>
           <div class="field">
-            <span class="field-label">Phone</span>
+            <span class="field-label">{{ 'PROFILE.PHONE' | translate }}</span>
             <div class="field-value contact-row">
-              <span>{{ user.phoneNumber || 'Not set' }}</span>
+              <span>{{ user.phoneNumber || ('PROFILE.NOT_SET' | translate) }}</span>
               <span *ngIf="user.phoneNumber" class="badge" [class.badge-ok]="user.isPhoneVerified" [class.badge-warn]="!user.isPhoneVerified">
                 <mat-icon>{{ user.isPhoneVerified ? 'check_circle' : 'cancel' }}</mat-icon>
-                {{ user.isPhoneVerified ? 'Verified' : 'Unverified' }}
+                {{ user.isPhoneVerified ? ('PROFILE.VERIFIED' | translate) : ('PROFILE.UNVERIFIED' | translate) }}
               </span>
             </div>
           </div>
@@ -111,7 +111,7 @@
 
         <!-- Address -->
         <div class="profile-card info-card full-width" *ngIf="user.houseNameNumber || user.street1 || user.city">
-          <h3 class="section-title"><mat-icon>location_on</mat-icon> Address</h3>
+          <h3 class="section-title"><mat-icon>location_on</mat-icon> {{ 'PROFILE.ADDRESS' | translate }}</h3>
           <p class="address-text">
             <ng-container *ngIf="user.houseNameNumber">{{ user.houseNameNumber }}, </ng-container>
             <ng-container *ngIf="user.street1">{{ user.street1 }}<ng-container *ngIf="user.street2">, {{ user.street2 }}</ng-container>, </ng-container>
@@ -127,7 +127,7 @@
     <ng-container *ngIf="!isEditing && userSection === 'payment'">
       <div class="profile-card bank-card">
         <div class="bank-card-header">
-          <h3 class="section-title"><mat-icon>account_balance_wallet</mat-icon> Payment Details</h3>
+          <h3 class="section-title"><mat-icon>account_balance_wallet</mat-icon> {{ 'PROFILE.PAYMENT_DETAILS' | translate }}</h3>
           <button class="btn btn-secondary btn-sm" (click)="startEditPayment()" *ngIf="!isEditingPayment">
             <mat-icon>edit</mat-icon> {{ user.upiVpa ? 'Edit' : 'Add' }}
           </button>
@@ -144,31 +144,31 @@
         <ng-container *ngIf="!isEditingPayment">
           <div *ngIf="!user.upiVpa" class="bank-empty">
             <mat-icon>info</mat-icon>
-            <p>No UPI ID saved. Add one and it will be pre-filled when you make a payment.</p>
+            <p>{{ 'PROFILE.NO_UPI' | translate }}</p>
           </div>
           <div *ngIf="user.upiVpa" class="field">
-            <span class="field-label">Saved UPI ID</span>
+            <span class="field-label">{{ 'PROFILE.SAVED_UPI' | translate }}</span>
             <div class="field-value contact-row">
               <mat-icon style="font-size:18px;color:#16a34a">qr_code</mat-icon>
               <span>{{ user.upiVpa }}</span>
             </div>
-            <span class="field-hint" style="margin-top:4px">This UPI ID will be offered as a quick option when you pay for a job.</span>
+            <span class="field-hint" style="margin-top:4px">{{ 'PROFILE.UPI_HINT' | translate }}</span>
           </div>
         </ng-container>
 
         <!-- Edit form -->
         <div class="bank-edit-form" *ngIf="isEditingPayment">
           <div class="form-group">
-            <label>UPI ID</label>
-            <input type="text" [(ngModel)]="paymentUpiVpa" name="paymentUpi" placeholder="e.g. yourname@upi" />
-            <span class="field-hint">Leave blank to remove saved UPI ID.</span>
+            <label>{{ 'PROFILE.UPI_LABEL' | translate }}</label>
+            <input type="text" [(ngModel)]="paymentUpiVpa" name="paymentUpi" [placeholder]="'PROFILE.UPI_PLACEHOLDER' | translate" />
+            <span class="field-hint">{{ 'PROFILE.UPI_BLANK_HINT' | translate }}</span>
           </div>
           <div class="form-actions">
             <button class="btn btn-success btn-sm" (click)="savePaymentDetails()" [disabled]="paymentSaveLoading">
-              <mat-icon>save</mat-icon>{{ paymentSaveLoading ? 'Saving…' : 'Save' }}
+              <mat-icon>save</mat-icon>{{ paymentSaveLoading ? ('PROFILE.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
             </button>
             <button class="btn btn-cancel btn-sm" (click)="cancelEditPayment()">
-              <mat-icon>close</mat-icon> Cancel
+              <mat-icon>close</mat-icon> {{ 'PROFILE.CANCEL' | translate }}
             </button>
           </div>
         </div>
@@ -178,7 +178,7 @@
     <!-- ── REVIEWS section ────────────────────────────────────── -->
     <ng-container *ngIf="!isEditing && userSection === 'reviews'">
       <div class="profile-card reviews-card">
-        <h3 class="section-title"><mat-icon>star</mat-icon> Reviews from Professionals</h3>
+        <h3 class="section-title"><mat-icon>star</mat-icon> {{ 'PROFILE.REVIEWS_FROM_PROS' | translate }}</h3>
 
         <div *ngIf="userReviewsLoading" class="reviews-loading">
           <mat-spinner diameter="28"></mat-spinner>
@@ -187,7 +187,7 @@
         <ng-container *ngIf="!userReviewsLoading">
           <div *ngIf="!userRatingSummary || userRatingSummary.totalReviews === 0" class="reviews-empty">
             <mat-icon>rate_review</mat-icon>
-            <p>No reviews yet. Reviews from professionals will appear here after completed jobs.</p>
+            <p>{{ 'PROFILE.NO_REVIEWS_USER' | translate }}</p>
           </div>
 
           <ng-container *ngIf="userRatingSummary && userRatingSummary.totalReviews > 0">
@@ -211,7 +211,7 @@
             </div>
 
             <div class="reviews-list" *ngIf="userReviews.length > 0">
-              <h4 class="reviews-list-title">Recent Reviews</h4>
+              <h4 class="reviews-list-title">{{ 'PROFILE.RECENT_REVIEWS' | translate }}</h4>
               <div *ngFor="let review of userReviews" class="review-card">
                 <div class="review-header">
                   <span *ngFor="let i of starsArray" class="star sm" [class.filled]="starFilled(review.rating, i - 1)">★</span>
@@ -222,7 +222,7 @@
                 <p *ngIf="review.comment" class="review-comment">{{ review.comment }}</p>
               </div>
               <button *ngIf="userReviews.length < userReviewsTotal" class="btn-load-more" (click)="loadMoreUserReviews()">
-                Load more reviews
+                {{ 'PROFILE.LOAD_MORE' | translate }}
               </button>
             </div>
           </ng-container>
@@ -242,38 +242,38 @@
       <form #profileForm="ngForm" (ngSubmit)="updateProfile(profileForm)">
         <input type="hidden" name="id" [(ngModel)]="user.id" />
 
-        <h4 class="form-section-label">Personal</h4>
+        <h4 class="form-section-label">{{ 'PROFILE.PERSONAL' | translate }}</h4>
         <div class="form-row">
           <div class="form-group">
-            <label>First Name</label>
+            <label>{{ 'PROFILE.FIRST_NAME' | translate }}</label>
             <input type="text" name="firstName" [(ngModel)]="user.firstName" required placeholder="First name" />
           </div>
           <div class="form-group">
-            <label>Last Name</label>
+            <label>{{ 'PROFILE.LAST_NAME' | translate }}</label>
             <input type="text" name="lastName" [(ngModel)]="user.lastName" required placeholder="Last name" />
           </div>
         </div>
 
-        <h4 class="form-section-label">Contact</h4>
+        <h4 class="form-section-label">{{ 'PROFILE.CONTACT' | translate }}</h4>
         <div class="form-row">
           <div class="form-group">
-            <label>Email</label>
+            <label>{{ 'PROFILE.EMAIL' | translate }}</label>
             <input type="email" name="email" [(ngModel)]="user.email" required placeholder="Email address" />
           </div>
           <div class="form-group">
-            <label>Phone</label>
+            <label>{{ 'PROFILE.PHONE' | translate }}</label>
             <input type="text" name="phoneNumber" [(ngModel)]="user.phoneNumber" placeholder="Phone number" />
           </div>
         </div>
 
-        <h4 class="form-section-label">Address</h4>
+        <h4 class="form-section-label">{{ 'PROFILE.ADDRESS' | translate }}</h4>
         <div class="form-row">
           <div class="form-group">
-            <label>House / Number</label>
+            <label>{{ 'PROFILE.HOUSE_NUMBER' | translate }}</label>
             <input type="text" name="houseNameNumber" [(ngModel)]="user.houseNameNumber" placeholder="e.g. 42 or Flat 3B" />
           </div>
           <div class="form-group">
-            <label>Street</label>
+            <label>{{ 'PROFILE.STREET' | translate }}</label>
             <input type="text" name="street1" [(ngModel)]="user.street1" placeholder="Street name" />
           </div>
         </div>
@@ -283,27 +283,27 @@
             <input type="text" name="city" [(ngModel)]="user.city" placeholder="City" />
           </div>
           <div class="form-group">
-            <label>State / Province</label>
+            <label>{{ 'PROFILE.STATE_PROVINCE' | translate }}</label>
             <input type="text" name="state" [(ngModel)]="user.state" placeholder="State" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Country</label>
+            <label>{{ 'PROFILE.COUNTRY' | translate }}</label>
             <input type="text" name="country" [(ngModel)]="user.country" placeholder="Country" />
           </div>
           <div class="form-group">
-            <label>Postal Code</label>
+            <label>{{ 'PROFILE.POSTAL_CODE' | translate }}</label>
             <input type="text" name="zipPostalCode" [(ngModel)]="user.zipPostalCode" placeholder="ZIP / PIN" />
           </div>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="btn btn-success" [disabled]="!profileForm.valid || isLoading">
-            <mat-icon>save</mat-icon>{{ isLoading ? 'Saving…' : 'Save Changes' }}
+            <mat-icon>save</mat-icon>{{ isLoading ? ('PROFILE.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
           </button>
           <button type="button" class="btn btn-cancel" (click)="cancelEdit()">
-            <mat-icon>close</mat-icon> Cancel
+            <mat-icon>close</mat-icon> {{ 'PROFILE.CANCEL' | translate }}
           </button>
         </div>
       </form>
@@ -322,10 +322,10 @@
         <div class="phs-name-row">
           <span class="phs-name phs-name--sub">{{ pro.proName }}</span>
           <span class="phs-role-chip chip-pro">
-            <mat-icon>engineering</mat-icon>Professional
+            <mat-icon>engineering</mat-icon>{{ 'PROFILE.PROFESSIONAL' | translate }}
           </span>
         </div>
-        <div class="phs-sub">Member since {{ pro.createdAt | date:'MMM yyyy' }}<span *ngIf="pro.city"> · {{ pro.city }}</span></div>
+        <div class="phs-sub">{{ 'PROFILE.MEMBER_SINCE' | translate }} {{ pro.createdAt | date:'MMM yyyy' }}<span *ngIf="pro.city"> · {{ pro.city }}</span></div>
       </div>
       <span class="phs-badge" [class.verified]="pro.isEmailVerified">
         <mat-icon>{{ pro.isEmailVerified ? 'verified' : 'error_outline' }}</mat-icon>
@@ -335,25 +335,25 @@
     <!-- Tab bar -->
     <nav class="pro-tab-bar" *ngIf="!isEditing">
       <button class="ptb-tab" [class.active]="proSection === 'info'"     (click)="selectProSection('info')">
-        <mat-icon>person</mat-icon><span>Profile</span>
+        <mat-icon>person</mat-icon><span>{{ 'PROFILE.TAB_PROFILE' | translate }}</span>
       </button>
       <button class="ptb-tab" [class.active]="proSection === 'payout'"   (click)="selectProSection('payout')">
-        <mat-icon>account_balance</mat-icon><span>Payout</span>
+        <mat-icon>account_balance</mat-icon><span>{{ 'PROFILE.TAB_PAYOUT' | translate }}</span>
       </button>
       <button class="ptb-tab" [class.active]="proSection === 'earnings'" (click)="selectProSection('earnings')">
-        <mat-icon>payments</mat-icon><span>Earnings</span>
+        <mat-icon>payments</mat-icon><span>{{ 'PROFILE.TAB_EARNINGS' | translate }}</span>
       </button>
       <button class="ptb-tab" [class.active]="proSection === 'reviews'"  (click)="selectProSection('reviews')">
-        <mat-icon>star</mat-icon><span>Reviews</span>
+        <mat-icon>star</mat-icon><span>{{ 'PROFILE.TAB_REVIEWS' | translate }}</span>
       </button>
     </nav>
 
     <!-- Edit mode header -->
     <div class="pro-edit-header" *ngIf="isEditing">
       <button class="btn btn-cancel btn-sm" (click)="cancelEdit()">
-        <mat-icon>arrow_back</mat-icon> Back
+        <mat-icon>arrow_back</mat-icon> {{ 'PROFILE.BACK' | translate }}
       </button>
-      <span class="pro-edit-title">Edit Profile</span>
+      <span class="pro-edit-title">{{ 'PROFILE.EDIT_PROFILE' | translate }}</span>
     </div>
 
     <!-- Alerts -->
@@ -365,61 +365,61 @@
     <ng-container *ngIf="!isEditing && proSection === 'info'">
       <div class="pro-section-actions">
         <button class="btn btn-primary btn-sm" (click)="toggleEdit()">
-          <mat-icon>edit</mat-icon> Edit Profile
+          <mat-icon>edit</mat-icon> {{ 'PROFILE.EDIT_PROFILE' | translate }}
         </button>
       </div>
       <div class="sections-grid">
         <!-- Business Info -->
         <div class="profile-card info-card">
-          <h3 class="section-title"><mat-icon>store</mat-icon> Business</h3>
+          <h3 class="section-title"><mat-icon>store</mat-icon> {{ 'PROFILE.BUSINESS' | translate }}</h3>
           <div class="field">
-            <span class="field-label">Professional Name</span>
+            <span class="field-label">{{ 'PROFILE.PRO_NAME' | translate }}</span>
             <span class="field-value">{{ pro.proName || '—' }}</span>
           </div>
           <div class="field">
-            <span class="field-label">Business Name</span>
+            <span class="field-label">{{ 'PROFILE.BUSINESS_NAME' | translate }}</span>
             <span class="field-value">{{ pro.businessName || '—' }}</span>
           </div>
           <div class="field">
-            <span class="field-label">Service Radius</span>
+            <span class="field-label">{{ 'PROFILE.SERVICE_RADIUS' | translate }}</span>
             <span class="field-value">{{ pro.serviceRadiusKm ?? 25 }} km</span>
           </div>
         </div>
 
         <!-- Contact -->
         <div class="profile-card info-card">
-          <h3 class="section-title"><mat-icon>contacts</mat-icon> Contact</h3>
+          <h3 class="section-title"><mat-icon>contacts</mat-icon> {{ 'PROFILE.CONTACT' | translate }}</h3>
           <div class="field">
-            <span class="field-label">Email</span>
+            <span class="field-label">{{ 'PROFILE.EMAIL' | translate }}</span>
             <div class="field-value contact-row">
               <span>{{ pro.email }}</span>
               <span class="badge" [class.badge-ok]="pro.isEmailVerified" [class.badge-warn]="!pro.isEmailVerified">
                 <mat-icon>{{ pro.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
-                {{ pro.isEmailVerified ? 'Verified' : 'Unverified' }}
+                {{ pro.isEmailVerified ? ('PROFILE.VERIFIED' | translate) : ('PROFILE.UNVERIFIED' | translate) }}
               </span>
-              <button *ngIf="!pro.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">Verify now</button>
-              <span *ngIf="emailVerifStep === 'sending'" class="muted-text">Sending…</span>
+              <button *ngIf="!pro.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">{{ 'PROFILE.VERIFY_NOW' | translate }}</button>
+              <span *ngIf="emailVerifStep === 'sending'" class="muted-text">{{ 'PROFILE.SENDING' | translate }}</span>
             </div>
             <div class="verif-panel" *ngIf="!pro.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
-              <p>Enter the 6-digit code sent to <strong>{{ pro.email }}</strong></p>
+              <p>{{ 'PROFILE.EMAIL_CODE_PROMPT' | translate }} <strong>{{ pro.email }}</strong></p>
               <div class="verif-row">
                 <input class="code-input" type="text" maxlength="6" placeholder="000000" [(ngModel)]="emailVerifCode" name="ecPro" />
                 <button class="btn btn-success btn-sm" (click)="confirmEmailCode()" [disabled]="emailVerifStep === 'verifying'">
-                  {{ emailVerifStep === 'verifying' ? 'Verifying…' : 'Confirm' }}
+                  {{ emailVerifStep === 'verifying' ? ('PROFILE.VERIFYING' | translate) : ('PROFILE.CONFIRM' | translate) }}
                 </button>
-                <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">Cancel</button>
+                <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">{{ 'PROFILE.CANCEL' | translate }}</button>
               </div>
               <span class="error-text" *ngIf="emailVerifError">{{ emailVerifError }}</span>
-              <button class="btn-link small" (click)="sendEmailVerification()">Resend code</button>
+              <button class="btn-link small" (click)="sendEmailVerification()">{{ 'PROFILE.RESEND_CODE' | translate }}</button>
             </div>
           </div>
           <div class="field">
-            <span class="field-label">Phone</span>
+            <span class="field-label">{{ 'PROFILE.PHONE' | translate }}</span>
             <div class="field-value contact-row">
-              <span>{{ pro.phoneNumber || 'Not set' }}</span>
+              <span>{{ pro.phoneNumber || ('PROFILE.NOT_SET' | translate) }}</span>
               <span *ngIf="pro.phoneNumber" class="badge" [class.badge-ok]="pro.isPhoneVerified" [class.badge-warn]="!pro.isPhoneVerified">
                 <mat-icon>{{ pro.isPhoneVerified ? 'check_circle' : 'cancel' }}</mat-icon>
-                {{ pro.isPhoneVerified ? 'Verified' : 'Unverified' }}
+                {{ pro.isPhoneVerified ? ('PROFILE.VERIFIED' | translate) : ('PROFILE.UNVERIFIED' | translate) }}
               </span>
             </div>
           </div>
@@ -427,7 +427,7 @@
 
         <!-- Address -->
         <div class="profile-card info-card full-width" *ngIf="pro.houseNameNumber || pro.street1 || pro.city">
-          <h3 class="section-title"><mat-icon>location_on</mat-icon> Address</h3>
+          <h3 class="section-title"><mat-icon>location_on</mat-icon> {{ 'PROFILE.ADDRESS' | translate }}</h3>
           <p class="address-text">
             <ng-container *ngIf="pro.houseNameNumber">{{ pro.houseNameNumber }}, </ng-container>
             <ng-container *ngIf="pro.street1">{{ pro.street1 }}<ng-container *ngIf="pro.street2">, {{ pro.street2 }}</ng-container>, </ng-container>
@@ -445,7 +445,7 @@
     <ng-container *ngIf="!isEditing && proSection === 'payout'">
       <div class="profile-card bank-card">
         <div class="bank-card-header">
-          <h3 class="section-title"><mat-icon>account_balance</mat-icon> Payout / Bank Details</h3>
+          <h3 class="section-title"><mat-icon>account_balance</mat-icon> {{ 'PROFILE.PAYOUT_BANK' | translate }}</h3>
           <button class="btn btn-secondary btn-sm" (click)="startEditBank()" *ngIf="!isEditingBank">
             <mat-icon>edit</mat-icon> {{ bankDetails?.hasBankDetails ? 'Edit' : 'Add' }}
           </button>
@@ -465,34 +465,34 @@
         <ng-container *ngIf="!bankDetailsLoading && !isEditingBank">
           <div *ngIf="!bankDetails?.hasBankDetails" class="bank-empty">
             <mat-icon>warning</mat-icon>
-            <p>No payout details configured. Add your bank account or UPI to receive payments for completed jobs.</p>
+            <p>{{ 'PROFILE.NO_PAYOUT' | translate }}</p>
           </div>
           <ng-container *ngIf="bankDetails?.hasBankDetails">
             <div class="field-row">
               <div class="field">
-                <span class="field-label">Payout Method</span>
+                <span class="field-label">{{ 'PROFILE.PAYOUT_METHOD' | translate }}</span>
                 <span class="field-value">{{ bankDetails?.payoutMethod }}</span>
               </div>
             </div>
             <ng-container *ngIf="bankDetails?.payoutMethod === 'UPI'">
               <div class="field">
-                <span class="field-label">UPI VPA</span>
+                <span class="field-label">{{ 'PROFILE.UPI_VPA' | translate }}</span>
                 <span class="field-value">{{ bankDetails?.upiVpa }}</span>
               </div>
             </ng-container>
             <ng-container *ngIf="bankDetails?.payoutMethod === 'Bank'">
               <div class="field-row">
                 <div class="field">
-                  <span class="field-label">Account Holder</span>
+                  <span class="field-label">{{ 'PROFILE.ACCOUNT_HOLDER' | translate }}</span>
                   <span class="field-value">{{ bankDetails?.bankAccountHolderName || '—' }}</span>
                 </div>
                 <div class="field">
-                  <span class="field-label">Account Number</span>
+                  <span class="field-label">{{ 'PROFILE.ACCOUNT_NUMBER' | translate }}</span>
                   <span class="field-value">****{{ (bankDetails?.bankAccountNumber ?? '').slice(-4) }}</span>
                 </div>
               </div>
               <div class="field">
-                <span class="field-label">IFSC</span>
+                <span class="field-label">{{ 'PROFILE.IFSC' | translate }}</span>
                 <span class="field-value">{{ bankDetails?.bankIfsc }}</span>
               </div>
             </ng-container>
@@ -502,13 +502,13 @@
         <!-- Edit bank form -->
         <div class="bank-edit-form" *ngIf="isEditingBank">
           <div class="form-group">
-            <label>Payout Method</label>
+            <label>{{ 'PROFILE.PAYOUT_METHOD' | translate }}</label>
             <div class="method-toggle">
               <button class="method-btn" [class.active]="bankForm.payoutMethod === 'Bank'" (click)="bankForm.payoutMethod = 'Bank'">
-                <mat-icon>account_balance</mat-icon> Bank Account
+                <mat-icon>account_balance</mat-icon> {{ 'PROFILE.BANK_ACCOUNT' | translate }}
               </button>
               <button class="method-btn" [class.active]="bankForm.payoutMethod === 'UPI'" (click)="bankForm.payoutMethod = 'UPI'">
-                <mat-icon>qr_code</mat-icon> UPI
+                <mat-icon>qr_code</mat-icon> {{ 'PROFILE.UPI' | translate }}
               </button>
             </div>
           </div>
@@ -516,33 +516,33 @@
           <ng-container *ngIf="bankForm.payoutMethod === 'Bank'">
             <div class="form-row">
               <div class="form-group">
-                <label>Account Holder Name</label>
+                <label>{{ 'PROFILE.ACCT_HOLDER_LABEL' | translate }}</label>
                 <input type="text" [(ngModel)]="bankForm.bankAccountHolderName" name="bankHolderName" placeholder="As per bank records" />
               </div>
               <div class="form-group">
-                <label>Account Number</label>
+                <label>{{ 'PROFILE.ACCT_NUMBER_LABEL' | translate }}</label>
                 <input type="text" [(ngModel)]="bankForm.bankAccountNumber" name="bankAccNum" placeholder="Bank account number" />
               </div>
             </div>
             <div class="form-group half-width">
-              <label>IFSC Code</label>
+              <label>{{ 'PROFILE.IFSC_CODE' | translate }}</label>
               <input type="text" [(ngModel)]="bankForm.bankIfsc" name="bankIfsc" placeholder="e.g. HDFC0001234" style="text-transform:uppercase" />
             </div>
           </ng-container>
 
           <ng-container *ngIf="bankForm.payoutMethod === 'UPI'">
             <div class="form-group half-width">
-              <label>UPI VPA</label>
+              <label>{{ 'PROFILE.UPI_VPA' | translate }}</label>
               <input type="text" [(ngModel)]="bankForm.upiVpa" name="upiVpa" placeholder="e.g. yourname@upi" />
             </div>
           </ng-container>
 
           <div class="form-actions">
             <button class="btn btn-success btn-sm" (click)="saveBankDetails()" [disabled]="bankSaveLoading">
-              <mat-icon>save</mat-icon>{{ bankSaveLoading ? 'Saving…' : 'Save' }}
+              <mat-icon>save</mat-icon>{{ bankSaveLoading ? ('PROFILE.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
             </button>
             <button class="btn btn-cancel btn-sm" (click)="cancelEditBank()">
-              <mat-icon>close</mat-icon> Cancel
+              <mat-icon>close</mat-icon> {{ 'PROFILE.CANCEL' | translate }}
             </button>
           </div>
         </div>
@@ -552,7 +552,7 @@
     <!-- ── EARNINGS section ─────────────────────────────────────── -->
     <ng-container *ngIf="!isEditing && proSection === 'earnings'">
       <div class="profile-card earnings-card">
-        <h3 class="section-title"><mat-icon>payments</mat-icon> Earnings</h3>
+        <h3 class="section-title"><mat-icon>payments</mat-icon> {{ 'PROFILE.EARNINGS' | translate }}</h3>
 
         <div *ngIf="payoutsLoading" class="payouts-loading">
           <mat-spinner diameter="24"></mat-spinner>
@@ -560,14 +560,14 @@
 
         <div *ngIf="!payoutsLoading && payouts.length === 0" class="payouts-empty">
           <mat-icon>inbox</mat-icon>
-          <p>No payouts yet. Complete jobs to earn money.</p>
+          <p>{{ 'PROFILE.NO_PAYOUTS' | translate }}</p>
         </div>
 
         <div class="payouts-list" *ngIf="!payoutsLoading && payouts.length > 0">
           <div *ngFor="let p of payouts" class="payout-card">
             <div class="payout-card-left">
               <div class="payout-job">{{ p.jobTitle || ('Job #' + p.jobId) }}</div>
-              <div class="payout-meta">{{ p.createdAt | date:'d MMM yyyy' }} · {{ p.mode || 'Pending method' }}</div>
+              <div class="payout-meta">{{ p.createdAt | date:'d MMM yyyy' }} · {{ p.mode || ('PROFILE.PENDING_METHOD' | translate) }}</div>
             </div>
             <div class="payout-card-right">
               <span class="payout-amount">&#8377;{{ p.amount | number:'1.2-2' }}</span>
@@ -584,7 +584,7 @@
     <!-- ── REVIEWS section ──────────────────────────────────────── -->
     <ng-container *ngIf="!isEditing && proSection === 'reviews'">
       <div class="profile-card reviews-card">
-        <h3 class="section-title"><mat-icon>star</mat-icon> Reviews &amp; Ratings</h3>
+        <h3 class="section-title"><mat-icon>star</mat-icon> {{ 'PROFILE.REVIEWS_RATINGS' | translate }}</h3>
 
         <div *ngIf="reviewsLoading" class="reviews-loading">
           <mat-spinner diameter="28"></mat-spinner>
@@ -593,7 +593,7 @@
         <ng-container *ngIf="!reviewsLoading">
           <div *ngIf="!ratingSummary || ratingSummary.totalReviews === 0" class="reviews-empty">
             <mat-icon>rate_review</mat-icon>
-            <p>No reviews yet. Complete jobs to receive ratings from customers.</p>
+            <p>{{ 'PROFILE.NO_REVIEWS_PRO' | translate }}</p>
           </div>
 
           <ng-container *ngIf="ratingSummary && ratingSummary.totalReviews > 0">
@@ -617,7 +617,7 @@
             </div>
 
             <div class="reviews-list" *ngIf="reviews.length > 0">
-              <h4 class="reviews-list-title">Recent Reviews</h4>
+              <h4 class="reviews-list-title">{{ 'PROFILE.RECENT_REVIEWS' | translate }}</h4>
               <div *ngFor="let review of reviews" class="review-card">
                 <div class="review-header">
                   <span *ngFor="let i of starsArray" class="star sm" [class.filled]="starFilled(review.rating, i - 1)">★</span>
@@ -628,7 +628,7 @@
                 <p *ngIf="review.comment" class="review-comment">{{ review.comment }}</p>
               </div>
               <button *ngIf="reviews.length < reviewsTotal" class="btn-load-more" (click)="loadMoreReviews()">
-                Load more reviews
+                {{ 'PROFILE.LOAD_MORE' | translate }}
               </button>
             </div>
           </ng-container>
@@ -648,43 +648,43 @@
       <form #proForm="ngForm" (ngSubmit)="updateProfile(proForm)">
         <input type="hidden" name="id" [(ngModel)]="pro.id" />
 
-        <h4 class="form-section-label">Business</h4>
+        <h4 class="form-section-label">{{ 'PROFILE.BUSINESS' | translate }}</h4>
         <div class="form-row">
           <div class="form-group">
-            <label>Professional Name</label>
+            <label>{{ 'PROFILE.PRO_NAME' | translate }}</label>
             <input type="text" name="proName" [(ngModel)]="pro.proName" required placeholder="Your name" />
           </div>
           <div class="form-group">
-            <label>Business Name</label>
+            <label>{{ 'PROFILE.BUSINESS_NAME' | translate }}</label>
             <input type="text" name="businessName" [(ngModel)]="pro.businessName" required placeholder="Business name" />
           </div>
         </div>
         <div class="form-group half-width">
-          <label>Service Radius (km)</label>
+          <label>{{ 'PROFILE.SERVICE_RADIUS' | translate }} (km)</label>
           <input type="number" name="serviceRadiusKm" [(ngModel)]="pro.serviceRadiusKm" min="1" max="500" placeholder="e.g. 25" />
-          <span class="field-hint">How far you're willing to travel to jobs</span>
+          <span class="field-hint">{{ 'PROFILE.SERVICE_RADIUS_HINT' | translate }}</span>
         </div>
 
-        <h4 class="form-section-label">Contact</h4>
+        <h4 class="form-section-label">{{ 'PROFILE.CONTACT' | translate }}</h4>
         <div class="form-row">
           <div class="form-group">
-            <label>Email</label>
+            <label>{{ 'PROFILE.EMAIL' | translate }}</label>
             <input type="email" name="email" [(ngModel)]="pro.email" required placeholder="Email address" />
           </div>
           <div class="form-group">
-            <label>Phone</label>
+            <label>{{ 'PROFILE.PHONE' | translate }}</label>
             <input type="text" name="phoneNumber" [(ngModel)]="pro.phoneNumber" placeholder="Phone number" />
           </div>
         </div>
 
-        <h4 class="form-section-label">Address</h4>
+        <h4 class="form-section-label">{{ 'PROFILE.ADDRESS' | translate }}</h4>
         <div class="form-row">
           <div class="form-group">
-            <label>House / Number</label>
+            <label>{{ 'PROFILE.HOUSE_NUMBER' | translate }}</label>
             <input type="text" name="houseNameNumber" [(ngModel)]="pro.houseNameNumber" placeholder="e.g. 42 or Shop 7" />
           </div>
           <div class="form-group">
-            <label>Street</label>
+            <label>{{ 'PROFILE.STREET' | translate }}</label>
             <input type="text" name="street1" [(ngModel)]="pro.street1" placeholder="Street name" />
           </div>
         </div>
@@ -694,37 +694,37 @@
             <input type="text" name="city" [(ngModel)]="pro.city" placeholder="City" />
           </div>
           <div class="form-group">
-            <label>State / Province</label>
+            <label>{{ 'PROFILE.STATE_PROVINCE' | translate }}</label>
             <input type="text" name="state" [(ngModel)]="pro.state" placeholder="State" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>District</label>
+            <label>{{ 'PROFILE.DISTRICT' | translate }}</label>
             <select *ngIf="proDistrictOptions.length > 0" name="district" [(ngModel)]="pro.district">
-              <option value="">— Select district —</option>
+              <option value="">{{ 'PROFILE.SELECT_DISTRICT' | translate }}</option>
               <option *ngFor="let d of proDistrictOptions" [value]="d">{{ d }}</option>
             </select>
             <input *ngIf="proDistrictOptions.length === 0" type="text" name="district" [(ngModel)]="pro.district" placeholder="District" />
           </div>
           <div class="form-group">
-            <label>Country</label>
+            <label>{{ 'PROFILE.COUNTRY' | translate }}</label>
             <input type="text" name="country" [(ngModel)]="pro.country" placeholder="Country" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Postal Code</label>
+            <label>{{ 'PROFILE.POSTAL_CODE' | translate }}</label>
             <input type="text" name="zipPostalCode" [(ngModel)]="pro.zipPostalCode" placeholder="ZIP / PIN" />
           </div>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="btn btn-success" [disabled]="!proForm.valid || isLoading">
-            <mat-icon>save</mat-icon>{{ isLoading ? 'Saving…' : 'Save Changes' }}
+            <mat-icon>save</mat-icon>{{ isLoading ? ('PROFILE.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
           </button>
           <button type="button" class="btn btn-cancel" (click)="cancelEdit()">
-            <mat-icon>close</mat-icon> Cancel
+            <mat-icon>close</mat-icon> {{ 'PROFILE.CANCEL' | translate }}
           </button>
         </div>
       </form>

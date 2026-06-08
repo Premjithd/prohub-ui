@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -15,13 +16,13 @@ import { Auth } from '../../core/services/auth';
   selector: 'app-notifications',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatChipsModule],
+  imports: [CommonModule, RouterModule, TranslateModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatChipsModule],
   template: `
     <div class="notif-wrapper">
       <div class="notif-header">
-        <h1>Notifications</h1>
+        <h1>{{ 'NOTIF.TITLE' | translate }}</h1>
         <button mat-stroked-button (click)="markAllRead()" [disabled]="unreadCount === 0">
-          <mat-icon>done_all</mat-icon> Mark all read
+          <mat-icon>done_all</mat-icon> {{ 'NOTIF.MARK_ALL' | translate }}
         </button>
       </div>
 
@@ -31,8 +32,8 @@ import { Auth } from '../../core/services/auth';
 
       <div *ngIf="!loading && notifications.length === 0" class="notif-empty">
         <mat-icon>notifications_none</mat-icon>
-        <p *ngIf="isPro()">No notifications yet. New job postings that match your services will appear here.</p>
-        <p *ngIf="!isPro()">No notifications yet. Bid updates, payment confirmations, and job activity will appear here.</p>
+        <p *ngIf="isPro()">{{ 'NOTIF.EMPTY_PRO' | translate }}</p>
+        <p *ngIf="!isPro()">{{ 'NOTIF.EMPTY_USER' | translate }}</p>
       </div>
 
       <div *ngIf="!loading && notifications.length > 0" class="notif-list">

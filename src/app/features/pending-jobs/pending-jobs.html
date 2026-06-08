@@ -3,12 +3,12 @@
   <div class="page-header">
     <div class="header-row">
       <div>
-        <h1>My Jobs</h1>
-        <p class="subtitle">Manage and track your posted jobs by status</p>
+        <h1>{{ 'PENDING_JOBS.TITLE' | translate }}</h1>
+        <p class="subtitle">{{ 'PENDING_JOBS.SUBTITLE' | translate }}</p>
       </div>
       <a routerLink="/my-pros" class="pros-link">
         <mat-icon>engineering</mat-icon>
-        My Pros
+        {{ 'PENDING_JOBS.MY_PROS' | translate }}
       </a>
     </div>
   </div>
@@ -27,9 +27,9 @@
 
   <!-- Status Filter -->
   <div *ngIf="!loading" class="status-filter">
-    <span class="filter-label">Filter by Status:</span>
-    <mat-button-toggle-group 
-      [value]="selectedStatusFilter" 
+    <span class="filter-label">{{ 'PENDING_JOBS.FILTER_STATUS' | translate }}</span>
+    <mat-button-toggle-group
+      [value]="selectedStatusFilter"
       (change)="onFilterChange($event.value)"
       class="status-toggle-group">
       <mat-button-toggle *ngFor="let status of statusFilters" [value]="status">
@@ -41,17 +41,17 @@
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <mat-spinner></mat-spinner>
-    <p>Loading your pending jobs...</p>
+    <p>{{ 'PENDING_JOBS.LOADING' | translate }}</p>
   </div>
 
   <!-- Empty State -->
   <div *ngIf="!loading && pendingJobs.length === 0" class="empty-state">
     <mat-icon class="empty-icon">work_off</mat-icon>
-    <h2>No Jobs To Show</h2>
-    <p>You can post new jobs by clicking the button below.</p>
+    <h2>{{ 'PENDING_JOBS.EMPTY_TITLE' | translate }}</h2>
+    <p>{{ 'PENDING_JOBS.EMPTY_SUB' | translate }}</p>
     <button mat-raised-button color="primary" routerLink="/post-job">
       <mat-icon>add</mat-icon>
-      Post a New Job
+      {{ 'PENDING_JOBS.POST_NEW' | translate }}
     </button>
   </div>
 
@@ -59,19 +59,19 @@
   <div *ngIf="!loading && pendingJobs.length > 0" class="jobs-list-container">
     <mat-card class="jobs-list-card">
       <mat-card-header>
-        <h2>My Jobs ({{ total }})</h2>
+        <h2>{{ 'PENDING_JOBS.TITLE' | translate }} ({{ total }})</h2>
       </mat-card-header>
       <mat-card-content>
         <table class="jobs-table">
           <thead>
             <tr>
-              <th>Job Title</th>
-              <th>Category</th>
-              <th>Status</th>
+              <th>{{ 'PENDING_JOBS.JOB_TITLE_COL' | translate }}</th>
+              <th>{{ 'PENDING_JOBS.CATEGORY_COL' | translate }}</th>
+              <th>{{ 'PENDING_JOBS.STATUS_COL' | translate }}</th>
               <!-- <th>Budget</th> -->
-              <th>Progress</th>
+              <th>{{ 'PENDING_JOBS.PROGRESS_COL' | translate }}</th>
               <!-- <th>Bids</th> -->
-              <th class="actions">Actions</th>
+              <th class="actions">{{ 'PENDING_JOBS.ACTIONS_COL' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -94,8 +94,8 @@
               </td> -->
               <td>
                 <div class="progress-cell" *ngIf="job.status === 'In Progress'">
-                  <mat-progress-bar 
-                    mode="determinate" 
+                  <mat-progress-bar
+                    mode="determinate"
                     [value]="getJobPhaseProgress(job)"
                     color="accent">
                   </mat-progress-bar>
@@ -107,22 +107,22 @@
                 <span class="bid-count">{{ (jobBidsMap.get(job.id) || []).length }} bid<span *ngIf="(jobBidsMap.get(job.id) || []).length !== 1">s</span></span>
               </td> -->
               <td class="actions">
-                <button 
-                  mat-raised-button 
+                <button
+                  mat-raised-button
                   class="view-button"
                   matTooltip="View Details"
                   (click)="viewJobDetails(job.id)">
                   <mat-icon>visibility</mat-icon>
-                  View
+                  {{ 'PENDING_JOBS.VIEW' | translate }}
                 </button>
-                <button 
+                <button
                   *ngIf="job.status === 'Open' && (jobBidsMap.get(job.id) || []).length > 0"
-                  mat-button 
+                  mat-button
                   class="view-bids-button"
                   (click)="toggleBidsExpansion(job.id)"
                   matTooltip="View Bids">
                   <mat-icon>{{ openBidsJobId === job.id ? 'expand_less' : 'expand_more' }}</mat-icon>
-                  {{ openBidsJobId === job.id ? 'Hide' : 'Show' }} Bids ({{ (jobBidsMap.get(job.id) || []).length }})
+                  {{ openBidsJobId === job.id ? ('PENDING_JOBS.HIDE_BIDS' | translate) : ('PENDING_JOBS.SHOW_BIDS' | translate) }} {{ 'PENDING_JOBS.BIDS_RECEIVED' | translate }} ({{ (jobBidsMap.get(job.id) || []).length }})
                 </button>
                 <button
                   *ngIf="job.assignedProId && !(paymentStatusMap.get(job.id)?.completed)"
@@ -132,7 +132,7 @@
                   matTooltip="Make Payment"
                   (click)="initiatePaymentForAssignedJob(job.id)">
                   <mat-icon>payment</mat-icon>
-                  Pay Now
+                  {{ 'PENDING_JOBS.PAY_NOW' | translate }}
                 </button>
               </td>
             </tr>
@@ -143,19 +143,19 @@
                 <div *ngIf="job.status === 'Open'" class="bids-expansion-content">
                   <h4 class="bids-title">
                     <mat-icon>how_to_vote</mat-icon>
-                    Bids Received ({{ (jobBidsMap.get(job.id) || []).length }})
+                    {{ 'PENDING_JOBS.BIDS_RECEIVED' | translate }} ({{ (jobBidsMap.get(job.id) || []).length }})
                   </h4>
 
                   <!-- Loading State -->
                   <div *ngIf="loadingBidsMap.get(job.id)" class="bids-loading">
                     <mat-spinner diameter="30"></mat-spinner>
-                    <p>Loading bids...</p>
+                    <p>{{ 'PENDING_JOBS.LOADING_BIDS' | translate }}</p>
                   </div>
 
                   <!-- No Bids -->
                   <div *ngIf="!loadingBidsMap.get(job.id) && (jobBidsMap.get(job.id) || []).length === 0" class="no-bids">
                     <mat-icon>mail_outline</mat-icon>
-                    <p>No bids received yet</p>
+                    <p>{{ 'PENDING_JOBS.NO_BIDS' | translate }}</p>
                   </div>
 
                   <!-- Bids Grid -->
@@ -184,77 +184,72 @@
                       <div class="bid-details-grid">
                         <!-- Quoted Price -->
                         <div class="detail-item">
-                          <span class="label">Quoted Price</span>
+                          <span class="label">{{ 'PENDING_JOBS.QUOTED_PRICE' | translate }}</span>
                           <span class="value amount">₹{{ bid.bidAmount | number: '1.2-2' }}</span>
                         </div>
 
                         <!-- Phase 1A: Commence Date -->
                         <div class="detail-item" *ngIf="bid.commenceDate">
-                          <span class="label">Commence Date</span>
+                          <span class="label">{{ 'PENDING_JOBS.COMMENCE_DATE' | translate }}</span>
                           <span class="value">{{ bid.commenceDate | date: 'MMM dd, yyyy' }}</span>
                         </div>
 
                         <!-- Phase 1A: Expected Duration -->
                         <div class="detail-item" *ngIf="bid.expectedDurationDays">
-                          <span class="label">Duration</span>
-                          <span class="value">{{ bid.expectedDurationDays }} days</span>
+                          <span class="label">{{ 'PENDING_JOBS.DURATION' | translate }}</span>
+                          <span class="value">{{ bid.expectedDurationDays }} {{ 'PENDING_JOBS.DAYS' | translate }}</span>
                         </div>
 
                         <!-- Phase 1A: Quote Expiry -->
                         <div class="detail-item" *ngIf="bid.expiresAt">
-                          <span class="label">Quote Valid Until</span>
+                          <span class="label">{{ 'PENDING_JOBS.QUOTE_VALID' | translate }}</span>
                           <span class="value">{{ bid.expiresAt | date: 'MMM dd, yyyy' }}</span>
                         </div>
                       </div>
 
                       <!-- Phase 1A: Materials & Details -->
                       <div class="bid-materials" *ngIf="bid.materialsDescription">
-                        <span class="label">Materials & Details</span>
+                        <span class="label">{{ 'PENDING_JOBS.MATERIALS' | translate }}</span>
                         <p class="materials-text">{{ bid.materialsDescription }}</p>
                       </div>
 
                       <!-- Message -->
                       <div class="bid-message" *ngIf="bid.bidMessage">
-                        <span class="label">Professional's Message</span>
+                        <span class="label">{{ 'PENDING_JOBS.PRO_MESSAGE' | translate }}</span>
                         <p class="message-text">{{ bid.bidMessage }}</p>
                       </div>
 
                       <!-- Bid Actions -->
                       <div class="bid-card-actions">
-                        <button 
-                          mat-button 
-                          color="accent" 
+                        <button
+                          mat-button
+                          color="accent"
                           *ngIf="bid.status === 'Pending'"
                           (click)="acceptBid(job.id, bid)">
                           <mat-icon>check</mat-icon>
-                          Accept
+                          {{ 'PENDING_JOBS.ACCEPT' | translate }}
                         </button>
-                        <button 
-                          mat-button 
-                          color="warn" 
+                        <button
+                          mat-button
+                          color="warn"
                           *ngIf="bid.status === 'Pending'"
                           (click)="rejectBid(job.id, bid)">
                           <mat-icon>close</mat-icon>
-                          Reject
+                          {{ 'PENDING_JOBS.REJECT' | translate }}
                         </button>
                         <button mat-button color="primary" (click)="messageBidProfessional(bid)">
                           <mat-icon>message</mat-icon>
-                          Message
+                          {{ 'PENDING_JOBS.MESSAGE' | translate }}
                         </button>
                       </div>
 
                       <!-- Bid Date -->
                       <div class="bid-date">
-                        Bid submitted on {{ bid.createdAt | date: 'MMM dd, yyyy HH:mm' }}
+                        {{ 'PENDING_JOBS.BID_SUBMITTED' | translate }} {{ bid.createdAt | date: 'MMM dd, yyyy HH:mm' }}
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <!-- No Bids for Non-Open Jobs -->
-                <!-- <div *ngIf="job.status !== 'Open'" class="no-expansion">
-                  <p>No bids to display for {{ job.status }} jobs</p>
-                </div> -->
               </td>
             </tr>
           </tbody>
@@ -266,7 +261,7 @@
         <button mat-icon-button (click)="prevPage()" [disabled]="page === 1" aria-label="Previous page">
           <mat-icon>chevron_left</mat-icon>
         </button>
-        <span class="page-info">Page {{ page }} of {{ totalPages }}</span>
+        <span class="page-info">{{ 'PENDING_JOBS.PAGE_INFO' | translate: {page: page, total: totalPages} }}</span>
         <button mat-icon-button (click)="nextPage()" [disabled]="page >= totalPages" aria-label="Next page">
           <mat-icon>chevron_right</mat-icon>
         </button>

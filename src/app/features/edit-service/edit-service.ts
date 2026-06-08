@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MyServicesService } from '../../services/my-services.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
@@ -12,7 +13,7 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-edit-service',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MatProgressSpinnerModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MatProgressSpinnerModule, TranslateModule],
   templateUrl: './edit-service.html',
   styleUrls: ['./edit-service.scss']
 })

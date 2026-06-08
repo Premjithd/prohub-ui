@@ -3,12 +3,12 @@
   <div class="page-header">
     <div class="header-inner">
       <div>
-        <h1><span class="material-icons">engineering</span> Find a Professional</h1>
-        <p class="subtitle">Browse verified service providers near you</p>
+        <h1><span class="material-icons">engineering</span> {{ 'FIND_PRO.TITLE' | translate }}</h1>
+        <p class="subtitle">{{ 'FIND_PRO.SUBTITLE' | translate }}</p>
       </div>
       <button *ngIf="isAuthenticated" class="map-toggle-btn" (click)="toggleMap()">
         <span class="material-icons">{{ showMap ? 'view_list' : 'map' }}</span>
-        {{ showMap ? 'List only' : 'Show map' }}
+        {{ showMap ? ('FIND_PRO.LIST_ONLY' | translate) : ('FIND_PRO.SHOW_MAP' | translate) }}
       </button>
     </div>
 
@@ -19,7 +19,7 @@
         <input
           type="text"
           class="search-input"
-          placeholder="Search by name, business or service..."
+          [placeholder]="'FIND_PRO.SEARCH_PLACEHOLDER' | translate"
           [(ngModel)]="searchText"
           (ngModelChange)="onSearchChange()"
         />
@@ -28,7 +28,7 @@
         </button>
       </div>
       <select class="cat-select" [(ngModel)]="selectedCategoryId" (change)="onCategoryChange()">
-        <option [ngValue]="null">All categories</option>
+        <option [ngValue]="null">{{ 'FIND_PRO.ALL_CATEGORIES' | translate }}</option>
         <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
       </select>
     </div>
@@ -37,26 +37,26 @@
     <div class="location-filter-bar" *ngIf="isAuthenticated">
       <select class="loc-select" [(ngModel)]="filterCountry" (change)="onCountryChange()"
               [disabled]="uniqueCountries.length === 0">
-        <option value="">All countries</option>
+        <option value="">{{ 'FIND_PRO.ALL_COUNTRIES' | translate }}</option>
         <option *ngFor="let c of uniqueCountries" [value]="c">{{ c }}</option>
       </select>
       <select class="loc-select" [(ngModel)]="filterState" (change)="onStateChange()"
               [disabled]="stateOptions.length === 0">
-        <option value="">All states</option>
+        <option value="">{{ 'FIND_PRO.ALL_STATES' | translate }}</option>
         <option *ngFor="let s of stateOptions" [value]="s">{{ s }}</option>
       </select>
       <select class="loc-select" [(ngModel)]="filterDistrict" (change)="onDistrictChange()"
               [disabled]="districtOptions.length === 0">
-        <option value="">All districts</option>
+        <option value="">{{ 'FIND_PRO.ALL_DISTRICTS' | translate }}</option>
         <option *ngFor="let d of districtOptions" [value]="d">{{ d }}</option>
       </select>
       <select class="loc-select" [(ngModel)]="filterPin" (change)="onPinChange()"
               [disabled]="pinOptions.length === 0">
-        <option value="">All PINs</option>
+        <option value="">{{ 'FIND_PRO.ALL_PINS' | translate }}</option>
         <option *ngFor="let p of pinOptions" [value]="p">{{ p }}</option>
       </select>
       <button *ngIf="hasLocationFilter" class="loc-clear-btn" (click)="clearLocationFilter()">
-        <span class="material-icons">close</span> Clear
+        <span class="material-icons">close</span> {{ 'FIND_PRO.CLEAR' | translate }}
       </button>
     </div>
   </div>
@@ -66,12 +66,12 @@
     <div class="preview-banner-inner">
       <span class="material-icons preview-icon">lock</span>
       <div class="preview-text">
-        <strong>Sign in to browse real professionals near you</strong>
-        <p>Here's a preview of the pros available on yProHub. Create a free account to see all professionals, search by service, and get in touch.</p>
+        <strong>{{ 'FIND_PRO.SIGN_IN_BANNER_TITLE' | translate }}</strong>
+        <p>{{ 'FIND_PRO.SIGN_IN_BANNER_SUB' | translate }}</p>
       </div>
       <div class="preview-actions">
-        <a routerLink="/auth/login" class="banner-btn primary">Sign In</a>
-        <a routerLink="/auth/register" class="banner-btn secondary">Create Account</a>
+        <a routerLink="/auth/login" class="banner-btn primary">{{ 'FIND_PRO.SIGN_IN' | translate }}</a>
+        <a routerLink="/auth/register" class="banner-btn secondary">{{ 'FIND_PRO.CREATE_ACCOUNT' | translate }}</a>
       </div>
     </div>
   </div>
@@ -87,16 +87,16 @@
     <div class="list-panel">
       <div *ngIf="loading" class="loading-wrap">
         <mat-spinner diameter="40"></mat-spinner>
-        <p>Loading professionals...</p>
+        <p>{{ 'FIND_PRO.LOADING' | translate }}</p>
       </div>
 
       <div *ngIf="!loading && isAuthenticated && pros.length === 0" class="empty-state">
         <span class="material-icons">search_off</span>
-        <p>No professionals found. Try a different search.</p>
+        <p>{{ 'FIND_PRO.EMPTY' | translate }}</p>
       </div>
 
       <div *ngIf="!loading && isAuthenticated && totalCount > 0" class="results-meta">
-        {{ totalCount }} professional{{ totalCount !== 1 ? 's' : '' }} found
+        {{ totalCount }} {{ 'FIND_PRO.PROS_FOUND' | translate }}
       </div>
 
       <div class="pro-list" [class.preview-blur]="!isAuthenticated">
@@ -123,7 +123,7 @@
               {{ getLocation(pro) }}
             </div>
             <div *ngIf="pro.serviceRadiusKm" class="pro-radius">
-              Service radius: {{ pro.serviceRadiusKm }} km
+              {{ 'FIND_PRO.SERVICE_RADIUS' | translate }} {{ pro.serviceRadiusKm }} km
             </div>
             <div *ngIf="pro.services && pro.services.length > 0" class="pro-services">
               <span *ngFor="let s of pro.services | slice:0:3" class="service-chip">{{ s.name }}</span>
@@ -185,7 +185,7 @@
         </div>
         <div *ngIf="selectedPro.serviceRadiusKm" class="pd-meta-row">
           <span class="material-icons">radio_button_checked</span>
-          Serves within {{ selectedPro.serviceRadiusKm }} km
+          {{ 'FIND_PRO.SERVES_WITHIN' | translate: {km: selectedPro.serviceRadiusKm} }}
         </div>
         <div *ngIf="proRatingSummary && proRatingSummary.totalReviews > 0" class="pd-meta-row">
           <div class="pd-rating-inline">
@@ -198,7 +198,7 @@
 
       <!-- Services offered -->
       <div class="pd-services-section">
-        <h3 class="pd-section-title">Services Offered</h3>
+        <h3 class="pd-section-title">{{ 'FIND_PRO.SERVICES_OFFERED' | translate }}</h3>
 
         <div *ngIf="proServicesLoading" class="pd-loading">
           <mat-spinner diameter="32"></mat-spinner>
@@ -206,7 +206,7 @@
 
         <div *ngIf="!proServicesLoading && proServices.length === 0" class="pd-empty">
           <span class="material-icons">info</span>
-          No services listed yet.
+          {{ 'FIND_PRO.NO_SERVICES' | translate }}
         </div>
 
         <div *ngFor="let service of proServices" class="pd-service-card">
@@ -217,14 +217,14 @@
           </div>
           <div class="pd-service-right">
             <div class="pd-service-price">₹{{ service.price | number:'1.0-0' }}</div>
-            <button *ngIf="canPostJob()" class="pd-post-btn" (click)="postJobForService(service)">Post a Job</button>
+            <button *ngIf="canPostJob()" class="pd-post-btn" (click)="postJobForService(service)">{{ 'FIND_PRO.POST_JOB' | translate }}</button>
           </div>
         </div>
       </div>
 
       <!-- Customer reviews -->
       <div class="pd-reviews-section" *ngIf="!proReviewsLoading && proReviews.length > 0">
-        <h3 class="pd-section-title">Customer Reviews</h3>
+        <h3 class="pd-section-title">{{ 'FIND_PRO.CUSTOMER_REVIEWS' | translate }}</h3>
         <div *ngFor="let review of proReviews" class="pd-review-card">
           <div class="pd-review-header">
             <span *ngFor="let i of starsArray" class="pd-star sm" [class.filled]="starFilled(review.rating, i - 1)">★</span>
@@ -237,8 +237,8 @@
 
       <!-- General post-job CTA (regular users only) -->
       <div class="pd-cta" *ngIf="!proServicesLoading && canPostJob()">
-        <p>Not sure which service fits?</p>
-        <button class="pd-post-general-btn" (click)="postJobGeneral()">Post a General Job</button>
+        <p>{{ 'FIND_PRO.CTA_UNSURE' | translate }}</p>
+        <button class="pd-post-general-btn" (click)="postJobGeneral()">{{ 'FIND_PRO.POST_GENERAL' | translate }}</button>
       </div>
 
     </div>

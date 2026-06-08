@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef 
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
 import { switchMap, catchError, takeUntil } from 'rxjs/operators';
 import { Auth } from '../../core/services/auth';
@@ -10,7 +11,7 @@ import { AddressService, AddressPrediction } from '../../core/services/address.s
 @Component({
   selector: 'app-register-pro',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
   templateUrl: './register-pro.html',
   styleUrls: ['./register-pro.scss']
 })

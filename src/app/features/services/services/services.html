@@ -6,27 +6,27 @@
       <div class="hero-left">
         <div class="hero-tag">
           <span class="tag-dot"></span>
-          Verified professionals · Secure payments
+          {{ 'SERVICES.HERO_TAG' | translate }}
         </div>
-        <h1>Hire the Right<br>Professional <span class="accent">Today</span></h1>
-        <p class="hero-sub">Browse services, compare prices, and book trusted pros — all in one place.</p>
+        <h1>{{ 'SERVICES.HERO_TITLE_1' | translate }}<br>{{ 'SERVICES.HERO_TITLE_2' | translate }} <span class="accent">{{ 'SERVICES.HERO_ACCENT' | translate }}</span></h1>
+        <p class="hero-sub">{{ 'SERVICES.HERO_SUB' | translate }}</p>
 
         <div class="hero-search">
           <span class="material-icons">search</span>
           <input
             [(ngModel)]="searchQuery"
             (keyup.enter)="onSearch()"
-            placeholder="Search services, skills, or business name..."
+            [placeholder]="'SERVICES.SEARCH_PLACEHOLDER' | translate"
             aria-label="Search services" />
-          <button (click)="onSearch()">Search</button>
+          <button (click)="onSearch()">{{ 'SERVICES.SEARCH_BTN' | translate }}</button>
         </div>
 
         <div class="hero-actions">
           <button class="hero-btn-primary" (click)="navigateTo('/post-job')">
-            <span class="material-icons">add_circle</span> Post a Job
+            <span class="material-icons">add_circle</span> {{ 'SERVICES.POST_JOB' | translate }}
           </button>
           <button class="hero-btn-ghost" (click)="navigateTo('/find-a-pro')">
-            <span class="material-icons">engineering</span> Browse Pros
+            <span class="material-icons">engineering</span> {{ 'SERVICES.BROWSE_PROS' | translate }}
           </button>
         </div>
       </div>
@@ -35,19 +35,19 @@
         <div class="hero-trust">
           <div class="trust-card">
             <span class="trust-icon">{{ categories.length || '20' }}+</span>
-            <span class="trust-label">Categories</span>
+            <span class="trust-label">{{ 'SERVICES.CATEGORIES_LABEL' | translate }}</span>
           </div>
           <div class="trust-card">
             <span class="trust-icon">⚡</span>
-            <span class="trust-label">Fast Responses</span>
+            <span class="trust-label">{{ 'SERVICES.FAST_RESPONSES' | translate }}</span>
           </div>
           <div class="trust-card">
             <span class="trust-icon">🔒</span>
-            <span class="trust-label">Secure Payments</span>
+            <span class="trust-label">{{ 'SERVICES.SECURE_PAYMENTS' | translate }}</span>
           </div>
           <div class="trust-card">
             <span class="trust-icon">✅</span>
-            <span class="trust-label">Verified Pros</span>
+            <span class="trust-label">{{ 'SERVICES.VERIFIED_PROS' | translate }}</span>
           </div>
         </div>
       </div>
@@ -58,9 +58,9 @@
   <section class="categories-section">
     <div class="section-inner">
       <div class="section-header">
-        <h2>What do you need help with?</h2>
+        <h2>{{ 'SERVICES.WHAT_DO_YOU_NEED' | translate }}</h2>
         <button *ngIf="selectedCategory" class="clear-filter" (click)="filterByCategory(selectedCategory!)">
-          Clear filter &times;
+          {{ 'SERVICES.CLEAR_FILTER' | translate }} &times;
         </button>
       </div>
 
@@ -72,14 +72,14 @@
       <!-- Categories error -->
       <div *ngIf="!categoriesLoading && categoriesError" class="section-error">
         <span class="material-icons">error_outline</span>
-        <span>Couldn't load categories. Please try again.</span>
-        <button (click)="loadCategories()">Retry</button>
+        <span>{{ 'SERVICES.CAT_ERROR' | translate }}</span>
+        <button (click)="loadCategories()">{{ 'COMMON.RETRY' | translate }}</button>
       </div>
 
       <!-- Empty categories -->
       <div *ngIf="!categoriesLoading && !categoriesError && categories.length === 0" class="section-empty">
         <span class="empty-icon">📂</span>
-        <p>No service categories available yet.</p>
+        <p>{{ 'SERVICES.CAT_NO_CATEGORIES' | translate }}</p>
       </div>
 
       <!-- Category cards -->
@@ -101,17 +101,16 @@
   <section class="services-section" *ngIf="showResults">
     <div class="section-inner">
 
-      <!-- Results: shown after user picks a category or searches -->
       <ng-container>
         <div class="services-header">
           <div class="services-title">
-            <h2>{{ selectedCategory ? selectedCategory : 'Search Results' }}</h2>
-            <span class="count-badge">{{ filteredServices.length }} services</span>
+            <h2>{{ selectedCategory ? selectedCategory : ('SERVICES.SEARCH_RESULTS' | translate) }}</h2>
+            <span class="count-badge">{{ filteredServices.length }} {{ 'SERVICES.SERVICES_COUNT' | translate }}</span>
           </div>
           <div class="sort-row">
-            <button (click)="sortBy('popular')" [class.active]="sortOrder === 'popular'">Popular</button>
-            <button (click)="sortBy('price-low')" [class.active]="sortOrder === 'price-low'">Price ↑</button>
-            <button (click)="sortBy('price-high')" [class.active]="sortOrder === 'price-high'">Price ↓</button>
+            <button (click)="sortBy('popular')" [class.active]="sortOrder === 'popular'">{{ 'SERVICES.SORT_POPULAR' | translate }}</button>
+            <button (click)="sortBy('price-low')" [class.active]="sortOrder === 'price-low'">{{ 'SERVICES.SORT_PRICE_LOW' | translate }}</button>
+            <button (click)="sortBy('price-high')" [class.active]="sortOrder === 'price-high'">{{ 'SERVICES.SORT_PRICE_HIGH' | translate }}</button>
           </div>
         </div>
 
@@ -130,8 +129,8 @@
         <!-- Services error -->
         <div *ngIf="!servicesLoading && servicesError" class="section-error">
           <span class="material-icons">error_outline</span>
-          <span>Couldn't load services. Please try again.</span>
-          <button (click)="loadServices()">Retry</button>
+          <span>{{ 'SERVICES.SVC_ERROR' | translate }}</span>
+          <button (click)="loadServices()">{{ 'COMMON.RETRY' | translate }}</button>
         </div>
 
         <div class="services-grid" *ngIf="!servicesLoading && !servicesError">
@@ -152,8 +151,8 @@
               <div class="card-footer">
                 <div class="price" *ngIf="s.price">from ₹{{ s.price | number }}</div>
                 <div class="card-actions">
-                  <button class="btn-outline" (click)="openService(s); $event.stopPropagation()">Details</button>
-                  <button class="btn-primary" (click)="bookService(s); $event.stopPropagation()">Book Now</button>
+                  <button class="btn-outline" (click)="openService(s); $event.stopPropagation()">{{ 'SERVICES.DETAILS' | translate }}</button>
+                  <button class="btn-primary" (click)="bookService(s); $event.stopPropagation()">{{ 'SERVICES.BOOK_NOW' | translate }}</button>
                 </div>
               </div>
             </div>
@@ -162,10 +161,10 @@
 
         <div class="empty-state" *ngIf="!servicesLoading && !servicesError && filteredServices.length === 0">
           <div class="empty-icon">🔍</div>
-          <h3>No services found</h3>
-          <p>Try a different search or select another category</p>
+          <h3>{{ 'SERVICES.NO_SERVICES_TITLE' | translate }}</h3>
+          <p>{{ 'SERVICES.NO_SERVICES_SUB' | translate }}</p>
           <button *ngIf="selectedCategory" class="btn-primary" (click)="filterByCategory(selectedCategory!)">
-            Clear Filter
+            {{ 'SERVICES.CLEAR_FILTER_BTN' | translate }}
           </button>
         </div>
       </ng-container>
@@ -176,27 +175,27 @@
   <!-- How it Works -->
   <section class="how-it-works">
     <div class="section-inner">
-      <h2>How yProHub Works</h2>
+      <h2>{{ 'SERVICES.HOW_IT_WORKS' | translate }}</h2>
       <div class="steps">
         <div class="step">
           <div class="step-num">1</div>
           <div class="step-icon">📋</div>
-          <h3>Post a Job</h3>
-          <p>Describe what you need in under 2 minutes.</p>
+          <h3>{{ 'SERVICES.STEP1_TITLE' | translate }}</h3>
+          <p>{{ 'SERVICES.STEP1_DESC' | translate }}</p>
         </div>
         <div class="step-arrow">→</div>
         <div class="step">
           <div class="step-num">2</div>
           <div class="step-icon">💬</div>
-          <h3>Receive Bids</h3>
-          <p>Verified professionals send competitive quotes.</p>
+          <h3>{{ 'SERVICES.STEP2_TITLE' | translate }}</h3>
+          <p>{{ 'SERVICES.STEP2_DESC' | translate }}</p>
         </div>
         <div class="step-arrow">→</div>
         <div class="step">
           <div class="step-num">3</div>
           <div class="step-icon">✅</div>
-          <h3>Hire & Pay Securely</h3>
-          <p>Choose your pro and pay through our secure platform.</p>
+          <h3>{{ 'SERVICES.STEP3_TITLE' | translate }}</h3>
+          <p>{{ 'SERVICES.STEP3_DESC' | translate }}</p>
         </div>
       </div>
     </div>
@@ -205,10 +204,10 @@
   <!-- CTA -->
   <section class="cta-section">
     <div class="cta-inner">
-      <h2>Can't find what you need?</h2>
-      <p>Post a job and let professionals come to you with competitive bids</p>
+      <h2>{{ 'SERVICES.CTA_TITLE' | translate }}</h2>
+      <p>{{ 'SERVICES.CTA_SUB' | translate }}</p>
       <button class="cta-btn" (click)="navigateTo('/post-job')">
-        <span class="material-icons">add_circle</span> Post a Job
+        <span class="material-icons">add_circle</span> {{ 'SERVICES.CTA_BTN' | translate }}
       </button>
     </div>
   </section>

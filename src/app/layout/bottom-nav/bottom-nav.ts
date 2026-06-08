@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule } from '@ngx-translate/core';
 import { Auth } from '../../core/services/auth';
 import { NotificationService } from '../../services/notification.service';
 import { SignalRService } from '../../services/signalr.service';
@@ -11,7 +12,7 @@ import { takeUntil, startWith, switchMap, catchError, filter, map, distinctUntil
 @Component({
   selector: 'app-bottom-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule],
+  imports: [CommonModule, RouterModule, MatIconModule, TranslateModule],
   templateUrl: './bottom-nav.html',
   styleUrl: './bottom-nav.scss'
 })

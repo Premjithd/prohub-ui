@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule } from '@ngx-translate/core';
 import { Auth } from '../../core/services/auth';
 
 @Component({
@@ -12,7 +13,8 @@ import { Auth } from '../../core/services/auth';
     CommonModule,
     RouterModule,
     MatListModule,
-    MatIconModule
+    MatIconModule,
+    TranslateModule
   ],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss'
