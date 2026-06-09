@@ -1138,6 +1138,192 @@
             </div>
           </div>
         </div>
+
+        <!-- Commission Config -->
+        <div class="commission-section">
+          <div class="geocode-item-header commission-section-header">
+            <mat-icon>payments</mat-icon>
+            <div>
+              <h3>Platform Commission</h3>
+              <p>Control the fee charged to users and the deduction from pro payouts on each transaction.</p>
+            </div>
+          </div>
+
+          <div *ngIf="commissionLoading" class="geocode-loading">
+            <mat-spinner diameter="28"></mat-spinner>
+            <span>Loading commission settings…</span>
+          </div>
+
+          <ng-container *ngIf="!commissionLoading && commissionConfig">
+
+            <!-- Read-only summary -->
+            <div class="commission-summary" *ngIf="!commissionEditing">
+              <div class="commission-summary-grid">
+                <div class="commission-stat">
+                  <span class="commission-stat-label">User Commission</span>
+                  <span class="commission-stat-value">{{ commissionConfig.userCommissionPercent }}%</span>
+                  <span class="commission-stat-sub">added on top of bid</span>
+                </div>
+                <div class="commission-stat">
+                  <span class="commission-stat-label">Pro Commission</span>
+                  <span class="commission-stat-value">{{ commissionConfig.proCommissionPercent }}%</span>
+                  <span class="commission-stat-sub">deducted from payout</span>
+                </div>
+                <div class="commission-stat">
+                  <span class="commission-stat-label">GST on User Fee</span>
+                  <span class="commission-stat-value">{{ commissionConfig.gstPercent }}%</span>
+                </div>
+                <div class="commission-stat">
+                  <span class="commission-stat-label">Min Platform Fee</span>
+                  <span class="commission-stat-value">₹{{ commissionConfig.minPlatformFee }}</span>
+                </div>
+                <div class="commission-stat">
+                  <span class="commission-stat-label">Max User Charge Cap</span>
+                  <span class="commission-stat-value">{{ commissionConfig.maxCommissionPercent }}%</span>
+                </div>
+              </div>
+              <button class="commission-edit-btn" (click)="startEditingCommission()">
+                <mat-icon>edit</mat-icon>
+                Edit
+              </button>
+            </div>
+
+            <!-- Edit form -->
+            <div class="commission-edit-form" *ngIf="commissionEditing">
+              <div class="commission-fields">
+                <div class="commission-field-group">
+                  <h4>User-side Commission</h4>
+                  <div class="commission-field-row">
+                    <label>User Commission %
+                      <span class="commission-hint">Added on top of the bid — paid by the user</span>
+                    </label>
+                    <div class="commission-input-wrap">
+                      <input type="number" class="commission-input" min="0" max="50" step="0.5"
+                        [(ngModel)]="commissionDraft.userCommissionPercent">
+                      <span class="commission-input-unit">%</span>
+                    </div>
+                  </div>
+                  <div class="commission-field-row">
+                    <label>GST on User Commission %
+                      <span class="commission-hint">Applied to the user commission amount</span>
+                    </label>
+                    <div class="commission-input-wrap">
+                      <input type="number" class="commission-input" min="0" max="30" step="0.5"
+                        [(ngModel)]="commissionDraft.gstPercent">
+                      <span class="commission-input-unit">%</span>
+                    </div>
+                  </div>
+                  <div class="commission-field-row">
+                    <label>Minimum Platform Fee
+                      <span class="commission-hint">Floor charge regardless of percentage</span>
+                    </label>
+                    <div class="commission-input-wrap">
+                      <span class="commission-input-prefix">₹</span>
+                      <input type="number" class="commission-input has-prefix" min="0" max="1000" step="1"
+                        [(ngModel)]="commissionDraft.minPlatformFee">
+                    </div>
+                  </div>
+                  <div class="commission-field-row">
+                    <label>Max User Charge Cap %
+                      <span class="commission-hint">User commission will never exceed this % of the bid</span>
+                    </label>
+                    <div class="commission-input-wrap">
+                      <input type="number" class="commission-input" min="0" max="50" step="0.5"
+                        [(ngModel)]="commissionDraft.maxCommissionPercent">
+                      <span class="commission-input-unit">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="commission-field-group">
+                  <h4>Pro-side Commission</h4>
+                  <div class="commission-field-row">
+                    <label>Pro Commission %
+                      <span class="commission-hint">Deducted from the pro's payout</span>
+                    </label>
+                    <div class="commission-input-wrap">
+                      <input type="number" class="commission-input" min="0" max="50" step="0.5"
+                        [(ngModel)]="commissionDraft.proCommissionPercent">
+                      <span class="commission-input-unit">%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live preview -->
+              <div class="commission-preview">
+                <div class="commission-preview-header">
+                  <mat-icon>calculate</mat-icon>
+                  <span>Live Preview — ₹{{ previewBid }} job</span>
+                </div>
+                <div class="commission-preview-grid">
+                  <div class="commission-preview-section">
+                    <h5>Consumer Pays</h5>
+                    <div class="preview-row">
+                      <span>Job bid</span>
+                      <span>₹{{ previewBid | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="preview-row">
+                      <span>Platform fee ({{ commissionDraft.userCommissionPercent }}%)</span>
+                      <span>+ ₹{{ previewUserCommission | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="preview-row">
+                      <span>GST on fee ({{ commissionDraft.gstPercent }}%)</span>
+                      <span>+ ₹{{ previewGst | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="preview-row preview-total">
+                      <span>Total charged</span>
+                      <span>₹{{ previewUserTotal | number:'1.2-2' }}</span>
+                    </div>
+                  </div>
+                  <div class="commission-preview-section">
+                    <h5>Pro Receives</h5>
+                    <div class="preview-row">
+                      <span>Job bid</span>
+                      <span>₹{{ previewBid | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="preview-row">
+                      <span>Platform deduction ({{ commissionDraft.proCommissionPercent }}%)</span>
+                      <span>− ₹{{ previewProDeduction | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="preview-row preview-total">
+                      <span>Pro payout</span>
+                      <span>₹{{ previewProPayout | number:'1.2-2' }}</span>
+                    </div>
+                  </div>
+                  <div class="commission-preview-section commission-preview-platform">
+                    <h5>Platform Earns</h5>
+                    <div class="preview-row">
+                      <span>From user</span>
+                      <span>₹{{ previewUserCommission | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="preview-row">
+                      <span>From pro</span>
+                      <span>₹{{ previewProDeduction | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="preview-row preview-total">
+                      <span>Total (before GST remittance)</span>
+                      <span>₹{{ previewPlatformEarnings | number:'1.2-2' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="commission-edit-actions">
+                <button class="commission-cancel-btn" [disabled]="commissionSaving"
+                  (click)="cancelEditingCommission()">
+                  Cancel
+                </button>
+                <button class="geocode-run-btn" [disabled]="commissionSaving"
+                  (click)="saveCommissionConfig()">
+                  {{ commissionSaving ? 'Saving…' : 'Save Commission Settings' }}
+                </button>
+              </div>
+            </div>
+
+          </ng-container>
+        </div>
+
       </div>
     </ng-container>
 

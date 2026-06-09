@@ -35,6 +35,14 @@ export interface ImpersonationData {
   userType: string;
 }
 
+export interface CommissionConfig {
+  userCommissionPercent: number;
+  proCommissionPercent: number;
+  gstPercent: number;
+  minPlatformFee: number;
+  maxCommissionPercent: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -170,5 +178,13 @@ export class AdminUsersService {
 
   resolveDispute(jobId: number, resolution: 'complete' | 'refund', notes?: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/admin/jobs/${jobId}/completion/resolve`, { resolution, notes });
+  }
+
+  getCommissionConfig(): Observable<CommissionConfig> {
+    return this.http.get<CommissionConfig>(`${this.apiUrl}/admin/commission-config`);
+  }
+
+  updateCommissionConfig(config: CommissionConfig): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/admin/commission-config`, config);
   }
 }

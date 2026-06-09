@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { AdminUsersService, Job } from '../../core/services/admin-users.service';
+import { AdminUsersService, Job, CommissionConfig } from '../../core/services/admin-users.service';
 import { User } from '../../core/models/user.model';
 import { Pro } from '../../core/models/pro.model';
 import { Auth } from '../../core/services/auth';
@@ -64,7 +64,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   setView(view: AdminView): void {
     this.activeView = view;
     this.showToolsMenu = false;
-    if (view === 'settings') this.loadSettings();
+    if (view === 'settings') { this.loadSettings(); this.loadCommissionConfig(); }
     if (view === 'categories') this.loadAdminCategories();
   }
 
@@ -437,6 +437,88 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
         this.settingsSaving = false;
         this.cdr.detectChanges();
         this.snack.open('Failed to save setting', 'OK', { duration: 3000, panelClass: 'snack-error' });
+      }
+    });
+  }
+
+  // ── Commission Config ─────────────────────────────────────────────────────
+  commissionConfig: CommissionConfig | null = null;
+  commissionDraft: CommissionConfig = {
+    userCommissionPercent: 10,
+    proCommissionPercent: 10,
+    gstPercent: 18,
+    minPlatformFee: 10,
+    maxCommissionPercent: 20,
+  };
+  commissionLoading = false;
+  commissionSaving = false;
+  commissionEditing = false;
+  readonly previewBid = 1000;
+
+  get previewUserCommission(): number {
+    const c = this.commissionDraft;
+    let fee = (this.previewBid * c.userCommissionPercent) / 100;
+    fee = Math.max(fee, c.minPlatformFee);
+    fee = Math.min(fee, (this.previewBid * c.maxCommissionPercent) / 100);
+    return Math.round(fee * 100) / 100;
+  }
+  get previewGst(): number {
+    return Math.round(this.previewUserCommission * this.commissionDraft.gstPercent) / 100;
+  }
+  get previewUserTotal(): number {
+    return this.previewBid + this.previewUserCommission + this.previewGst;
+  }
+  get previewProDeduction(): number {
+    return Math.round((this.previewBid * this.commissionDraft.proCommissionPercent) / 100 * 100) / 100;
+  }
+  get previewProPayout(): number {
+    return this.previewBid - this.previewProDeduction;
+  }
+  get previewPlatformEarnings(): number {
+    return this.previewUserCommission + this.previewProDeduction;
+  }
+
+  loadCommissionConfig(): void {
+    this.commissionLoading = true;
+    this.adminUsersService.getCommissionConfig().subscribe({
+      next: (config) => {
+        this.commissionConfig = config;
+        this.commissionDraft = { ...config };
+        this.commissionEditing = false;
+        this.commissionLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.commissionLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  startEditingCommission(): void {
+    if (this.commissionConfig) this.commissionDraft = { ...this.commissionConfig };
+    this.commissionEditing = true;
+  }
+
+  cancelEditingCommission(): void {
+    if (this.commissionConfig) this.commissionDraft = { ...this.commissionConfig };
+    this.commissionEditing = false;
+  }
+
+  saveCommissionConfig(): void {
+    this.commissionSaving = true;
+    this.adminUsersService.updateCommissionConfig(this.commissionDraft).subscribe({
+      next: () => {
+        this.commissionConfig = { ...this.commissionDraft };
+        this.commissionEditing = false;
+        this.commissionSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open('Commission settings saved', 'OK', { duration: 2500, panelClass: 'snack-success' });
+      },
+      error: () => {
+        this.commissionSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open('Failed to save commission settings', 'OK', { duration: 3000, panelClass: 'snack-error' });
       }
     });
   }
