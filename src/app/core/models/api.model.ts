@@ -42,8 +42,11 @@ export interface GetUserResponse {
     street1?: string;
     street2?: string;
     city?: string;
+    district?: string;
     state?: string;
     country?: string;
     zipPostalCode?: string;
+    latitude?: number;
+    longitude?: number;
     upiVpa?: string;
 }

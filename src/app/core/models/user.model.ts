@@ -27,23 +27,6 @@ export interface LoginRequest {
     password: string;
 }
 
-export interface RegisterUserRequest {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    phoneNumber: string;
-    houseNameNumber?: string;
-    street1?: string;
-    street2?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-    zipPostalCode?: string;
-    latitude?: number | null;
-    longitude?: number | null;
-}
-
 export interface GetUserRequest {
     id: number;
 }

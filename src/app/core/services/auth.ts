@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { ApiService } from './api';
 import { LoginResponse, ApiResponse } from '../models/api.model';
-import { LoginRequest, RegisterUserRequest } from '../models/user.model';
-import { RegisterProRequest } from '../models/pro.model';
+import { LoginRequest } from '../models/user.model';
 import { StorageService } from './storage';
 
 @Injectable({
@@ -41,10 +40,6 @@ export class Auth {
     );
   }
 
-  registerUser(userData: RegisterUserRequest): Observable<ApiResponse<void>> {
-    return this.api.post<void>('auth/user/register', userData);
-  }
-
   registerUserStep1(data: { FirstName: string; LastName: string; Email: string; Password: string; PhoneNumber: string }): Observable<{ userId: number }> {
     return this.api.postRaw<{ userId: number }>('auth/user/register/draft', data);
   }
@@ -53,10 +48,6 @@ export class Auth {
     return this.api.postRaw<LoginResponse>(`auth/user/register/complete/${userId}`, data).pipe(
       tap(response => { if (response) this.storeSession(response); })
     );
-  }
-
-  registerPro(proData: RegisterProRequest): Observable<ApiResponse<void>> {
-    return this.api.post<void>('auth/pro/register', proData);
   }
 
   registerProStep1(data: { Name: string; Email: string; Password: string; PhoneNumber: string; BusinessName: string }): Observable<{ proId: number }> {
