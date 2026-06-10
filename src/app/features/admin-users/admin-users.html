@@ -365,7 +365,7 @@
                     </div>
                   </div>
                   <div class="messages-panel" *ngIf="selectedConversation">
-                    <h3>Messages â€” {{ selectedConversation.userName }}</h3>
+                    <h3>Messages — {{ selectedConversation.userName }}</h3>
                     <div class="messages-list">
                       <div class="message" *ngFor="let message of conversationMessages"
                         [ngClass]="'message-' + (message.senderType ? message.senderType.toLowerCase() : 'unknown')">
@@ -697,7 +697,7 @@
               <span class="map-legend-dot inactive"></span> Inactive
             </div>
             <span *ngIf="isGeocodingAreas" class="map-geocoding">
-              <mat-spinner diameter="14"></mat-spinner> Locatingâ€¦
+              <mat-spinner diameter="14"></mat-spinner> Locating...
             </span>
           </div>
           <div id="service-area-map" class="map-container"></div>
@@ -747,9 +747,9 @@
               <tbody>
                 <tr *ngFor="let area of filteredListAreas" [class.area-row-inactive]="!area.isActive">
                   <td>{{ area.country }}</td>
-                  <td>{{ area.state || 'â€”' }}</td>
-                  <td>{{ area.district || 'â€”' }}</td>
-                  <td>{{ area.pinCode || 'â€”' }}</td>
+                  <td>{{ area.state || '—' }}</td>
+                  <td>{{ area.district || '—' }}</td>
+                  <td>{{ area.pinCode || '—' }}</td>
                   <td>
                     <span class="area-badge" [class.area-badge-active]="area.isActive" [class.area-badge-inactive]="!area.isActive">
                       <mat-icon>{{ area.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
@@ -762,7 +762,7 @@
                     </span>
                     <span *ngIf="!area.isAutoEnrolled" class="manual-badge">Manual</span>
                   </td>
-                  <td class="notes-cell">{{ area.notes || 'â€”' }}</td>
+                  <td class="notes-cell">{{ area.notes || '—' }}</td>
                   <td class="area-actions">
                     <button (click)="toggleServiceArea(area.id)" class="area-action-btn toggle-btn"
                       [title]="area.isActive ? 'Disable this area' : 'Enable this area'">
@@ -778,7 +778,7 @@
 
             <div *ngIf="serviceAreas.length === 0" class="no-data">
               <mat-icon>location_off</mat-icon>
-              <p>No service areas defined. Add one above â€” currently accepting jobs from anywhere.</p>
+              <p>No service areas defined. Add one above — currently accepting jobs from anywhere.</p>
             </div>
             <div *ngIf="serviceAreas.length > 0 && filteredListAreas.length === 0" class="no-data">
               <mat-icon>filter_alt_off</mat-icon>
@@ -872,7 +872,7 @@
                       title="Resend invitation email">
                       <mat-icon>mail</mat-icon> Resend
                     </button>
-                    <span *ngIf="invitation.isUsed || invitation.isExpired" class="action-disabled">â€”</span>
+                    <span *ngIf="invitation.isUsed || invitation.isExpired" class="action-disabled">—</span>
                   </td>
                 </tr>
               </tbody>
@@ -896,80 +896,172 @@
         </div>
         <p class="panel-description">Set latitude/longitude coordinates for accounts that are missing map data. Coordinates are looked up from their registered address via the Nominatim API.</p>
 
-        <div class="geocode-grid">
-          <!-- Pros -->
-          <div class="geocode-item">
-            <div class="geocode-item-header">
-              <mat-icon>engineering</mat-icon>
+        <!-- Professionals section -->
+        <div class="geocode-section">
+          <div class="geocode-section-header">
+            <mat-icon>engineering</mat-icon>
+            <div>
               <h3>Professionals</h3>
+              <p>Pro accounts that have an address but are missing map coordinates.</p>
             </div>
-            <p>Find and geocode all pro accounts that have an address but no coordinates.</p>
-            <button class="geocode-run-btn" (click)="runGeocodeBackfillPros()" [disabled]="isBackfillingPros">
-              <mat-icon>{{ isBackfillingPros ? 'hourglass_empty' : 'my_location' }}</mat-icon>
-              {{ isBackfillingPros ? 'Geocoding Pros...' : 'Run Geocode â€” Pros' }}
-            </button>
+          </div>
 
-            <div *ngIf="proBackfillResult" class="geocode-result">
-              <div class="geocode-result-title">
-                <mat-icon>check_circle</mat-icon>
-                Pros Geocode Complete
+          <div *ngIf="isLoadingPendingPros" class="geocode-loading-row">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Checking records...</span>
+          </div>
+
+          <ng-container *ngIf="!isLoadingPendingPros">
+            <div *ngIf="pendingProGeocodes.length === 0 && !proBackfillResult && !isBackfillingPros" class="geocode-all-done">
+              <mat-icon>check_circle</mat-icon>
+              All professionals are geocoded.
+            </div>
+
+            <ng-container *ngIf="pendingProGeocodes.length > 0">
+              <div class="geocode-pending-header">
+                <mat-icon>location_searching</mat-icon>
+                <span><strong>{{ pendingProGeocodes.length }}</strong> professional{{ pendingProGeocodes.length !== 1 ? 's' : '' }} need geocoding</span>
+              </div>
+              <div class="geocode-table-wrap">
+                <table class="geocode-table">
+                  <thead><tr><th>Name</th><th>Email</th><th>City</th><th>State</th><th>Country</th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let r of pendingProGeocodes">
+                      <td>{{ r.name }}</td>
+                      <td class="geocode-email">{{ r.email }}</td>
+                      <td>{{ r.city }}</td>
+                      <td>{{ r.state }}</td>
+                      <td>{{ r.country }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="geocode-run-btn" (click)="runGeocodeBackfillPros()" [disabled]="isBackfillingPros">
+                <mat-icon>{{ isBackfillingPros ? 'hourglass_empty' : 'my_location' }}</mat-icon>
+                {{ isBackfillingPros ? 'Geocoding...' : 'Geocode ' + pendingProGeocodes.length + ' record' + (pendingProGeocodes.length !== 1 ? 's' : '') }}
+              </button>
+            </ng-container>
+
+            <div *ngIf="proBackfillResult" class="geocode-result-block">
+              <div class="geocode-result-header">
+                <mat-icon class="icon-done">check_circle</mat-icon>
+                <span class="result-title">Geocoding complete</span>
+                <div class="result-chips">
+                  <span class="result-chip chip-total">{{ proBackfillResult.total }} total</span>
+                  <span class="result-chip chip-updated">{{ proBackfillResult.updated }} updated</span>
+                  <span class="result-chip chip-failed" *ngIf="proBackfillResult.failed > 0">{{ proBackfillResult.failed }} failed</span>
+                </div>
                 <button class="dismiss-btn" (click)="proBackfillResult = null"><mat-icon>close</mat-icon></button>
               </div>
-              <div class="geocode-stats">
-                <div class="geocode-stat">
-                  <span class="stat-value">{{ proBackfillResult.total }}</span>
-                  <span class="stat-label">Found</span>
-                </div>
-                <div class="geocode-stat stat-updated">
-                  <mat-icon>check_circle</mat-icon>
-                  <span class="stat-value">{{ proBackfillResult.updated }}</span>
-                  <span class="stat-label">Updated</span>
-                </div>
-                <div class="geocode-stat stat-failed" *ngIf="proBackfillResult.failed > 0">
-                  <mat-icon>warning</mat-icon>
-                  <span class="stat-value">{{ proBackfillResult.failed }}</span>
-                  <span class="stat-label">Could not geocode</span>
-                </div>
+              <div class="geocode-table-wrap" *ngIf="proBackfillResult.details && proBackfillResult.details.length > 0">
+                <table class="geocode-table geocode-result-table">
+                  <thead><tr><th>Name</th><th>Email</th><th>City</th><th>Coordinates</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let d of proBackfillResult.details" [class.row-failed]="d.status === 'failed'">
+                      <td>{{ d.name }}</td>
+                      <td class="geocode-email">{{ d.email }}</td>
+                      <td>{{ d.city }}</td>
+                      <td class="geocode-coords">
+                        <span *ngIf="d.lat != null">{{ d.lat | number:'1.4-4' }}, {{ d.lng | number:'1.4-4' }}</span>
+                        <span *ngIf="d.lat == null" class="no-coords">—</span>
+                      </td>
+                      <td>
+                        <span class="status-chip" [class.chip-updated]="d.status === 'updated'" [class.chip-failed]="d.status === 'failed'">
+                          <mat-icon>{{ d.status === 'updated' ? 'check_circle' : 'error_outline' }}</mat-icon>
+                          {{ d.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <div class="geocode-divider"></div>
+
+        <!-- Users section -->
+        <div class="geocode-section">
+          <div class="geocode-section-header">
+            <mat-icon>person_pin_circle</mat-icon>
+            <div>
+              <h3>Users</h3>
+              <p>User accounts that have an address but are missing map coordinates.</p>
             </div>
           </div>
 
-          <!-- Users -->
-          <div class="geocode-item">
-            <div class="geocode-item-header">
-              <mat-icon>person_pin_circle</mat-icon>
-              <h3>Users</h3>
-            </div>
-            <p>Find and geocode all user accounts that have an address but no coordinates.</p>
-            <button class="geocode-run-btn" (click)="runGeocodeBackfillUsers()" [disabled]="isBackfillingUsers">
-              <mat-icon>{{ isBackfillingUsers ? 'hourglass_empty' : 'person_pin_circle' }}</mat-icon>
-              {{ isBackfillingUsers ? 'Geocoding Users...' : 'Run Geocode â€” Users' }}
-            </button>
+          <div *ngIf="isLoadingPendingUsers" class="geocode-loading-row">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Checking records...</span>
+          </div>
 
-            <div *ngIf="userBackfillResult" class="geocode-result">
-              <div class="geocode-result-title">
-                <mat-icon>check_circle</mat-icon>
-                Users Geocode Complete
+          <ng-container *ngIf="!isLoadingPendingUsers">
+            <div *ngIf="pendingUserGeocodes.length === 0 && !userBackfillResult && !isBackfillingUsers" class="geocode-all-done">
+              <mat-icon>check_circle</mat-icon>
+              All users are geocoded.
+            </div>
+
+            <ng-container *ngIf="pendingUserGeocodes.length > 0">
+              <div class="geocode-pending-header">
+                <mat-icon>location_searching</mat-icon>
+                <span><strong>{{ pendingUserGeocodes.length }}</strong> user{{ pendingUserGeocodes.length !== 1 ? 's' : '' }} need geocoding</span>
+              </div>
+              <div class="geocode-table-wrap">
+                <table class="geocode-table">
+                  <thead><tr><th>Name</th><th>Email</th><th>City</th><th>State</th><th>Country</th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let r of pendingUserGeocodes">
+                      <td>{{ r.name }}</td>
+                      <td class="geocode-email">{{ r.email }}</td>
+                      <td>{{ r.city }}</td>
+                      <td>{{ r.state }}</td>
+                      <td>{{ r.country }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="geocode-run-btn" (click)="runGeocodeBackfillUsers()" [disabled]="isBackfillingUsers">
+                <mat-icon>{{ isBackfillingUsers ? 'hourglass_empty' : 'person_pin_circle' }}</mat-icon>
+                {{ isBackfillingUsers ? 'Geocoding...' : 'Geocode ' + pendingUserGeocodes.length + ' record' + (pendingUserGeocodes.length !== 1 ? 's' : '') }}
+              </button>
+            </ng-container>
+
+            <div *ngIf="userBackfillResult" class="geocode-result-block">
+              <div class="geocode-result-header">
+                <mat-icon class="icon-done">check_circle</mat-icon>
+                <span class="result-title">Geocoding complete</span>
+                <div class="result-chips">
+                  <span class="result-chip chip-total">{{ userBackfillResult.total }} total</span>
+                  <span class="result-chip chip-updated">{{ userBackfillResult.updated }} updated</span>
+                  <span class="result-chip chip-failed" *ngIf="userBackfillResult.failed > 0">{{ userBackfillResult.failed }} failed</span>
+                </div>
                 <button class="dismiss-btn" (click)="userBackfillResult = null"><mat-icon>close</mat-icon></button>
               </div>
-              <div class="geocode-stats">
-                <div class="geocode-stat">
-                  <span class="stat-value">{{ userBackfillResult.total }}</span>
-                  <span class="stat-label">Found</span>
-                </div>
-                <div class="geocode-stat stat-updated">
-                  <mat-icon>check_circle</mat-icon>
-                  <span class="stat-value">{{ userBackfillResult.updated }}</span>
-                  <span class="stat-label">Updated</span>
-                </div>
-                <div class="geocode-stat stat-failed" *ngIf="userBackfillResult.failed > 0">
-                  <mat-icon>warning</mat-icon>
-                  <span class="stat-value">{{ userBackfillResult.failed }}</span>
-                  <span class="stat-label">Could not geocode</span>
-                </div>
+              <div class="geocode-table-wrap" *ngIf="userBackfillResult.details && userBackfillResult.details.length > 0">
+                <table class="geocode-table geocode-result-table">
+                  <thead><tr><th>Name</th><th>Email</th><th>City</th><th>Coordinates</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let d of userBackfillResult.details" [class.row-failed]="d.status === 'failed'">
+                      <td>{{ d.name }}</td>
+                      <td class="geocode-email">{{ d.email }}</td>
+                      <td>{{ d.city }}</td>
+                      <td class="geocode-coords">
+                        <span *ngIf="d.lat != null">{{ d.lat | number:'1.4-4' }}, {{ d.lng | number:'1.4-4' }}</span>
+                        <span *ngIf="d.lat == null" class="no-coords">—</span>
+                      </td>
+                      <td>
+                        <span class="status-chip" [class.chip-updated]="d.status === 'updated'" [class.chip-failed]="d.status === 'failed'">
+                          <mat-icon>{{ d.status === 'updated' ? 'check_circle' : 'error_outline' }}</mat-icon>
+                          {{ d.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
+          </ng-container>
         </div>
       </div>
     </ng-container>

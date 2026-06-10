@@ -66,6 +66,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.showToolsMenu = false;
     if (view === 'settings') { this.loadSettings(); this.loadCommissionConfig(); }
     if (view === 'categories') this.loadAdminCategories();
+    if (view === 'geocode') this.loadPendingGeocodes();
   }
 
   getActiveViewLabel(): string {
@@ -112,8 +113,12 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   // ── Geocode ───────────────────────────────────────────────────────────────
   isBackfillingPros = false;
   isBackfillingUsers = false;
-  proBackfillResult: { message: string; updated: number; failed: number; total: number } | null = null;
-  userBackfillResult: { message: string; updated: number; failed: number; total: number } | null = null;
+  isLoadingPendingPros = false;
+  isLoadingPendingUsers = false;
+  pendingProGeocodes: any[] = [];
+  pendingUserGeocodes: any[] = [];
+  proBackfillResult: { message: string; updated: number; failed: number; total: number; details: any[] } | null = null;
+  userBackfillResult: { message: string; updated: number; failed: number; total: number; details: any[] } | null = null;
 
   // ── Service Radius ────────────────────────────────────────────────────────
   isEditingRadius = false;
@@ -884,6 +889,27 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
 
   // ── Geocode ───────────────────────────────────────────────────────────────
 
+  loadPendingGeocodes(): void {
+    this.loadPendingGeocodePros();
+    this.loadPendingGeocodeUsers();
+  }
+
+  loadPendingGeocodePros(): void {
+    this.isLoadingPendingPros = true;
+    this.adminUsersService.getPendingGeocodePros().subscribe({
+      next: (data) => { this.pendingProGeocodes = data; this.isLoadingPendingPros = false; this.cdr.markForCheck(); },
+      error: () => { this.isLoadingPendingPros = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  loadPendingGeocodeUsers(): void {
+    this.isLoadingPendingUsers = true;
+    this.adminUsersService.getPendingGeocodeUsers().subscribe({
+      next: (data) => { this.pendingUserGeocodes = data; this.isLoadingPendingUsers = false; this.cdr.markForCheck(); },
+      error: () => { this.isLoadingPendingUsers = false; this.cdr.markForCheck(); }
+    });
+  }
+
   runGeocodeBackfillPros(): void {
     this.isBackfillingPros = true;
     this.proBackfillResult = null;
@@ -891,6 +917,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       next: (result) => {
         this.isBackfillingPros = false;
         this.proBackfillResult = result;
+        this.loadPendingGeocodePros();
         this.cdr.markForCheck();
       },
       error: (err: any) => {
@@ -908,6 +935,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       next: (result) => {
         this.isBackfillingUsers = false;
         this.userBackfillResult = result;
+        this.loadPendingGeocodeUsers();
         this.cdr.markForCheck();
       },
       error: (err: any) => {

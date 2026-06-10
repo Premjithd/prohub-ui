@@ -1138,56 +1138,134 @@
 
 // ── Geocode Panel ─────────────────────────────────────────────────────────────
 
-.geocode-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.geocode-item {
-  background: #f8f9ff;
-  border: 1px solid #e3e8ff;
-  border-radius: 10px;
-  padding: 1.5rem;
-
-  p {
-    font-size: 0.88rem;
-    color: #666;
-    margin: 0.25rem 0 1rem;
-    line-height: 1.5;
-  }
-}
-
-.geocode-item-header {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
+.geocode-section {
   margin-bottom: 0.5rem;
+}
 
-  mat-icon {
-    font-size: 1.25rem;
-    width: 1.25rem;
-    height: 1.25rem;
+.geocode-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  > mat-icon {
+    font-size: 1.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
     color: #667eea;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
   }
 
   h3 {
-    margin: 0;
+    margin: 0 0 0.15rem;
     font-size: 1rem;
     font-weight: 700;
     color: #333;
   }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #666;
+  }
+}
+
+.geocode-divider {
+  border-top: 1px solid #e8e8f0;
+  margin: 1.75rem 0;
+}
+
+.geocode-loading-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #666;
+  font-size: 0.88rem;
+  padding: 0.5rem 0;
+}
+
+.geocode-all-done {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2e7d32;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem 0;
+
+  mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+}
+
+.geocode-pending-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.75rem;
+
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; color: #f57c00; }
+}
+
+.geocode-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.geocode-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th {
+    background: #f5f5f8;
+    padding: 0.55rem 0.85rem;
+    text-align: left;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.6rem 0.85rem;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody tr:hover { background: #fafafe; }
+
+  tbody tr.row-failed { background: #fff8f5; }
+  tbody tr.row-failed:hover { background: #fff3ee; }
+}
+
+.geocode-email {
+  color: #555;
+  font-size: 0.82rem;
+}
+
+.geocode-coords {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #444;
+
+  .no-coords { color: #bbb; }
 }
 
 .geocode-run-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.55rem 1rem;
+  padding: 0.55rem 1.1rem;
   background: #1976d2;
   color: white;
   border: none;
@@ -1196,69 +1274,91 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
+  margin-bottom: 0.5rem;
 
   mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
   &:hover:not(:disabled) { background: #1565c0; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
-.geocode-result {
+.geocode-result-block {
   margin-top: 1.25rem;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  background: #f9fff9;
+  border: 1px solid #c8e6c9;
+  border-radius: 10px;
   padding: 1rem 1.25rem;
+}
 
-  .geocode-result-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 0.9rem;
+.geocode-result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+
+  .icon-done {
     color: #2e7d32;
-    margin-bottom: 0.75rem;
-
-    mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
-
-    .dismiss-btn {
-      margin-left: auto;
-      background: none;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      color: #aaa;
-      padding: 0.15rem;
-      border-radius: 4px;
-      transition: color 0.15s;
-
-      &:hover { color: #555; }
-      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
-    }
+    font-size: 1.2rem;
+    width: 1.2rem;
+    height: 1.2rem;
+    flex-shrink: 0;
   }
 
-  .geocode-stats {
+  .result-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #2e7d32;
+  }
+
+  .result-chips {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.45rem;
     flex-wrap: wrap;
   }
 
-  .geocode-stat {
+  .dismiss-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    background: #f5f5f5;
-    border-radius: 6px;
-    padding: 0.4rem 0.75rem;
-
-    mat-icon { font-size: 0.95rem; width: 0.95rem; height: 0.95rem; color: #888; }
-
-    .stat-value { font-size: 1.1rem; font-weight: 700; color: #333; }
-    .stat-label { font-size: 0.78rem; color: #777; }
-
-    &.stat-updated mat-icon { color: #4caf50; }
-    &.stat-failed mat-icon { color: #ff9800; }
+    color: #aaa;
+    padding: 0.15rem;
+    border-radius: 4px;
+    transition: color 0.15s;
+    &:hover { color: #555; }
+    mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
   }
+}
+
+.result-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  &.chip-total { background: #e8eaf6; color: #3949ab; }
+  &.chip-updated { background: #e8f5e9; color: #2e7d32; }
+  &.chip-failed { background: #fff3e0; color: #e65100; }
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  mat-icon { font-size: 0.85rem; width: 0.85rem; height: 0.85rem; }
+
+  &.chip-updated { background: #e8f5e9; color: #2e7d32; mat-icon { color: #4caf50; } }
+  &.chip-failed { background: #fff3e0; color: #e65100; mat-icon { color: #ff9800; } }
 }
 
 // ── Categories ────────────────────────────────────────────────────────────────

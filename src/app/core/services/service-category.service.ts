@@ -61,7 +61,14 @@ export class ServiceCategoryService {
   }
 
   getAllCategories(): Observable<ServiceCategory[]> {
-    return this.http.get<ServiceCategory[]>(`${this.baseUrl}/serviceCategories/all`);
+    return this.http.get<any>(`${this.baseUrl}/serviceCategories/all`).pipe(
+      map(response => {
+        if (response && response.$values && Array.isArray(response.$values)) return response.$values;
+        if (Array.isArray(response)) return response;
+        return [];
+      }),
+      catchError(() => of([]))
+    );
   }
 
   createCategory(data: { name: string; description?: string; icon?: string }): Observable<ServiceCategory> {

@@ -147,6 +147,14 @@ export class AdminUsersService {
     return this.http.post(`${this.apiUrl}/pros`, payload);
   }
 
+  getPendingGeocodePros(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/admin/pros/geocode-backfill/pending`);
+  }
+
+  getPendingGeocodeUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/admin/users/geocode-backfill/pending`);
+  }
+
   geocodeBackfillPros(): Observable<any> {
     return this.http.post(`${this.apiUrl}/admin/pros/geocode-backfill`, {});
   }
