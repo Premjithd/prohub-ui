@@ -149,6 +149,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
     }
     this.showResults = true;
     this.loadServices();
+    this.scrollToResults();
   }
 
   onSearch(): void {
@@ -159,6 +160,13 @@ export class ServicesComponent implements OnInit, OnDestroy {
     }
     this.showResults = true;
     this.search$.next(this.searchQuery);
+    this.scrollToResults();
+  }
+
+  private scrollToResults(): void {
+    setTimeout(() => {
+      document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   }
 
   sortBy(order: SortOrder): void {
