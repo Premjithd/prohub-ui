@@ -1,5 +1,6 @@
 <div class="register-container">
   <div class="register-card">
+
     <div class="register-header">
       <div class="logo-circle">U</div>
       <div class="header-text">
@@ -8,36 +9,42 @@
       </div>
     </div>
 
-    <form #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)">
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+      <div class="step-item" [class.active]="currentStep === 1" [class.done]="currentStep > 1">
+        <div class="step-circle">
+          <span *ngIf="currentStep <= 1">1</span>
+          <span class="check" *ngIf="currentStep > 1">✓</span>
+        </div>
+        <span class="step-label">{{ 'AUTH.REGISTER.STEP1_LABEL' | translate }}</span>
+      </div>
+      <div class="step-connector" [class.done]="currentStep > 1"></div>
+      <div class="step-item" [class.active]="currentStep === 2">
+        <div class="step-circle">2</div>
+        <span class="step-label">{{ 'AUTH.REGISTER.STEP2_LABEL' | translate }}</span>
+      </div>
+    </div>
+
+    <!-- Step 1: Basic Information -->
+    <form #step1Form="ngForm" (ngSubmit)="onStep1Next(step1Form)" *ngIf="currentStep === 1">
+
       <div class="name-row">
         <div class="form-group">
-          <label for="FirstName">{{ 'AUTH.REGISTER.FIRST_NAME' | translate }}</label>
-          <input
-            type="text"
-            id="FirstName"
-            name="FirstName"
-            class="form-control"
-            #firstNameField="ngModel"
-            [class.is-invalid]="firstNameField.invalid && (firstNameField.dirty || firstNameField.touched)"
-            ngModel
-            required
-          />
+          <label for="firstName">{{ 'AUTH.REGISTER.FIRST_NAME' | translate }} <span class="required">*</span></label>
+          <input type="text" id="firstName" name="firstName" class="form-control"
+                 #firstNameField="ngModel"
+                 [class.is-invalid]="firstNameField.invalid && (firstNameField.dirty || firstNameField.touched)"
+                 [(ngModel)]="firstName" required />
           <small class="field-error" *ngIf="firstNameField.invalid && (firstNameField.dirty || firstNameField.touched)">
             {{ 'AUTH.REGISTER.FIRST_NAME_REQUIRED' | translate }}
           </small>
         </div>
         <div class="form-group">
-          <label for="LastName">{{ 'AUTH.REGISTER.LAST_NAME' | translate }}</label>
-          <input
-            type="text"
-            id="LastName"
-            name="LastName"
-            class="form-control"
-            #lastNameField="ngModel"
-            [class.is-invalid]="lastNameField.invalid && (lastNameField.dirty || lastNameField.touched)"
-            ngModel
-            required
-          />
+          <label for="lastName">{{ 'AUTH.REGISTER.LAST_NAME' | translate }} <span class="required">*</span></label>
+          <input type="text" id="lastName" name="lastName" class="form-control"
+                 #lastNameField="ngModel"
+                 [class.is-invalid]="lastNameField.invalid && (lastNameField.dirty || lastNameField.touched)"
+                 [(ngModel)]="lastName" required />
           <small class="field-error" *ngIf="lastNameField.invalid && (lastNameField.dirty || lastNameField.touched)">
             {{ 'AUTH.REGISTER.LAST_NAME_REQUIRED' | translate }}
           </small>
@@ -45,19 +52,11 @@
       </div>
 
       <div class="form-group">
-        <label for="email">{{ 'AUTH.REGISTER.EMAIL' | translate }}</label>
-        <input
-          type="email"
-          id="email"
-          name="Email"
-          class="form-control"
-          #emailField="ngModel"
-          [class.is-invalid]="emailField.invalid && (emailField.dirty || emailField.touched)"
-          ngModel
-          required
-          email
-          [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate"
-        />
+        <label for="email">{{ 'AUTH.REGISTER.EMAIL' | translate }} <span class="required">*</span></label>
+        <input type="email" id="email" name="email" class="form-control"
+               #emailField="ngModel"
+               [class.is-invalid]="emailField.invalid && (emailField.dirty || emailField.touched)"
+               [(ngModel)]="email" required email [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate" />
         <small class="field-error" *ngIf="emailField.invalid && (emailField.dirty || emailField.touched)">
           <span *ngIf="emailField.hasError('required')">{{ 'AUTH.REGISTER.EMAIL_REQUIRED' | translate }}</span>
           <span *ngIf="emailField.hasError('email')">{{ 'AUTH.REGISTER.EMAIL_INVALID' | translate }}</span>
@@ -65,19 +64,12 @@
       </div>
 
       <div class="form-group">
-        <label for="phone">{{ 'AUTH.REGISTER.PHONE' | translate }}</label>
-        <input
-          type="tel"
-          id="phone"
-          name="PhoneNumber"
-          class="form-control"
-          #phoneField="ngModel"
-          [class.is-invalid]="phoneField.invalid && (phoneField.dirty || phoneField.touched)"
-          ngModel
-          required
-          pattern="^[0-9]{10}$"
-          [placeholder]="'AUTH.REGISTER.PHONE_PLACEHOLDER' | translate"
-        />
+        <label for="phone">{{ 'AUTH.REGISTER.PHONE' | translate }} <span class="required">*</span></label>
+        <input type="tel" id="phone" name="phone" class="form-control"
+               #phoneField="ngModel"
+               [class.is-invalid]="phoneField.invalid && (phoneField.dirty || phoneField.touched)"
+               [(ngModel)]="phoneNumber" required pattern="^[0-9]{10}$"
+               [placeholder]="'AUTH.REGISTER.PHONE_PLACEHOLDER' | translate" />
         <small class="field-error" *ngIf="phoneField.invalid && (phoneField.dirty || phoneField.touched)">
           <span *ngIf="phoneField.hasError('required')">{{ 'AUTH.REGISTER.PHONE_REQUIRED' | translate }}</span>
           <span *ngIf="phoneField.hasError('pattern')">{{ 'AUTH.REGISTER.PHONE_INVALID' | translate }}</span>
@@ -85,113 +77,147 @@
       </div>
 
       <div class="form-group">
-        <label for="password">{{ 'AUTH.REGISTER.PASSWORD' | translate }}</label>
-        <input
-          type="password"
-          id="password"
-          name="Password"
-          class="form-control"
-          #passwordField="ngModel"
-          [class.is-invalid]="passwordField.invalid && (passwordField.dirty || passwordField.touched)"
-          ngModel
-          required
-          minlength="6"
-          [placeholder]="'AUTH.REGISTER.PASSWORD_PLACEHOLDER' | translate"
-        />
+        <label for="password">{{ 'AUTH.REGISTER.PASSWORD' | translate }} <span class="required">*</span></label>
+        <input type="password" id="password" name="password" class="form-control"
+               #passwordField="ngModel"
+               [class.is-invalid]="passwordField.invalid && (passwordField.dirty || passwordField.touched)"
+               [(ngModel)]="password" required minlength="6"
+               [placeholder]="'AUTH.REGISTER.PASSWORD_PLACEHOLDER' | translate" />
         <small class="field-error" *ngIf="passwordField.invalid && (passwordField.dirty || passwordField.touched)">
           <span *ngIf="passwordField.hasError('required')">{{ 'AUTH.REGISTER.PASSWORD_REQUIRED' | translate }}</span>
           <span *ngIf="passwordField.hasError('minlength')">{{ 'AUTH.REGISTER.PASSWORD_MIN' | translate }}</span>
         </small>
       </div>
 
-      <div class="address-section">
-        <h3>{{ 'AUTH.REGISTER.ADDRESS_TITLE' | translate }} <span class="required">*</span></h3>
+      <div class="error-msg" *ngIf="step1Error">
+        {{ step1Error }}
+        <a *ngIf="step1ShowLoginLink" routerLink="/login" class="error-login-link">{{ 'AUTH.REGISTER.SIGN_IN' | translate }}</a>
+      </div>
 
-        <div class="form-group">
-          <label for="addressAutocomplete">{{ 'AUTH.REGISTER.SEARCH_ADDRESS' | translate }}</label>
-          <div class="autocomplete-container">
-            <input
-              #addressInput
-              type="text"
-              id="addressAutocomplete"
-              class="form-control"
-              [placeholder]="'AUTH.REGISTER.SEARCH_ADDRESS_PLACEHOLDER' | translate"
-              (input)="onAddressInput($event, registerForm)"
-              (blur)="hideAddressList()"
-              autocomplete="off"
-            />
-            <div class="address-dropdown" *ngIf="showAddressList && addressPredictions.length > 0">
-              <div
-                *ngFor="let prediction of addressPredictions"
-                class="address-item"
-                (click)="onAddressSelected(prediction, registerForm)"
-              >
-                <div class="address-main">{{ prediction.mainText }}</div>
-                <div class="address-secondary">{{ prediction.secondaryText }}</div>
-              </div>
+      <button type="submit" class="btn-submit" [disabled]="!step1Form.valid || step1Loading || step1ShowLoginLink">
+        {{ step1Loading ? ('AUTH.REGISTER.SAVING' | translate) : ('AUTH.REGISTER.NEXT' | translate) }}
+        <span class="btn-arrow" *ngIf="!step1Loading">→</span>
+      </button>
+
+      <p class="login-link">{{ 'AUTH.REGISTER.HAVE_ACCOUNT' | translate }} <a routerLink="/login">{{ 'AUTH.REGISTER.SIGN_IN' | translate }}</a></p>
+    </form>
+
+    <!-- Step 2: Address -->
+    <form #step2Form="ngForm" (ngSubmit)="onStep2Submit(step2Form)" *ngIf="currentStep === 2">
+
+      <div class="step2-banner">
+        <span class="banner-icon">✓</span>
+        <span>{{ 'AUTH.REGISTER.STEP2_BANNER' | translate }}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="addressAutocomplete">{{ 'AUTH.REGISTER.SEARCH_ADDRESS' | translate }}</label>
+        <div class="autocomplete-container">
+          <input
+            #addressInput
+            type="text"
+            id="addressAutocomplete"
+            class="form-control"
+            [placeholder]="'AUTH.REGISTER.SEARCH_ADDRESS_PLACEHOLDER' | translate"
+            (input)="onAddressInput($event)"
+            (blur)="hideAddressList()"
+            autocomplete="off"
+          />
+          <div class="address-dropdown" *ngIf="showAddressList && addressPredictions.length > 0">
+            <div
+              *ngFor="let prediction of addressPredictions"
+              class="address-item"
+              (mousedown)="$event.preventDefault()"
+              (click)="onAddressSelected(prediction)"
+            >
+              <div class="address-main">{{ prediction.mainText }}</div>
+              <div class="address-secondary">{{ prediction.secondaryText }}</div>
             </div>
-            <div class="address-loading" *ngIf="addressLoading">{{ 'COMMON.SEARCHING' | translate }}</div>
           </div>
-          <small class="text-muted">{{ 'COMMON.SEARCH_HINT' | translate }}</small>
+          <div class="address-loading" *ngIf="addressLoading">{{ 'COMMON.SEARCHING' | translate }}</div>
         </div>
+        <small class="text-muted">{{ 'COMMON.SEARCH_HINT' | translate }}</small>
+      </div>
 
+      <div class="form-row">
         <div class="form-group">
           <label for="houseNameNumber">{{ 'AUTH.REGISTER.HOUSE' | translate }} <span class="required">*</span></label>
           <input type="text" id="houseNameNumber" name="houseNameNumber" class="form-control"
-            #houseField="ngModel" [class.is-invalid]="houseField.invalid && (houseField.dirty || houseField.touched)"
-            ngModel required />
+                 #houseField="ngModel"
+                 [class.is-invalid]="houseField.invalid && (houseField.dirty || houseField.touched)"
+                 [(ngModel)]="houseNameNumber" required placeholder="12A" />
           <small class="field-error" *ngIf="houseField.invalid && (houseField.dirty || houseField.touched)">{{ 'AUTH.REGISTER.HOUSE_REQUIRED' | translate }}</small>
         </div>
-
-        <div class="form-group">
-          <label for="street1">{{ 'AUTH.REGISTER.STREET1' | translate }} <span class="required">*</span></label>
-          <input type="text" id="street1" name="street1" class="form-control"
-            #street1Field="ngModel" [class.is-invalid]="street1Field.invalid && (street1Field.dirty || street1Field.touched)"
-            ngModel required />
-          <small class="field-error" *ngIf="street1Field.invalid && (street1Field.dirty || street1Field.touched)">{{ 'AUTH.REGISTER.STREET1_REQUIRED' | translate }}</small>
-        </div>
-
-        <div class="form-group">
-          <label for="street2">{{ 'AUTH.REGISTER.STREET2' | translate }}</label>
-          <input type="text" id="street2" name="street2" class="form-control" />
-        </div>
-
-        <div class="form-group">
-          <label for="city">{{ 'AUTH.REGISTER.CITY' | translate }} <span class="required">*</span></label>
-          <input type="text" id="city" name="city" class="form-control"
-            #cityField="ngModel" [class.is-invalid]="cityField.invalid && (cityField.dirty || cityField.touched)"
-            ngModel required />
-          <small class="field-error" *ngIf="cityField.invalid && (cityField.dirty || cityField.touched)">{{ 'AUTH.REGISTER.CITY_REQUIRED' | translate }}</small>
-        </div>
-
-        <div class="form-group">
-          <label for="state">{{ 'AUTH.REGISTER.STATE' | translate }} <span class="required">*</span></label>
-          <input type="text" id="state" name="state" class="form-control"
-            #stateField="ngModel" [class.is-invalid]="stateField.invalid && (stateField.dirty || stateField.touched)"
-            ngModel required />
-          <small class="field-error" *ngIf="stateField.invalid && (stateField.dirty || stateField.touched)">{{ 'AUTH.REGISTER.STATE_REQUIRED' | translate }}</small>
-        </div>
-
-        <div class="form-group">
-          <label for="country">{{ 'AUTH.REGISTER.COUNTRY' | translate }} <span class="required">*</span></label>
-          <input type="text" id="country" name="country" class="form-control"
-            #countryField="ngModel" [class.is-invalid]="countryField.invalid && (countryField.dirty || countryField.touched)"
-            ngModel required />
-          <small class="field-error" *ngIf="countryField.invalid && (countryField.dirty || countryField.touched)">{{ 'AUTH.REGISTER.COUNTRY_REQUIRED' | translate }}</small>
-        </div>
-
         <div class="form-group">
           <label for="zipPostalCode">{{ 'AUTH.REGISTER.ZIP' | translate }} <span class="required">*</span></label>
           <input type="text" id="zipPostalCode" name="zipPostalCode" class="form-control"
-            #zipField="ngModel" [class.is-invalid]="zipField.invalid && (zipField.dirty || zipField.touched)"
-            ngModel required />
+                 #zipField="ngModel"
+                 [class.is-invalid]="zipField.invalid && (zipField.dirty || zipField.touched)"
+                 [(ngModel)]="zipPostalCode" required placeholder="695001" />
           <small class="field-error" *ngIf="zipField.invalid && (zipField.dirty || zipField.touched)">{{ 'AUTH.REGISTER.ZIP_REQUIRED' | translate }}</small>
         </div>
       </div>
 
-      <button type="submit" class="btn-submit" [disabled]="!registerForm.valid">
-        {{ 'AUTH.REGISTER.CREATE_ACCOUNT' | translate }}
-      </button>
+      <div class="form-group">
+        <label for="street1">{{ 'AUTH.REGISTER.STREET1' | translate }} <span class="required">*</span></label>
+        <input type="text" id="street1" name="street1" class="form-control"
+               #street1Field="ngModel"
+               [class.is-invalid]="street1Field.invalid && (street1Field.dirty || street1Field.touched)"
+               [(ngModel)]="street1" required [placeholder]="'AUTH.REGISTER.STREET1' | translate" />
+        <small class="field-error" *ngIf="street1Field.invalid && (street1Field.dirty || street1Field.touched)">{{ 'AUTH.REGISTER.STREET1_REQUIRED' | translate }}</small>
+      </div>
+
+      <div class="form-group">
+        <label for="street2">{{ 'AUTH.REGISTER.STREET2' | translate }}</label>
+        <input type="text" id="street2" name="street2" class="form-control"
+               [(ngModel)]="street2" placeholder="Apartment, suite, etc." />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">{{ 'AUTH.REGISTER.CITY' | translate }} <span class="required">*</span></label>
+          <input type="text" id="city" name="city" class="form-control"
+                 #cityField="ngModel"
+                 [class.is-invalid]="cityField.invalid && (cityField.dirty || cityField.touched)"
+                 [(ngModel)]="city" required [placeholder]="'AUTH.REGISTER.CITY' | translate" />
+          <small class="field-error" *ngIf="cityField.invalid && (cityField.dirty || cityField.touched)">{{ 'AUTH.REGISTER.CITY_REQUIRED' | translate }}</small>
+        </div>
+        <div class="form-group">
+          <label for="district">{{ 'AUTH.REGISTER.DISTRICT' | translate }}</label>
+          <input type="text" id="district" name="district" class="form-control"
+                 [(ngModel)]="district" [placeholder]="'AUTH.REGISTER.DISTRICT' | translate" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="state">{{ 'AUTH.REGISTER.STATE' | translate }} <span class="required">*</span></label>
+          <input type="text" id="state" name="state" class="form-control"
+                 #stateField="ngModel"
+                 [class.is-invalid]="stateField.invalid && (stateField.dirty || stateField.touched)"
+                 [(ngModel)]="state" required [placeholder]="'AUTH.REGISTER.STATE' | translate" />
+          <small class="field-error" *ngIf="stateField.invalid && (stateField.dirty || stateField.touched)">{{ 'AUTH.REGISTER.STATE_REQUIRED' | translate }}</small>
+        </div>
+        <div class="form-group">
+          <label for="country">{{ 'AUTH.REGISTER.COUNTRY' | translate }} <span class="required">*</span></label>
+          <input type="text" id="country" name="country" class="form-control"
+                 #countryField="ngModel"
+                 [class.is-invalid]="countryField.invalid && (countryField.dirty || countryField.touched)"
+                 [(ngModel)]="country" required [placeholder]="'AUTH.REGISTER.COUNTRY' | translate" />
+          <small class="field-error" *ngIf="countryField.invalid && (countryField.dirty || countryField.touched)">{{ 'AUTH.REGISTER.COUNTRY_REQUIRED' | translate }}</small>
+        </div>
+      </div>
+
+      <div class="error-msg" *ngIf="step2Error">{{ step2Error }}</div>
+
+      <div class="step2-actions">
+        <button type="button" class="btn-back" (click)="goBack()">{{ 'AUTH.REGISTER.BACK' | translate }}</button>
+        <button type="submit" class="btn-submit" [disabled]="!step2Form.valid || step2Loading">
+          {{ step2Loading ? ('AUTH.REGISTER.CREATING' | translate) : ('AUTH.REGISTER.CREATE_ACCOUNT' | translate) }}
+        </button>
+      </div>
+
     </form>
+
   </div>
 </div>

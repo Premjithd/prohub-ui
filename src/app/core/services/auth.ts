@@ -45,6 +45,16 @@ export class Auth {
     return this.api.post<void>('auth/user/register', userData);
   }
 
+  registerUserStep1(data: { FirstName: string; LastName: string; Email: string; Password: string; PhoneNumber: string }): Observable<{ userId: number }> {
+    return this.api.postRaw<{ userId: number }>('auth/user/register/draft', data);
+  }
+
+  registerUserStep2(userId: number, data: any): Observable<LoginResponse> {
+    return this.api.postRaw<LoginResponse>(`auth/user/register/complete/${userId}`, data).pipe(
+      tap(response => { if (response) this.storeSession(response); })
+    );
+  }
+
   registerPro(proData: RegisterProRequest): Observable<ApiResponse<void>> {
     return this.api.post<void>('auth/pro/register', proData);
   }

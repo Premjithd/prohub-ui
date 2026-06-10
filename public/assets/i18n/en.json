@@ -145,7 +145,22 @@
       "COUNTRY_REQUIRED": "Country is required",
       "ZIP": "Zip/Postal Code",
       "ZIP_REQUIRED": "Postal code is required",
-      "CREATE_ACCOUNT": "Create Account"
+      "CREATE_ACCOUNT": "Create Account",
+      "STEP1_LABEL": "Basic Info",
+      "STEP2_LABEL": "Address",
+      "NEXT": "Next",
+      "SAVING": "Saving...",
+      "CREATING": "Creating account...",
+      "BACK": "Back",
+      "STEP2_BANNER": "Account created! Now add your address.",
+      "HAVE_ACCOUNT": "Already have an account?",
+      "SIGN_IN": "Sign in",
+      "DISTRICT": "District",
+      "CITY": "City",
+      "STATE": "State",
+      "COUNTRY": "Country",
+      "STREET1": "Street 1",
+      "STREET2": "Street 2 (optional)"
     },
     "REGISTER_PRO": {
       "TITLE": "Register as Professional",
