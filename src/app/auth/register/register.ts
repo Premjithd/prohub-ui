@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
 import { switchMap, catchError, takeUntil } from 'rxjs/operators';
+import { isValidPhoneNumber } from 'libphonenumber-js/min';
 import { Auth } from '../../core/services/auth';
 import { AddressService, AddressPrediction } from '../../core/services/address.service';
 
@@ -18,10 +19,35 @@ import { AddressService, AddressPrediction } from '../../core/services/address.s
 export class RegisterUserComponent implements OnInit, OnDestroy {
   @ViewChild('addressInput') addressInput: ElementRef | undefined;
 
+  readonly countryCodes = [
+    { code: '+1',   label: 'US/CA (+1)'   }, { code: '+44',  label: 'UK (+44)'    },
+    { code: '+91',  label: 'IN (+91)'     }, { code: '+61',  label: 'AU (+61)'    },
+    { code: '+64',  label: 'NZ (+64)'     }, { code: '+65',  label: 'SG (+65)'    },
+    { code: '+60',  label: 'MY (+60)'     }, { code: '+971', label: 'UAE (+971)'  },
+    { code: '+966', label: 'SA (+966)'    }, { code: '+974', label: 'QA (+974)'   },
+    { code: '+965', label: 'KW (+965)'    }, { code: '+968', label: 'OM (+968)'   },
+    { code: '+973', label: 'BH (+973)'    }, { code: '+49',  label: 'DE (+49)'    },
+    { code: '+33',  label: 'FR (+33)'     }, { code: '+39',  label: 'IT (+39)'    },
+    { code: '+34',  label: 'ES (+34)'     }, { code: '+31',  label: 'NL (+31)'    },
+    { code: '+46',  label: 'SE (+46)'     }, { code: '+47',  label: 'NO (+47)'    },
+    { code: '+45',  label: 'DK (+45)'     }, { code: '+41',  label: 'CH (+41)'    },
+    { code: '+43',  label: 'AT (+43)'     }, { code: '+32',  label: 'BE (+32)'    },
+    { code: '+86',  label: 'CN (+86)'     }, { code: '+81',  label: 'JP (+81)'    },
+    { code: '+82',  label: 'KR (+82)'     }, { code: '+66',  label: 'TH (+66)'    },
+    { code: '+62',  label: 'ID (+62)'     }, { code: '+63',  label: 'PH (+63)'    },
+    { code: '+84',  label: 'VN (+84)'     }, { code: '+880', label: 'BD (+880)'   },
+    { code: '+94',  label: 'LK (+94)'     }, { code: '+92',  label: 'PK (+92)'    },
+    { code: '+27',  label: 'ZA (+27)'     }, { code: '+234', label: 'NG (+234)'   },
+    { code: '+254', label: 'KE (+254)'    }, { code: '+20',  label: 'EG (+20)'    },
+    { code: '+55',  label: 'BR (+55)'     }, { code: '+52',  label: 'MX (+52)'    },
+    { code: '+54',  label: 'AR (+54)'     }, { code: '+57',  label: 'CO (+57)'    },
+  ];
+
   // Step 1 fields
   firstName = '';
   lastName = '';
   email = '';
+  phoneDialCode = '+91';
   phoneNumber = '';
   password = '';
 
@@ -46,10 +72,13 @@ export class RegisterUserComponent implements OnInit, OnDestroy {
   step2Error = '';
   step1ShowLoginLink = false;
 
+  phoneInvalid = false;
+
   // Address autocomplete
   addressPredictions: AddressPrediction[] = [];
   showAddressList = false;
   addressLoading = false;
+  zipLookupLoading = false;
 
   private addressSearch$ = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -62,6 +91,17 @@ export class RegisterUserComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Resume incomplete registration: user completed step 1 but not step 2 (address)
+    if (this.auth.isAuthenticated()
+        && this.auth.getUserType() === 'User'
+        && !this.auth.isProfileComplete()) {
+      const userId = parseInt(this.auth.getUserId() ?? '0', 10);
+      if (userId > 0) {
+        this.draftUserId = userId;
+        this.currentStep = 2;
+      }
+    }
+
     this.addressSearch$.pipe(
       switchMap(input => {
         this.addressLoading = true;
@@ -84,8 +124,34 @@ export class RegisterUserComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  onEmailChange(): void {
+    if (this.step1Error || this.step1ShowLoginLink) {
+      this.step1Error = '';
+      this.step1ShowLoginLink = false;
+    }
+  }
+
+  onPhoneBlur(): void {
+    if (!this.phoneNumber) return;
+    this.phoneInvalid = !isValidPhoneNumber(this.phoneDialCode + this.phoneNumber);
+    this.cdr.detectChanges();
+  }
+
+  onPhoneChange(): void {
+    this.phoneInvalid = false;
+  }
+
+  onDialCodeChange(): void {
+    if (this.phoneNumber) {
+      this.phoneInvalid = !isValidPhoneNumber(this.phoneDialCode + this.phoneNumber);
+      this.cdr.detectChanges();
+    }
+  }
+
   onStep1Next(form: any): void {
     if (!form.valid) return;
+    this.phoneInvalid = !isValidPhoneNumber(this.phoneDialCode + this.phoneNumber);
+    if (this.phoneInvalid) return;
     this.step1Loading = true;
     this.step1Error = '';
     this.step1ShowLoginLink = false;
@@ -94,7 +160,7 @@ export class RegisterUserComponent implements OnInit, OnDestroy {
       LastName: this.lastName,
       Email: this.email,
       Password: this.password,
-      PhoneNumber: this.phoneNumber,
+      PhoneNumber: this.phoneDialCode + this.phoneNumber,
     }).subscribe({
       next: res => {
         this.draftUserId = res.userId;
@@ -180,5 +246,27 @@ export class RegisterUserComponent implements OnInit, OnDestroy {
 
   hideAddressList(): void {
     setTimeout(() => { this.showAddressList = false; }, 200);
+  }
+
+  onZipBlur(): void {
+    const code = this.zipPostalCode?.trim();
+    if (!code || code.length < 3) return;
+    this.zipLookupLoading = true;
+    this.cdr.detectChanges();
+    this.addressService.lookupByPostcode(code).subscribe({
+      next: details => {
+        if (details) {
+          if (details.city)      this.city      = details.city;
+          if (details.state)     this.state     = details.state;
+          if (details.country)   this.country   = details.country;
+          if (details.district)  this.district  = details.district;
+          if (details.latitude)  this.latitude  = details.latitude ?? null;
+          if (details.longitude) this.longitude = details.longitude ?? null;
+        }
+        this.zipLookupLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.zipLookupLoading = false; this.cdr.detectChanges(); }
+    });
   }
 }

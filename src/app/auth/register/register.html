@@ -56,7 +56,8 @@
         <input type="email" id="email" name="email" class="form-control"
                #emailField="ngModel"
                [class.is-invalid]="emailField.invalid && (emailField.dirty || emailField.touched)"
-               [(ngModel)]="email" required email [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate" />
+               [(ngModel)]="email" required email [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate"
+               (ngModelChange)="onEmailChange()" />
         <small class="field-error" *ngIf="emailField.invalid && (emailField.dirty || emailField.touched)">
           <span *ngIf="emailField.hasError('required')">{{ 'AUTH.REGISTER.EMAIL_REQUIRED' | translate }}</span>
           <span *ngIf="emailField.hasError('email')">{{ 'AUTH.REGISTER.EMAIL_INVALID' | translate }}</span>
@@ -65,14 +66,24 @@
 
       <div class="form-group">
         <label for="phone">{{ 'AUTH.REGISTER.PHONE' | translate }} <span class="required">*</span></label>
-        <input type="tel" id="phone" name="phone" class="form-control"
-               #phoneField="ngModel"
-               [class.is-invalid]="phoneField.invalid && (phoneField.dirty || phoneField.touched)"
-               [(ngModel)]="phoneNumber" required pattern="^[0-9]{10}$"
-               [placeholder]="'AUTH.REGISTER.PHONE_PLACEHOLDER' | translate" />
+        <div class="phone-input-group">
+          <select class="form-control dial-code-select" name="phoneDialCode" [(ngModel)]="phoneDialCode"
+                  (ngModelChange)="onDialCodeChange()">
+            <option *ngFor="let c of countryCodes" [value]="c.code">{{ c.label }}</option>
+          </select>
+          <input type="tel" id="phone" name="phone" class="form-control"
+                 #phoneField="ngModel"
+                 [class.is-invalid]="(phoneField.invalid && (phoneField.dirty || phoneField.touched)) || (phoneInvalid && phoneField.touched)"
+                 [(ngModel)]="phoneNumber" required
+                 [placeholder]="'AUTH.REGISTER.PHONE_PLACEHOLDER' | translate"
+                 (blur)="onPhoneBlur()"
+                 (ngModelChange)="onPhoneChange()" />
+        </div>
         <small class="field-error" *ngIf="phoneField.invalid && (phoneField.dirty || phoneField.touched)">
-          <span *ngIf="phoneField.hasError('required')">{{ 'AUTH.REGISTER.PHONE_REQUIRED' | translate }}</span>
-          <span *ngIf="phoneField.hasError('pattern')">{{ 'AUTH.REGISTER.PHONE_INVALID' | translate }}</span>
+          {{ 'AUTH.REGISTER.PHONE_REQUIRED' | translate }}
+        </small>
+        <small class="field-error" *ngIf="phoneInvalid && !phoneField.hasError('required')">
+          {{ 'AUTH.REGISTER.PHONE_INVALID' | translate }}
         </small>
       </div>
 
@@ -91,15 +102,15 @@
 
       <div class="error-msg" *ngIf="step1Error">
         {{ step1Error }}
-        <a *ngIf="step1ShowLoginLink" routerLink="/login" class="error-login-link">{{ 'AUTH.REGISTER.SIGN_IN' | translate }}</a>
+        <a *ngIf="step1ShowLoginLink" routerLink="/auth/login" class="error-login-link">{{ 'AUTH.REGISTER.SIGN_IN' | translate }}</a>
       </div>
 
-      <button type="submit" class="btn-submit" [disabled]="!step1Form.valid || step1Loading || step1ShowLoginLink">
+      <button type="submit" class="btn-submit" [disabled]="!step1Form.valid || step1Loading || phoneInvalid">
         {{ step1Loading ? ('AUTH.REGISTER.SAVING' | translate) : ('AUTH.REGISTER.NEXT' | translate) }}
         <span class="btn-arrow" *ngIf="!step1Loading">→</span>
       </button>
 
-      <p class="login-link">{{ 'AUTH.REGISTER.HAVE_ACCOUNT' | translate }} <a routerLink="/login">{{ 'AUTH.REGISTER.SIGN_IN' | translate }}</a></p>
+      <p class="login-link">{{ 'AUTH.REGISTER.HAVE_ACCOUNT' | translate }} <a routerLink="/auth/login">{{ 'AUTH.REGISTER.SIGN_IN' | translate }}</a></p>
     </form>
 
     <!-- Step 2: Address -->
@@ -153,7 +164,9 @@
           <input type="text" id="zipPostalCode" name="zipPostalCode" class="form-control"
                  #zipField="ngModel"
                  [class.is-invalid]="zipField.invalid && (zipField.dirty || zipField.touched)"
-                 [(ngModel)]="zipPostalCode" required placeholder="695001" />
+                 [(ngModel)]="zipPostalCode" required placeholder="695001"
+                 (blur)="onZipBlur()" />
+          <small class="zip-lookup-hint" *ngIf="zipLookupLoading">Filling address…</small>
           <small class="field-error" *ngIf="zipField.invalid && (zipField.dirty || zipField.touched)">{{ 'AUTH.REGISTER.ZIP_REQUIRED' | translate }}</small>
         </div>
       </div>

@@ -35,6 +35,8 @@ export class LoginComponent {
           this.router.navigate(['/admin-users']);
         } else if (response.role === 'Pro' && response.isProfileComplete === false) {
           this.router.navigate(['/auth/register/pro']);
+        } else if (response.isProfileComplete === false) {
+          this.router.navigate(['/auth/register/user']);
         } else {
           this.router.navigate(['/']);
         }

@@ -277,6 +277,27 @@
   }
 }
 
+.zip-lookup-hint {
+  display: block;
+  font-size: 12px;
+  color: #667eea;
+  margin-top: 4px;
+}
+
+.phone-input-group {
+  display: flex;
+  gap: 8px;
+
+  .dial-code-select {
+    flex: 0 0 auto;
+    width: 118px;
+    cursor: pointer;
+    padding-right: 8px;
+  }
+
+  input { flex: 1; }
+}
+
 .autocomplete-container {
   position: relative;
   width: 100%;

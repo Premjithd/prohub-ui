@@ -104,6 +104,15 @@ export class AddressService {
     );
   }
 
+  lookupByPostcode(code: string, countryCode?: string): Observable<AddressDetails | null> {
+    const params: Record<string, string> = { code };
+    if (countryCode) params['countryCode'] = countryCode;
+    return this.http.get<NominatimResult | null>(`${this.API_URL}/by-postcode`, { params }).pipe(
+      map(result => result ? this.parseNominatimAddress(result) : null),
+      catchError(() => of(null))
+    );
+  }
+
   getAddressDetails(placeId: string): Observable<AddressDetails> {
     return this.http.get<NominatimResult | NominatimResult[]>(`${this.API_URL}/details`, {
       params: { placeId }
