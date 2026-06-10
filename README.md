@@ -1,173 +1,61 @@
-# ProHubUI - Professional Services Marketplace Frontend
+# prohub-ui
 
-## Overview
-ProHubUI is the frontend application for a professional services marketplace, built with Angular 19. It provides a modern, responsive interface for connecting service professionals with users.
-
-## Features
-- User and Professional registration/authentication
-- Email and phone verification
-- Service browsing and management
-- Profile management
-- Responsive design with Material UI
-- Lazy-loaded modules for optimal performance
+Angular 20 frontend for the yProHub professional services marketplace.
 
 ## Technology Stack
-- Angular 19 (v20.2.2)
-- Angular Material
-- TypeScript
-- SCSS
-- RxJS
 
-## Prerequisites
-- Node.js (v20 or higher)
-- npm (v11 or higher)
-- Angular CLI (v20.2.2)
+- Angular 20.2.x (standalone components)
+- Angular Material Design
+- TypeScript 5.9 (strict mode)
+- SCSS with CSS custom properties
+- JWT + Azure MSAL authentication
+- Karma/Jasmine unit tests
 
-## Installation
+## Setup
 
-1. Install dependencies:
 ```bash
 npm install
+npm start           # Dev server at http://localhost:4200
+npm run build       # Production build
+npm test            # Run unit tests
 ```
 
-2. Start the development server:
-```bash
-ng serve
-```
-
-3. Open your browser and navigate to `http://localhost:4200`
+API URL is configured in `src/environments/environment.ts` (default: `http://localhost:5001/api`).
 
 ## Project Structure
+
 ```
-src/
-├── app/
-│   ├── auth/                  # Authentication features
-│   │   ├── login/
-│   │   ├── register/
-│   │   └── verify/
-│   ├── core/                  # Core functionality
-│   │   ├── models/
-│   │   └── services/
-│   ├── features/             # Main application features
-│   │   ├── about/
-│   │   ├── contact/
-│   │   ├── home/
-│   │   ├── profile/
-│   │   └── services/
-│   ├── layout/              # Layout components
-│   │   ├── footer/
-│   │   ├── main-layout/
-│   │   ├── navbar/
-│   │   └── sidebar/
-│   └── shared/              # Shared components and utilities
-│       └── components/
-├── assets/
-├── environments/
-└── styles/
+src/app/
+├── auth/           # Login, registration (user + two-step pro), verification flows
+├── core/           # Singleton services, guards, interceptors, shared models
+├── features/       # Lazy-loaded feature modules:
+│   ├── home/       # Landing page
+│   ├── profile/    # User and pro profile pages (role section, address autofill)
+│   ├── post-job/   # Job posting flow
+│   ├── messages/   # Messaging between users and pros
+│   ├── payments/   # Razorpay/UPI payment pages
+│   ├── services/   # Service category browse (hero redesign)
+│   ├── notifications/ # User notification list
+│   └── admin/      # Admin dashboard (categories, service areas, users, payments/disputes)
+├── layout/         # Main layout, navbar, footer, bottom nav (mobile), sidebar
+└── services/       # Job, material, payment services
 ```
 
-## Available Scripts
-- `ng serve`: Start development server
-- `ng build`: Build the application
-- `ng test`: Run unit tests with Karma
-- `ng generate`: Generate Angular artifacts
+## Features
 
-## API Integration
-The application connects to the ProHubAPI backend. Configure the API URL in:
-- Development: `src/environments/environment.ts`
-- Production: `src/environments/environment.prod.ts`
+- **Auth**: JWT + Azure MSAL; token stored in localStorage; HTTP interceptor attaches token to all requests; logout calls `POST /api/auth/logout` to revoke token server-side
+- **Two-step pro registration**: account creation step then profile completion step
+- **Profile**: redesigned role section; address autofill via Nominatim proxy
+- **Find a Pro**: filtered by service area (Country → State → District → PIN) and category
+- **Job flow**: post job → pro bids → user accepts → in-progress → completion sign-off
+- **Payments**: Razorpay integration with UPI pre-fill
+- **Notifications**: bell icon in navbar; notification list page
+- **Admin dashboard**: category CRUD, service area management, user management, payments tab with refund and dispute resolution, settings toggle
+- **Mobile layout**: bottom navigation bar (role-aware, mobile-only); `--bottom-nav-height` CSS variable (60px mobile / 0px desktop)
 
-## Features Documentation
+## Design Conventions
 
-### Authentication
-- Login with email/password
-- Separate registration flows for users and professionals
-- Email and phone number verification
-- JWT token-based authentication
-- Protected routes with auth guards
-
-### Layout
-- Responsive navbar with dynamic menu items
-- Collapsible sidebar for mobile devices
-- Sticky footer
-- Material Design components and theming
-
-### Core Services
-- ApiService: Base HTTP service for API communication
-- AuthService: Handles authentication and token management
-- VerificationService: Manages email/phone verification
-- UserService: User profile management
-- ProService: Professional profile management
-
-### Shared Components
-- Button: Customized Material button component
-- Modal: Reusable dialog component
-- Loader: Loading spinner component
-
-## Development Guidelines
-
-### Code Style
-- Follow Angular style guide
-- Use TypeScript strict mode
-- Implement proper error handling
-- Write comprehensive documentation
-- Use meaningful variable and function names
-
-### Component Structure
-- Separate template, styles, and logic
-- Use standalone components where possible
-- Implement proper change detection
-- Follow single responsibility principle
-
-### State Management
-- Services for state management
-- RxJS for reactive programming
-- Local storage for persistent data
-
-### Error Handling
-- Implement proper error handling in services
-- Display user-friendly error messages
-- Log errors appropriately
-
-## Building for Production
-
-```bash
-ng build --configuration production
-```
-
-This will create production-ready files in the `dist/prohub-ui` directory.
-
-## Environment Configuration
-
-Configure the following environment variables in `src/environments/environment.ts`:
-
-```typescript
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:5001/api'
-};
-```
-
-For production, update `environment.prod.ts`:
-
-```typescript
-export const environment = {
-  production: true,
-  apiUrl: 'https://api.prohub.com/api'
-};
-```
-
-## Future Enhancements
-- Real-time chat between users and professionals
-- Advanced search and filtering
-- Rating and review system
-- Payment integration
-- Service scheduling
-
-## Additional Resources
-- [Angular Documentation](https://angular.dev)
-- [Angular Material](https://material.angular.io)
-- [RxJS Documentation](https://rxjs.dev)
-
-## Support
-For support, please create an issue in the repository.
+- CSS custom properties: `var(--color-primary)`, `var(--text-h1)`, etc. — defined in `src/styles.scss`
+- Snackbar panels: `.snack-info`, `.snack-success`, `.snack-error` — pass via `panelClass`
+- Component style budget: `anyComponentStyle.maximumError` set to 30kB in `angular.json`
+- Routing: all authenticated routes wrapped in `MainLayout`; `accept-admin-invite` is public

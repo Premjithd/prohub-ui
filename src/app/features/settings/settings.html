@@ -1,0 +1,239 @@
+<div class="settings-wrapper">
+
+  <div class="settings-header">
+    <mat-icon>settings</mat-icon>
+    <div>
+      <h1>{{ 'SETTINGS.TITLE' | translate }}</h1>
+      <p>{{ 'SETTINGS.SUBTITLE' | translate }}</p>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="settings-loading">
+    <mat-spinner diameter="36"></mat-spinner>
+    <span>{{ 'COMMON.LOADING' | translate }}</span>
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <!-- ── Email Verification ──────────────────────────────────────────────── -->
+    <div class="settings-card">
+      <div class="card-section-header">
+        <mat-icon>email</mat-icon>
+        <div>
+          <h2>{{ 'SETTINGS.EMAIL_TITLE' | translate }}</h2>
+          <p class="contact-display">{{ userEmail }}</p>
+        </div>
+        <span class="verif-badge" [class.verified]="isEmailVerified" [class.unverified]="!isEmailVerified">
+          <mat-icon>{{ isEmailVerified ? 'verified' : 'warning' }}</mat-icon>
+          {{ isEmailVerified ? ('SETTINGS.VERIFIED' | translate) : ('SETTINGS.UNVERIFIED' | translate) }}
+        </span>
+      </div>
+
+      <div *ngIf="emailSuccess" class="alert alert-success">
+        <mat-icon>check_circle</mat-icon> {{ emailSuccess }}
+      </div>
+
+      <ng-container *ngIf="!isEmailVerified">
+        <p class="card-hint">{{ 'SETTINGS.EMAIL_HINT' | translate }}</p>
+
+        <div *ngIf="emailStep === 'idle' || emailStep === 'sending'" class="verif-action">
+          <button class="btn-verify" (click)="sendEmailCode()" [disabled]="emailStep === 'sending'">
+            <mat-spinner *ngIf="emailStep === 'sending'" diameter="16"></mat-spinner>
+            <mat-icon *ngIf="emailStep !== 'sending'">send</mat-icon>
+            {{ emailStep === 'sending' ? ('SETTINGS.SENDING' | translate) : ('SETTINGS.SEND_CODE' | translate) }}
+          </button>
+        </div>
+
+        <div *ngIf="emailStep === 'code-sent' || emailStep === 'verifying'" class="verif-code-row">
+          <input
+            type="text"
+            [(ngModel)]="emailCode"
+            maxlength="6"
+            placeholder="{{ 'SETTINGS.ENTER_CODE' | translate }}"
+            class="code-input"
+            (keyup.enter)="confirmEmailCode()" />
+          <button class="btn-verify" (click)="confirmEmailCode()" [disabled]="emailStep === 'verifying'">
+            <mat-spinner *ngIf="emailStep === 'verifying'" diameter="16"></mat-spinner>
+            <mat-icon *ngIf="emailStep !== 'verifying'">check</mat-icon>
+            {{ emailStep === 'verifying' ? ('SETTINGS.VERIFYING' | translate) : ('SETTINGS.VERIFY' | translate) }}
+          </button>
+          <button class="btn-resend" (click)="sendEmailCode()">{{ 'SETTINGS.RESEND' | translate }}</button>
+        </div>
+
+        <p *ngIf="emailError" class="verif-error"><mat-icon>error_outline</mat-icon> {{ emailError }}</p>
+      </ng-container>
+
+      <div *ngIf="isEmailVerified" class="verif-done">
+        <mat-icon>check_circle</mat-icon>
+        {{ 'SETTINGS.EMAIL_VERIFIED_MSG' | translate }}
+      </div>
+    </div>
+
+    <!-- ── Phone Verification ──────────────────────────────────────────────── -->
+    <div class="settings-card">
+      <div class="card-section-header">
+        <mat-icon>phone_iphone</mat-icon>
+        <div>
+          <h2>{{ 'SETTINGS.PHONE_TITLE' | translate }}</h2>
+          <p class="contact-display">{{ userPhone }}</p>
+        </div>
+        <span class="verif-badge" [class.verified]="isPhoneVerified" [class.unverified]="!isPhoneVerified">
+          <mat-icon>{{ isPhoneVerified ? 'verified' : 'warning' }}</mat-icon>
+          {{ isPhoneVerified ? ('SETTINGS.VERIFIED' | translate) : ('SETTINGS.UNVERIFIED' | translate) }}
+        </span>
+      </div>
+
+      <div *ngIf="phoneSuccess" class="alert alert-success">
+        <mat-icon>check_circle</mat-icon> {{ phoneSuccess }}
+      </div>
+
+      <ng-container *ngIf="!isPhoneVerified">
+        <p class="card-hint">{{ 'SETTINGS.PHONE_HINT' | translate }}</p>
+
+        <div *ngIf="phoneStep === 'idle' || phoneStep === 'sending'" class="verif-action">
+          <button class="btn-verify" (click)="sendPhoneCode()" [disabled]="phoneStep === 'sending'">
+            <mat-spinner *ngIf="phoneStep === 'sending'" diameter="16"></mat-spinner>
+            <mat-icon *ngIf="phoneStep !== 'sending'">sms</mat-icon>
+            {{ phoneStep === 'sending' ? ('SETTINGS.SENDING' | translate) : ('SETTINGS.SEND_OTP' | translate) }}
+          </button>
+        </div>
+
+        <div *ngIf="phoneStep === 'code-sent' || phoneStep === 'verifying'" class="verif-code-row">
+          <input
+            type="text"
+            [(ngModel)]="phoneCode"
+            maxlength="6"
+            placeholder="{{ 'SETTINGS.ENTER_OTP' | translate }}"
+            class="code-input"
+            (keyup.enter)="confirmPhoneCode()" />
+          <button class="btn-verify" (click)="confirmPhoneCode()" [disabled]="phoneStep === 'verifying'">
+            <mat-spinner *ngIf="phoneStep === 'verifying'" diameter="16"></mat-spinner>
+            <mat-icon *ngIf="phoneStep !== 'verifying'">check</mat-icon>
+            {{ phoneStep === 'verifying' ? ('SETTINGS.VERIFYING' | translate) : ('SETTINGS.VERIFY' | translate) }}
+          </button>
+          <button class="btn-resend" (click)="sendPhoneCode()">{{ 'SETTINGS.RESEND' | translate }}</button>
+        </div>
+
+        <p *ngIf="phoneError" class="verif-error"><mat-icon>error_outline</mat-icon> {{ phoneError }}</p>
+      </ng-container>
+
+      <div *ngIf="isPhoneVerified" class="verif-done">
+        <mat-icon>check_circle</mat-icon>
+        {{ 'SETTINGS.PHONE_VERIFIED_MSG' | translate }}
+      </div>
+    </div>
+
+    <!-- ── KYC Documents (Pros only) ───────────────────────────────────────── -->
+    <ng-container *ngIf="isPro">
+      <div class="settings-card kyc-card">
+        <div class="card-section-header">
+          <mat-icon>badge</mat-icon>
+          <div>
+            <h2>{{ 'SETTINGS.KYC_TITLE' | translate }}</h2>
+            <p class="card-hint-inline">{{ 'SETTINGS.KYC_SUBTITLE' | translate }}</p>
+          </div>
+          <span *ngIf="kycStatus" class="kyc-status-badge" [ngClass]="kycStatusClass(kycStatus.kycStatus)">
+            {{ kycStatusLabel(kycStatus.kycStatus) }}
+          </span>
+        </div>
+
+        <div *ngIf="kycLoading" class="kyc-loading">
+          <mat-spinner diameter="24"></mat-spinner>
+          <span>{{ 'COMMON.LOADING' | translate }}</span>
+        </div>
+
+        <ng-container *ngIf="!kycLoading && kycStatus">
+
+          <div *ngIf="kycStatus.kycStatus === 'Approved'" class="alert alert-success kyc-approved">
+            <mat-icon>verified_user</mat-icon>
+            {{ 'SETTINGS.KYC_APPROVED_MSG' | translate }}
+          </div>
+
+          <div *ngIf="kycStatus.kycStatus !== 'Approved'">
+            <p class="card-hint">{{ 'SETTINGS.KYC_HINT' | translate }}</p>
+
+            <div class="doc-grid">
+
+              <!-- Aadhaar -->
+              <div class="doc-card" [class.uploaded]="kycStatus.aadhaarUploaded">
+                <div class="doc-card-header">
+                  <mat-icon>credit_card</mat-icon>
+                  <span>{{ 'SETTINGS.AADHAAR' | translate }}</span>
+                  <mat-icon class="doc-status-icon" *ngIf="kycStatus.aadhaarUploaded">check_circle</mat-icon>
+                </div>
+
+                <div class="doc-preview" *ngIf="aadhaarPreview">
+                  <img *ngIf="aadhaarPreview !== 'pdf'" [src]="aadhaarPreview" alt="Aadhaar preview" />
+                  <div *ngIf="aadhaarPreview === 'pdf'" class="pdf-badge">
+                    <mat-icon>picture_as_pdf</mat-icon> PDF uploaded
+                  </div>
+                </div>
+                <div class="doc-preview" *ngIf="!aadhaarPreview && kycStatus.aadhaarUploaded && kycStatus.aadhaarUrl">
+                  <a [href]="kycStatus.aadhaarUrl" target="_blank" class="doc-link">
+                    <mat-icon>open_in_new</mat-icon> {{ 'SETTINGS.VIEW_DOCUMENT' | translate }}
+                  </a>
+                </div>
+
+                <button class="btn-upload" (click)="triggerAadhaarUpload()" [disabled]="aadhaarUploading">
+                  <mat-spinner *ngIf="aadhaarUploading" diameter="16"></mat-spinner>
+                  <mat-icon *ngIf="!aadhaarUploading">upload_file</mat-icon>
+                  {{ aadhaarUploading ? ('SETTINGS.UPLOADING' | translate) : (kycStatus.aadhaarUploaded ? ('SETTINGS.REPLACE' | translate) : ('SETTINGS.UPLOAD' | translate)) }}
+                </button>
+                <input #aadhaarInput type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" (change)="onAadhaarSelected($event)" />
+              </div>
+
+              <!-- PAN -->
+              <div class="doc-card" [class.uploaded]="kycStatus.panUploaded">
+                <div class="doc-card-header">
+                  <mat-icon>article</mat-icon>
+                  <span>{{ 'SETTINGS.PAN' | translate }}</span>
+                  <mat-icon class="doc-status-icon" *ngIf="kycStatus.panUploaded">check_circle</mat-icon>
+                </div>
+
+                <div class="doc-preview" *ngIf="panPreview">
+                  <img *ngIf="panPreview !== 'pdf'" [src]="panPreview" alt="PAN preview" />
+                  <div *ngIf="panPreview === 'pdf'" class="pdf-badge">
+                    <mat-icon>picture_as_pdf</mat-icon> PDF uploaded
+                  </div>
+                </div>
+                <div class="doc-preview" *ngIf="!panPreview && kycStatus.panUploaded && kycStatus.panUrl">
+                  <a [href]="kycStatus.panUrl" target="_blank" class="doc-link">
+                    <mat-icon>open_in_new</mat-icon> {{ 'SETTINGS.VIEW_DOCUMENT' | translate }}
+                  </a>
+                </div>
+
+                <button class="btn-upload" (click)="triggerPanUpload()" [disabled]="panUploading">
+                  <mat-spinner *ngIf="panUploading" diameter="16"></mat-spinner>
+                  <mat-icon *ngIf="!panUploading">upload_file</mat-icon>
+                  {{ panUploading ? ('SETTINGS.UPLOADING' | translate) : (kycStatus.panUploaded ? ('SETTINGS.REPLACE' | translate) : ('SETTINGS.UPLOAD' | translate)) }}
+                </button>
+                <input #panInput type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" (change)="onPanSelected($event)" />
+              </div>
+
+            </div>
+
+            <p *ngIf="kycError" class="verif-error"><mat-icon>error_outline</mat-icon> {{ kycError }}</p>
+            <div *ngIf="kycSuccess" class="alert alert-success">
+              <mat-icon>check_circle</mat-icon> {{ kycSuccess }}
+            </div>
+
+            <div class="kyc-submit-row">
+              <p class="kyc-submit-hint" *ngIf="!kycStatus.aadhaarUploaded || !kycStatus.panUploaded">
+                <mat-icon>info</mat-icon> {{ 'SETTINGS.KYC_UPLOAD_BOTH' | translate }}
+              </p>
+              <button
+                class="btn-submit-kyc"
+                (click)="submitKyc()"
+                [disabled]="!canSubmitKyc || kycSubmitting">
+                <mat-spinner *ngIf="kycSubmitting" diameter="16"></mat-spinner>
+                <mat-icon *ngIf="!kycSubmitting">send</mat-icon>
+                {{ kycSubmitting ? ('SETTINGS.SUBMITTING' | translate) : ('SETTINGS.SUBMIT_KYC' | translate) }}
+              </button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+
+  </ng-container>
+</div>

@@ -18,4 +18,12 @@ export class VerificationService {
   verifyEmail(contact: string, code: string, userType: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/verify-email`, { contact, code, userType });
   }
+
+  sendPhoneCode(contact: string, userType: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/send-phone-code`, { contact, userType });
+  }
+
+  verifyPhone(contact: string, code: string, userType: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/verify-phone`, { contact, code, userType });
+  }
 }

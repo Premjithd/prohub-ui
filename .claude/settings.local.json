@@ -30,7 +30,25 @@
       "PowerShell(Get-Content \"C:\\\\Users\\\\premj\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--repos-yProHub-prohub-ui\\\\6f4f1ab8-eff3-4366-8843-992cadd1f181\\\\tasks\\\\btxbu1357.output\" | Where-Object { $_ -match \"error|Error|fail|Fail|listen|address|port|now listening\" } | Select-Object -Last 15)",
       "PowerShell(Stop-Process *)",
       "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c cd /d C:\\\\repos\\\\yProHub\\\\prohub-ui && npm start\" -WindowStyle Normal; Write-Output \"UI starting in new window...\")",
-      "Bash(curl -s http://localhost:4200 -o /dev/null -w \"%{http_code}\")"
+      "Bash(curl -s http://localhost:4200 -o /dev/null -w \"%{http_code}\")",
+      "PowerShell(head *)",
+      "Bash(npx tsc *)",
+      "Bash(Select-Object -First 20)",
+      "Bash(Format-Table FullName)",
+      "PowerShell(ls *)",
+      "Bash(find *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(dotnet ef *)",
+      "Bash(Sort-Object Name)",
+      "Bash(Select-Object -Last 5)",
+      "Bash(Select-Object Name)",
+      "Bash(curl -s -k -X POST https://localhost:7042/api/auth/user/login -H 'Content-Type: application/json' -d '{\\\\\"email\\\\\":\\\\\"premjithd@gmail.com\\\\\",\\\\\"password\\\\\":\\\\\"Admin@123\\\\\"}')",
+      "Bash(curl -s -k -H \"Authorization: Bearer $\\(curl -s -k -X POST https://localhost:7042/api/auth/user/login -H 'Content-Type: application/json' -d '{\\\\\"email\\\\\":\\\\\"premjithd@gmail.com\\\\\",\\\\\"password\\\\\":\\\\\"Admin@123\\\\\"}')",
+      "Bash(curl -s -k -X POST https://localhost:7042/api/auth/user/login -H 'Content-Type: application/json' -d '{\"email\":\"premjithd@gmail.com\",\"password\":\"Admin@123\"}')",
+      "Bash(python3 -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\(r.get\\('token','NO TOKEN'\\)[:50], r.get\\('role','?'\\)\\)\")",
+      "Bash(curl -s -k https://localhost:7042/api/serviceCategories)",
+      "Bash(findstr /s /i \"IFormFile\\\\|FormFile\\\\|multipart\\\\|upload\" \"C:\\\\repos\\\\yProHub\\\\ProHubAPI\\\\ServiceProviderAPI\\\\Controllers\\\\*.cs\")",
+      "Bash(findstr /s /i \"IFormFile\\\\|FormFile\" \"C:\\\\repos\\\\yProHub\\\\ProHubAPI\\\\ServiceProviderAPI\\\\Models\\\\*.cs\")"
     ]
   }
 }

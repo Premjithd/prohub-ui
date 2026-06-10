@@ -20,6 +20,9 @@
       <mat-icon>notifications</mat-icon>
       <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
     </button>
+    <button mat-icon-button routerLink="/settings" [attr.aria-label]="'NAV.SETTINGS' | translate">
+      <mat-icon>settings</mat-icon>
+    </button>
     <button mat-icon-button routerLink="/profile" [attr.aria-label]="'NAV.PROFILE' | translate">
       <mat-icon>person</mat-icon>
     </button>

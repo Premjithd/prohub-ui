@@ -1,8 +1,8 @@
-{
+﻿{
   "LANG": {
     "EN": "English",
-    "ML": "മലയാളം",
-    "HI": "हिन्दी"
+    "ML": "à´®à´²à´¯à´¾à´³à´‚",
+    "HI": "à¤¹à¤¿à¤¨à¥à¤¦à¥€"
   },
   "NAV": {
     "HOME": "Home",
@@ -27,7 +27,8 @@
     "MATERIALS": "Materials",
     "SIGN_OUT": "Sign out",
     "DASHBOARD": "Dashboard",
-    "NOTIFICATIONS": "Notifications"
+    "NOTIFICATIONS": "Notifications",
+    "SETTINGS": "Settings"
   },
   "FOOTER": {
     "COMPANY": "Company",
@@ -41,7 +42,7 @@
     "FAQ": "FAQ",
     "TERMS": "Terms & Conditions",
     "PRIVACY": "Privacy Policy",
-    "COPYRIGHT": "© 2026 yProHub. All rights reserved."
+    "COPYRIGHT": "Â© 2026 yProHub. All rights reserved."
   },
   "COMMON": {
     "LOADING": "Loading...",
@@ -81,7 +82,7 @@
       "PASSWORD_MIN": "Password must be at least 6 characters",
       "FORGOT": "Forgot password?",
       "SIGN_IN": "Sign In",
-      "SIGNING_IN": "Signing in…",
+      "SIGNING_IN": "Signing inâ€¦",
       "NO_ACCOUNT": "Don't have an account?",
       "CREATE_ONE": "Create one here"
     },
@@ -208,7 +209,7 @@
       "COUNTRY_REQUIRED": "Country is required",
       "COMPLETE": "Complete Registration",
       "CREATING": "Creating Account...",
-      "BACK": "← Back"
+      "BACK": "â† Back"
     },
     "FORGOT": {
       "TITLE": "Forgot Password",
@@ -221,7 +222,7 @@
       "EMAIL_REQUIRED": "Email is required",
       "EMAIL_INVALID": "Enter a valid email address",
       "SEND": "Send Reset Link",
-      "SENDING": "Sending…",
+      "SENDING": "Sendingâ€¦",
       "BACK_TO_LOGIN": "Back to Login"
     },
     "RESET": {
@@ -235,9 +236,9 @@
       "CONFIRM_REQUIRED": "Please confirm your password",
       "MISMATCH": "Passwords do not match",
       "SET": "Set New Password",
-      "SAVING": "Saving…",
+      "SAVING": "Savingâ€¦",
       "BACK_TO_LOGIN": "Back to Login",
-      "REDIRECTING": "Redirecting to login…"
+      "REDIRECTING": "Redirecting to loginâ€¦"
     }
   },
   "ABOUT": {
@@ -276,11 +277,11 @@
     "CTA_BECOME_PRO": "Become a Pro"
   },
   "SERVICES": {
-    "HERO_TAG": "Verified professionals · Secure payments",
+    "HERO_TAG": "Verified professionals Â· Secure payments",
     "HERO_TITLE_1": "Hire the Right",
     "HERO_TITLE_2": "Professional",
     "HERO_ACCENT": "Today",
-    "HERO_SUB": "Browse services, compare prices, and book trusted pros — all in one place.",
+    "HERO_SUB": "Browse services, compare prices, and book trusted pros â€” all in one place.",
     "SEARCH_PLACEHOLDER": "Search services, skills, or business name...",
     "SEARCH_BTN": "Search",
     "POST_JOB": "Post a Job",
@@ -294,8 +295,8 @@
     "SEARCH_RESULTS": "Search Results",
     "SERVICES_COUNT": "services",
     "SORT_POPULAR": "Popular",
-    "SORT_PRICE_LOW": "Price ↑",
-    "SORT_PRICE_HIGH": "Price ↓",
+    "SORT_PRICE_LOW": "Price â†‘",
+    "SORT_PRICE_HIGH": "Price â†“",
     "DETAILS": "Details",
     "BOOK_NOW": "Book Now",
     "NO_SERVICES_TITLE": "No services found",
@@ -340,7 +341,7 @@
   },
   "HOME": {
     "WELCOME_BACK": "Welcome back, {{name}}",
-    "ADMIN_SUBTITLE": "Platform overview — manage users, materials, and services.",
+    "ADMIN_SUBTITLE": "Platform overview â€” manage users, materials, and services.",
     "PRO_SUBTITLE": "Here's a quick look at your work.",
     "USER_SUBTITLE": "What would you like to do today?",
     "POST_JOB": "Post a Job",
@@ -409,11 +410,11 @@
     "DESC_MIN": "Description must be at least 20 characters",
     "DESC_MAX": "Description must not exceed 2000 characters",
     "CHARS": "characters",
-    "PRICE_LABEL": "Starting Price (₹)",
+    "PRICE_LABEL": "Starting Price (â‚¹)",
     "PRICE_PLACEHOLDER": "e.g., 500",
     "PRICE_REQUIRED": "Price is required",
-    "PRICE_MIN": "Price must be at least ₹1",
-    "PRICE_MAX": "Price cannot exceed ₹99,99,999",
+    "PRICE_MIN": "Price must be at least â‚¹1",
+    "PRICE_MAX": "Price cannot exceed â‚¹99,99,999",
     "CAT_LABEL": "Service Category",
     "CAT_SELECT": "-- Select a Category --",
     "CAT_ERROR": "Couldn't load categories.",
@@ -497,8 +498,8 @@
     "AGREE_REQUIRED": "You must agree to be contacted",
     "SEND": "Send Message",
     "SENDING": "Sending...",
-    "SUCCESS": "✓ Thank you! Your message has been sent successfully. We'll get back to you soon.",
-    "ERROR": "✗ There was an error sending your message. Please try again.",
+    "SUCCESS": "âœ“ Thank you! Your message has been sent successfully. We'll get back to you soon.",
+    "ERROR": "âœ— There was an error sending your message. Please try again.",
     "INFO_TITLE": "Contact Information",
     "OFFICE_TITLE": "Our Office",
     "OFFICE_TEXT": "yProHub Headquarters, San Francisco, CA 94102, United States",
@@ -575,8 +576,8 @@
     "SEARCH_PLACEHOLDER": "Title or description...",
     "CATEGORY_LABEL": "Category",
     "CATEGORY_ALL": "All Categories",
-    "MIN_BUDGET": "Min Budget (₹)",
-    "MAX_BUDGET": "Max Budget (₹)",
+    "MIN_BUDGET": "Min Budget (â‚¹)",
+    "MAX_BUDGET": "Max Budget (â‚¹)",
     "RESET": "Reset",
     "DISTANCE": "Distance:",
     "PROXIMITY_WITHIN": "Showing jobs within {{km}} km of your location",
@@ -682,13 +683,13 @@
     "VERIFIED": "Verified",
     "UNVERIFIED": "Unverified",
     "VERIFY_NOW": "Verify now",
-    "SENDING": "Sending…",
-    "VERIFYING": "Verifying…",
+    "SENDING": "Sendingâ€¦",
+    "VERIFYING": "Verifyingâ€¦",
     "CONFIRM": "Confirm",
     "RESEND_CODE": "Resend code",
     "NOT_SET": "Not set",
     "SAVE_CHANGES": "Save Changes",
-    "SAVING": "Saving…",
+    "SAVING": "Savingâ€¦",
     "CANCEL": "Cancel",
     "PAYMENT_DETAILS": "Payment Details",
     "NO_UPI": "No UPI ID saved. Add one and it will be pre-filled when you make a payment.",
@@ -727,7 +728,7 @@
     "COUNTRY": "Country",
     "POSTAL_CODE": "Postal Code",
     "DISTRICT": "District",
-    "SELECT_DISTRICT": "— Select district —",
+    "SELECT_DISTRICT": "â€” Select district â€”",
     "HOUSE_NUMBER": "House / Number",
     "EMAIL_CODE_PROMPT": "Enter the 6-digit code sent to"
   },
@@ -758,5 +759,38 @@
     "CUSTOMER_REVIEWS": "Customer Reviews",
     "CTA_UNSURE": "Not sure which service fits?",
     "POST_GENERAL": "Post a General Job"
+  },
+  "SETTINGS": {
+    "TITLE": "Settings",
+    "SUBTITLE": "Manage your account verification and identity documents",
+    "EMAIL_TITLE": "Email Verification",
+    "PHONE_TITLE": "Phone Verification",
+    "KYC_TITLE": "KYC Documents",
+    "KYC_SUBTITLE": "Upload Aadhaar and PAN card for identity verification",
+    "VERIFIED": "Verified",
+    "UNVERIFIED": "Unverified",
+    "EMAIL_HINT": "Verify your email address to secure your account and receive important notifications.",
+    "PHONE_HINT": "Verify your phone number to enable SMS notifications and enhance account security.",
+    "KYC_HINT": "Upload clear copies of your Aadhaar card and PAN card. Only PDF, JPG, or PNG files up to 5 MB are accepted.",
+    "SEND_CODE": "Send Verification Code",
+    "SEND_OTP": "Send OTP",
+    "SENDING": "Sending...",
+    "ENTER_CODE": "Enter 6-digit code",
+    "ENTER_OTP": "Enter OTP",
+    "VERIFY": "Verify",
+    "VERIFYING": "Verifying...",
+    "RESEND": "Resend",
+    "EMAIL_VERIFIED_MSG": "Your email address is verified.",
+    "PHONE_VERIFIED_MSG": "Your phone number is verified.",
+    "AADHAAR": "Aadhaar Card",
+    "PAN": "PAN Card",
+    "UPLOAD": "Upload",
+    "REPLACE": "Replace",
+    "UPLOADING": "Uploading...",
+    "VIEW_DOCUMENT": "View document",
+    "SUBMIT_KYC": "Submit for Verification",
+    "SUBMITTING": "Submitting...",
+    "KYC_UPLOAD_BOTH": "Please upload both documents before submitting.",
+    "KYC_APPROVED_MSG": "Your KYC has been verified and approved."
   }
 }

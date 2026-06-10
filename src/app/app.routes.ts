@@ -45,6 +45,12 @@ export const routes: Routes = [
           .then(m => m.ProfileModule)
       },
       {
+        path: 'settings',
+        loadComponent: () => import('./features/settings/settings')
+          .then(m => m.SettingsComponent),
+        canActivate: [AuthGuard]
+      },
+      {
         path: 'faq',
         loadChildren: () => import('./features/faq/faq-module')
           .then(m => m.FAQModule)
