@@ -112,6 +112,12 @@ export class Auth {
     return this.storage.getItem(this.USER_TYPE_KEY);
   }
 
+  acceptProUserInvite(token: string, firstName: string, lastName: string, password: string): Observable<LoginResponse> {
+    return this.api.loginUser('auth/pro-user/accept-invite', { token, firstName, lastName, password }).pipe(
+      tap(response => { if (response) this.storeSession(response); })
+    );
+  }
+
   acceptAdminInvitation(
     token: string,
     firstName: string,

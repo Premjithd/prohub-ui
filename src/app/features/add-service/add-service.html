@@ -1,186 +1,163 @@
-<div class="add-service-wrapper">
-  <!-- Hero Section -->
-  <section class="add-service-hero">
-    <div class="hero-content">
-      <h1>{{ 'ADD_SERVICE.HERO_TITLE' | translate }}</h1>
-      <p>{{ 'ADD_SERVICE.HERO_SUB' | translate }}</p>
-    </div>
-  </section>
+<div class="page">
 
-  <!-- Form Section -->
-  <section class="add-service-section">
-    <div class="section-container">
-      <div class="form-wrapper">
-        <!-- Success Message -->
-        <div *ngIf="successMessage" class="alert alert-success">
-          <span>{{ successMessage }}</span>
-          <button (click)="dismissMessage('success')" class="dismiss-btn">&times;</button>
-        </div>
-
-        <!-- Error Message -->
-        <div *ngIf="errorMessage" class="alert alert-error">
-          <span>{{ errorMessage }}</span>
-          <button (click)="dismissMessage('error')" class="dismiss-btn">&times;</button>
-        </div>
-
-        <form *ngIf="serviceForm" [formGroup]="serviceForm" (ngSubmit)="onSubmit()">
-          <!-- Service Name -->
-          <div class="form-group">
-            <label for="name">{{ 'ADD_SERVICE.NAME_LABEL' | translate }} *</label>
-            <input
-              type="text"
-              id="name"
-              formControlName="name"
-              [placeholder]="'ADD_SERVICE.NAME_PLACEHOLDER' | translate"
-              class="form-control"
-              [class.is-invalid]="(submitted || f['name'].touched) && f['name'].errors"
-            />
-            <small *ngIf="(submitted || f['name'].touched) && f['name'].errors" class="error-text">
-              <span *ngIf="f['name'].errors['required']">{{ 'ADD_SERVICE.NAME_REQUIRED' | translate }}</span>
-              <span *ngIf="f['name'].errors['minlength']">{{ 'ADD_SERVICE.NAME_MIN' | translate }}</span>
-              <span *ngIf="f['name'].errors['maxlength']">{{ 'ADD_SERVICE.NAME_MAX' | translate }}</span>
-            </small>
-          </div>
-
-          <!-- Service Description -->
-          <div class="form-group">
-            <label for="description">{{ 'ADD_SERVICE.DESC_LABEL' | translate }} *</label>
-            <textarea
-              id="description"
-              formControlName="description"
-              [placeholder]="'ADD_SERVICE.DESC_PLACEHOLDER' | translate"
-              class="form-control textarea"
-              rows="8"
-              [class.is-invalid]="(submitted || f['description'].touched) && f['description'].errors"
-            ></textarea>
-            <div class="char-count">
-              {{ serviceForm.get('description')?.value?.length || 0 }} / 2000 {{ 'ADD_SERVICE.CHARS' | translate }}
-            </div>
-            <small *ngIf="(submitted || f['description'].touched) && f['description'].errors" class="error-text">
-              <span *ngIf="f['description'].errors['required']">{{ 'ADD_SERVICE.DESC_REQUIRED' | translate }}</span>
-              <span *ngIf="f['description'].errors['minlength']">{{ 'ADD_SERVICE.DESC_MIN' | translate }}</span>
-              <span *ngIf="f['description'].errors['maxlength']">{{ 'ADD_SERVICE.DESC_MAX' | translate }}</span>
-            </small>
-          </div>
-
-          <!-- Service Price -->
-          <div class="form-group">
-            <label for="price">{{ 'ADD_SERVICE.PRICE_LABEL' | translate }} *</label>
-            <div class="price-input-wrapper">
-              <span class="currency">₹</span>
-              <input
-                type="number"
-                id="price"
-                formControlName="price"
-                [placeholder]="'ADD_SERVICE.PRICE_PLACEHOLDER' | translate"
-                class="form-control price-input"
-                step="1"
-                min="1"
-                [class.is-invalid]="(submitted || f['price'].touched) && f['price'].errors"
-              />
-            </div>
-            <small *ngIf="(submitted || f['price'].touched) && f['price'].errors" class="error-text">
-              <span *ngIf="f['price'].errors['required']">{{ 'ADD_SERVICE.PRICE_REQUIRED' | translate }}</span>
-              <span *ngIf="f['price'].errors['min']">{{ 'ADD_SERVICE.PRICE_MIN' | translate }}</span>
-              <span *ngIf="f['price'].errors['max']">{{ 'ADD_SERVICE.PRICE_MAX' | translate }}</span>
-            </small>
-          </div>
-
-          <!-- Service Category -->
-          <div class="form-group">
-            <label for="serviceCategoryId">{{ 'ADD_SERVICE.CAT_LABEL' | translate }} *</label>
-            <div *ngIf="categoriesLoading" class="cat-inline-loading">
-              <div class="cat-inline-skeleton" *ngFor="let i of [1,2,3]"></div>
-            </div>
-            <div *ngIf="!categoriesLoading && categoriesError" class="cat-inline-error">
-              <span class="material-icons">error_outline</span>
-              {{ 'ADD_SERVICE.CAT_ERROR' | translate }}
-              <button type="button" (click)="loadCategories()">{{ 'COMMON.RETRY' | translate }}</button>
-            </div>
-            <ng-container *ngIf="!categoriesLoading && !categoriesError">
-              <p *ngIf="categories.length === 0" class="cat-inline-empty">{{ 'ADD_SERVICE.CAT_EMPTY' | translate }}</p>
-              <select
-                *ngIf="categories.length > 0"
-                id="serviceCategoryId"
-                formControlName="serviceCategoryId"
-                class="form-control"
-                [class.is-invalid]="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors"
-              >
-                <option value="">{{ 'ADD_SERVICE.CAT_SELECT' | translate }}</option>
-                <option *ngFor="let category of categories" [value]="category.id">
-                  {{ category.icon }} {{ category.name }}
-                </option>
-              </select>
-            </ng-container>
-            <small *ngIf="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors" class="error-text">
-              <span *ngIf="f['serviceCategoryId'].errors['required']">{{ 'ADD_SERVICE.CAT_REQUIRED' | translate }}</span>
-            </small>
-          </div>
-
-          <!-- Service Photo URL (Optional) -->
-          <div class="form-group">
-            <label for="imageUrl">{{ 'ADD_SERVICE.IMAGE_LABEL' | translate }} <span class="optional-label">({{ 'COMMON.OPTIONAL' | translate }})</span></label>
-            <input
-              type="url"
-              id="imageUrl"
-              formControlName="imageUrl"
-              [placeholder]="'ADD_SERVICE.IMAGE_PLACEHOLDER' | translate"
-              class="form-control"
-              [class.is-invalid]="(submitted || f['imageUrl'].touched) && f['imageUrl'].errors"
-            />
-            <small class="hint-text">{{ 'ADD_SERVICE.IMAGE_HINT' | translate }}</small>
-            <small *ngIf="(submitted || f['imageUrl'].touched) && f['imageUrl'].errors" class="error-text">
-              {{ 'ADD_SERVICE.IMAGE_INVALID' | translate }}
-            </small>
-          </div>
-
-          <!-- Terms & Conditions -->
-          <div class="form-group checkbox-group">
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                formControlName="agreeToTerms"
-                [class.is-invalid]="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors"
-              />
-              <span>{{ 'COMMON.AGREE_TERMS' | translate }}</span>
-            </label>
-            <small *ngIf="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors" class="error-text">
-              {{ 'COMMON.TERMS_REQUIRED' | translate }}
-            </small>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="form-actions">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              (click)="resetForm()"
-              [disabled]="submitted"
-            >
-              {{ 'ADD_SERVICE.CLEAR' | translate }}
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              [disabled]="submitted"
-            >
-              <span *ngIf="!submitted">{{ 'ADD_SERVICE.SUBMIT' | translate }}</span>
-              <span *ngIf="submitted">{{ 'ADD_SERVICE.SUBMITTING' | translate }}</span>
-            </button>
-          </div>
-        </form>
-
-        <!-- Form Tips -->
-        <div class="form-tips">
-          <h3>{{ 'ADD_SERVICE.TIPS_TITLE' | translate }}</h3>
-          <ul>
-            <li>{{ 'ADD_SERVICE.TIP1' | translate }}</li>
-            <li>{{ 'ADD_SERVICE.TIP2' | translate }}</li>
-            <li>{{ 'ADD_SERVICE.TIP3' | translate }}</li>
-            <li>{{ 'ADD_SERVICE.TIP4' | translate }}</li>
-          </ul>
-        </div>
+  <!-- ── Page Header ─────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <mat-icon>home_repair_service</mat-icon>
+      </div>
+      <div>
+        <h1>{{ 'ADD_SERVICE.HERO_TITLE' | translate }}</h1>
+        <p class="header-subtitle">{{ 'ADD_SERVICE.HERO_SUB' | translate }}</p>
       </div>
     </div>
-  </section>
+  </div>
+
+  <!-- ── Alerts ──────────────────────────────────────────────────────── -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <mat-icon>check_circle</mat-icon>
+    <span>{{ successMessage }}</span>
+    <button class="dismiss-btn" (click)="dismissMessage('success')">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ errorMessage }}</span>
+    <button class="dismiss-btn" (click)="dismissMessage('error')">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- ── Form card ───────────────────────────────────────────────────── -->
+  <div class="form-card" *ngIf="serviceForm">
+    <form [formGroup]="serviceForm" (ngSubmit)="onSubmit()">
+
+      <!-- Service Name -->
+      <div class="form-group">
+        <label for="name">{{ 'ADD_SERVICE.NAME_LABEL' | translate }} <span class="required">*</span></label>
+        <input type="text" id="name" formControlName="name" class="form-control"
+               [placeholder]="'ADD_SERVICE.NAME_PLACEHOLDER' | translate"
+               [class.is-invalid]="(submitted || f['name'].touched) && f['name'].errors" />
+        <small class="error-text" *ngIf="(submitted || f['name'].touched) && f['name'].errors">
+          <span *ngIf="f['name'].errors['required']">{{ 'ADD_SERVICE.NAME_REQUIRED' | translate }}</span>
+          <span *ngIf="f['name'].errors['minlength']">{{ 'ADD_SERVICE.NAME_MIN' | translate }}</span>
+          <span *ngIf="f['name'].errors['maxlength']">{{ 'ADD_SERVICE.NAME_MAX' | translate }}</span>
+        </small>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label for="description">{{ 'ADD_SERVICE.DESC_LABEL' | translate }} <span class="required">*</span></label>
+        <textarea id="description" formControlName="description" class="form-control" rows="6"
+                  [placeholder]="'ADD_SERVICE.DESC_PLACEHOLDER' | translate"
+                  [class.is-invalid]="(submitted || f['description'].touched) && f['description'].errors"></textarea>
+        <div class="char-count">{{ serviceForm.get('description')?.value?.length || 0 }} / 2000 {{ 'ADD_SERVICE.CHARS' | translate }}</div>
+        <small class="error-text" *ngIf="(submitted || f['description'].touched) && f['description'].errors">
+          <span *ngIf="f['description'].errors['required']">{{ 'ADD_SERVICE.DESC_REQUIRED' | translate }}</span>
+          <span *ngIf="f['description'].errors['minlength']">{{ 'ADD_SERVICE.DESC_MIN' | translate }}</span>
+          <span *ngIf="f['description'].errors['maxlength']">{{ 'ADD_SERVICE.DESC_MAX' | translate }}</span>
+        </small>
+      </div>
+
+      <!-- Price + Category row -->
+      <div class="form-row">
+
+        <!-- Price -->
+        <div class="form-group">
+          <label for="price">{{ 'ADD_SERVICE.PRICE_LABEL' | translate }} <span class="required">*</span></label>
+          <div class="price-input-wrapper" [class.is-invalid]="(submitted || f['price'].touched) && f['price'].errors">
+            <span class="currency">₹</span>
+            <input type="number" id="price" formControlName="price" class="form-control price-input"
+                   [placeholder]="'ADD_SERVICE.PRICE_PLACEHOLDER' | translate"
+                   step="1" min="1" />
+          </div>
+          <small class="error-text" *ngIf="(submitted || f['price'].touched) && f['price'].errors">
+            <span *ngIf="f['price'].errors['required']">{{ 'ADD_SERVICE.PRICE_REQUIRED' | translate }}</span>
+            <span *ngIf="f['price'].errors['min']">{{ 'ADD_SERVICE.PRICE_MIN' | translate }}</span>
+            <span *ngIf="f['price'].errors['max']">{{ 'ADD_SERVICE.PRICE_MAX' | translate }}</span>
+          </small>
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label for="serviceCategoryId">{{ 'ADD_SERVICE.CAT_LABEL' | translate }} <span class="required">*</span></label>
+          <div *ngIf="categoriesLoading" class="cat-loading">
+            <div class="cat-skeleton"></div>
+          </div>
+          <div *ngIf="!categoriesLoading && categoriesError" class="cat-error">
+            <mat-icon>error_outline</mat-icon>
+            {{ 'ADD_SERVICE.CAT_ERROR' | translate }}
+            <button type="button" (click)="loadCategories()">{{ 'COMMON.RETRY' | translate }}</button>
+          </div>
+          <ng-container *ngIf="!categoriesLoading && !categoriesError">
+            <p *ngIf="categories.length === 0" class="cat-empty">{{ 'ADD_SERVICE.CAT_EMPTY' | translate }}</p>
+            <select *ngIf="categories.length > 0" id="serviceCategoryId" formControlName="serviceCategoryId"
+                    class="form-control"
+                    [class.is-invalid]="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors">
+              <option value="">{{ 'ADD_SERVICE.CAT_SELECT' | translate }}</option>
+              <option *ngFor="let category of categories" [value]="category.id">
+                {{ category.icon }} {{ category.name }}
+              </option>
+            </select>
+          </ng-container>
+          <small class="error-text" *ngIf="(submitted || f['serviceCategoryId'].touched) && f['serviceCategoryId'].errors">
+            <span *ngIf="f['serviceCategoryId'].errors['required']">{{ 'ADD_SERVICE.CAT_REQUIRED' | translate }}</span>
+          </small>
+        </div>
+
+      </div>
+
+      <!-- Image URL -->
+      <div class="form-group">
+        <label for="imageUrl">
+          {{ 'ADD_SERVICE.IMAGE_LABEL' | translate }}
+          <span class="optional-label">({{ 'COMMON.OPTIONAL' | translate }})</span>
+        </label>
+        <input type="url" id="imageUrl" formControlName="imageUrl" class="form-control"
+               [placeholder]="'ADD_SERVICE.IMAGE_PLACEHOLDER' | translate"
+               [class.is-invalid]="(submitted || f['imageUrl'].touched) && f['imageUrl'].errors" />
+        <small class="hint-text">{{ 'ADD_SERVICE.IMAGE_HINT' | translate }}</small>
+        <small class="error-text" *ngIf="(submitted || f['imageUrl'].touched) && f['imageUrl'].errors">
+          {{ 'ADD_SERVICE.IMAGE_INVALID' | translate }}
+        </small>
+      </div>
+
+      <!-- Tips strip -->
+      <div class="tips-strip">
+        <mat-icon>lightbulb</mat-icon>
+        <ul>
+          <li>{{ 'ADD_SERVICE.TIP1' | translate }}</li>
+          <li>{{ 'ADD_SERVICE.TIP2' | translate }}</li>
+          <li>{{ 'ADD_SERVICE.TIP3' | translate }}</li>
+          <li>{{ 'ADD_SERVICE.TIP4' | translate }}</li>
+        </ul>
+      </div>
+
+      <!-- Terms -->
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="agreeToTerms" />
+          <span>{{ 'COMMON.AGREE_TERMS' | translate }}</span>
+        </label>
+        <small class="error-text" *ngIf="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors">
+          {{ 'COMMON.TERMS_REQUIRED' | translate }}
+        </small>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="resetForm()" [disabled]="submitted">
+          {{ 'ADD_SERVICE.CLEAR' | translate }}
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="submitted">
+          <mat-spinner *ngIf="submitted" diameter="16"></mat-spinner>
+          <mat-icon *ngIf="!submitted">check</mat-icon>
+          {{ submitted ? ('ADD_SERVICE.SUBMITTING' | translate) : ('ADD_SERVICE.SUBMIT' | translate) }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
 </div>

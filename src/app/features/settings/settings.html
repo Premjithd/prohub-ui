@@ -235,5 +235,23 @@
       </div>
     </ng-container>
 
+    <!-- ── Business Account (Pros only) ───────────────────────────────────── -->
+    <ng-container *ngIf="isPro">
+      <div class="settings-card">
+        <div class="card-section-header">
+          <mat-icon class="card-icon">business</mat-icon>
+          <div>
+            <h2>{{ 'SETTINGS.BUSINESS_TITLE' | translate }}</h2>
+            <p class="card-hint-inline">{{ 'SETTINGS.BUSINESS_SUBTITLE' | translate }}</p>
+          </div>
+        </div>
+        <p class="card-hint">{{ 'SETTINGS.BUSINESS_HINT' | translate }}</p>
+        <a routerLink="/my-businesses" class="btn-manage-biz">
+          <mat-icon>business</mat-icon>
+          {{ 'SETTINGS.MANAGE_BUSINESSES' | translate }}
+        </a>
+      </div>
+    </ng-container>
+
   </ng-container>
 </div>

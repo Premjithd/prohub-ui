@@ -11,6 +11,11 @@ export const routes: Routes = [
       .then(m => m.AcceptAdminInviteComponent)
   },
   {
+    path: 'accept-pro-user-invite',
+    loadComponent: () => import('./features/accept-pro-user-invite/accept-pro-user-invite')
+      .then(m => m.AcceptProUserInviteComponent)
+  },
+  {
     path: '',
     component: MainLayout,
     children: [
@@ -120,6 +125,18 @@ export const routes: Routes = [
         path: 'my-clients',
         loadComponent: () => import('./features/my-clients/my-clients')
           .then(m => m.MyClientsComponent),
+        canActivate: [ProGuard]
+      },
+      {
+        path: 'my-users',
+        loadComponent: () => import('./features/my-users/my-users')
+          .then(m => m.MyUsersComponent),
+        canActivate: [ProGuard]
+      },
+      {
+        path: 'my-businesses',
+        loadComponent: () => import('./features/my-businesses/my-businesses')
+          .then(m => m.MyBusinessesComponent),
         canActivate: [ProGuard]
       },
       {

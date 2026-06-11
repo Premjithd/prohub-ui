@@ -1,0 +1,320 @@
+<div class="biz-page">
+
+  <!-- ── Page Header ───────────────────────────────────────────────────── -->
+  <div class="biz-page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <mat-icon>business</mat-icon>
+      </div>
+      <div>
+        <h1>{{ 'BUSINESSES.TITLE' | translate }}</h1>
+        <p class="header-subtitle">{{ 'BUSINESSES.PAGE_SUBTITLE' | translate }}</p>
+      </div>
+    </div>
+    <button class="btn-primary" (click)="showCreatePanel = !showCreatePanel">
+      <mat-icon>add</mat-icon>
+      {{ 'BUSINESSES.CREATE' | translate }}
+    </button>
+  </div>
+
+  <!-- ── Create Business Panel ─────────────────────────────────────────── -->
+  <div class="create-panel" *ngIf="showCreatePanel">
+    <div class="panel-header">
+      <mat-icon>add_business</mat-icon>
+      <h3>{{ 'BUSINESSES.CREATE_TITLE' | translate }}</h3>
+    </div>
+
+    <form #createForm="ngForm" (ngSubmit)="onCreateBusiness(createForm)">
+
+      <div class="form-group">
+        <label>{{ 'BUSINESSES.BIZ_NAME' | translate }} <span class="required">*</span></label>
+        <input type="text" class="form-control" name="newBizName" [(ngModel)]="newBizName" required
+               placeholder="e.g. Acme Plumbing Ltd" />
+      </div>
+
+      <div class="form-section-label">{{ 'BUSINESSES.SEARCH_ADDRESS' | translate }}</div>
+      <div class="form-group">
+        <div class="autocomplete-container">
+          <input type="text" class="form-control"
+                 [placeholder]="'AUTH.REGISTER_PRO.SEARCH_ADDRESS_PLACEHOLDER' | translate"
+                 (input)="onAddressInput($event)"
+                 (blur)="hideAddressList()"
+                 autocomplete="off" />
+          <div class="address-dropdown" *ngIf="showAddressList">
+            <div *ngFor="let p of addressPredictions" class="address-item"
+                 (mousedown)="$event.preventDefault()"
+                 (click)="onAddressSelected(p)">
+              <div class="address-main">{{ p.mainText }}</div>
+              <div class="address-secondary">{{ p.secondaryText }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ 'BUSINESSES.HOUSE' | translate }} <span class="required">*</span></label>
+          <input type="text" class="form-control" name="newBizHouse" [(ngModel)]="newBizHouse" required placeholder="12A" />
+        </div>
+        <div class="form-group">
+          <label>{{ 'BUSINESSES.ZIP' | translate }} <span class="required">*</span></label>
+          <input type="text" class="form-control" name="newBizZip" [(ngModel)]="newBizZip" required placeholder="695001" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>{{ 'BUSINESSES.STREET' | translate }} <span class="required">*</span></label>
+        <input type="text" class="form-control" name="newBizStreet1" [(ngModel)]="newBizStreet1" required placeholder="Street / Road" />
+      </div>
+
+      <div class="form-group">
+        <label>{{ 'BUSINESSES.STREET2' | translate }}</label>
+        <input type="text" class="form-control" name="newBizStreet2" [(ngModel)]="newBizStreet2" placeholder="Floor, unit…" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ 'BUSINESSES.CITY' | translate }} <span class="required">*</span></label>
+          <input type="text" class="form-control" name="newBizCity" [(ngModel)]="newBizCity" required placeholder="City" />
+        </div>
+        <div class="form-group">
+          <label>{{ 'BUSINESSES.DISTRICT' | translate }}</label>
+          <input type="text" class="form-control" name="newBizDistrict" [(ngModel)]="newBizDistrict" placeholder="District" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ 'BUSINESSES.STATE' | translate }} <span class="required">*</span></label>
+          <input type="text" class="form-control" name="newBizState" [(ngModel)]="newBizState" required placeholder="State" />
+        </div>
+        <div class="form-group">
+          <label>{{ 'BUSINESSES.COUNTRY' | translate }} <span class="required">*</span></label>
+          <input type="text" class="form-control" name="newBizCountry" [(ngModel)]="newBizCountry" required placeholder="Country" />
+        </div>
+      </div>
+
+      <div class="migrate-toggle">
+        <label class="toggle-label">
+          <input type="checkbox" name="migrateSoloServices" [(ngModel)]="migrateSoloServices" />
+          <span>{{ 'BUSINESSES.MIGRATE_SERVICES' | translate }}</span>
+        </label>
+        <small>{{ 'BUSINESSES.MIGRATE_SERVICES_HINT' | translate }}</small>
+      </div>
+
+      <div class="alert alert-error" *ngIf="createError">
+        <mat-icon>error_outline</mat-icon> {{ createError }}
+      </div>
+
+      <div class="panel-actions">
+        <button type="button" class="btn-secondary" (click)="showCreatePanel = false">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="!createForm.valid || createLoading">
+          <mat-spinner *ngIf="createLoading" diameter="16"></mat-spinner>
+          <mat-icon *ngIf="!createLoading">check</mat-icon>
+          {{ createLoading ? ('COMMON.SAVING' | translate) : ('BUSINESSES.CREATE' | translate) }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ── Loading / Error ───────────────────────────────────────────────── -->
+  <div class="state-msg" *ngIf="loading">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>{{ 'COMMON.LOADING' | translate }}</span>
+  </div>
+  <div class="alert alert-error" *ngIf="error">
+    <mat-icon>error_outline</mat-icon> {{ error }}
+  </div>
+
+  <!-- ── Empty State ───────────────────────────────────────────────────── -->
+  <div class="empty-state" *ngIf="!loading && !error && businesses.length === 0 && !showCreatePanel">
+    <div class="empty-icon">
+      <mat-icon>business</mat-icon>
+    </div>
+    <h3>{{ 'BUSINESSES.EMPTY_TITLE' | translate }}</h3>
+    <p>{{ 'BUSINESSES.EMPTY' | translate }}</p>
+    <button class="btn-primary" (click)="showCreatePanel = true">
+      <mat-icon>add</mat-icon>
+      {{ 'BUSINESSES.CREATE' | translate }}
+    </button>
+  </div>
+
+  <!-- ── Business List ─────────────────────────────────────────────────── -->
+  <div class="biz-grid" *ngIf="!loading && businesses.length > 0 && !selectedBiz">
+    <div class="biz-card" *ngFor="let biz of businesses" (click)="selectBusiness(biz)">
+      <div class="biz-avatar">
+        <mat-icon>business</mat-icon>
+      </div>
+      <div class="biz-card-info">
+        <div class="biz-card-name">{{ biz.businessName }}</div>
+        <div class="biz-card-meta">
+          <span class="role-chip" [class.owner]="biz.role === 'Owner'">{{ biz.role }}</span>
+          <span class="status-chip" [class.active]="biz.status === 'Active'">{{ biz.status }}</span>
+        </div>
+      </div>
+      <div class="biz-card-footer">
+        <span class="footer-item" *ngIf="biz.address?.city">
+          <mat-icon>location_on</mat-icon>
+          {{ biz.address!.city }}{{ biz.address!.state ? ', ' + biz.address!.state : '' }}
+        </span>
+        <span class="footer-item">
+          <mat-icon>group</mat-icon>
+          {{ biz.memberCount }} {{ biz.memberCount === 1 ? ('BUSINESSES.MEMBER_SINGULAR' | translate) : ('BUSINESSES.MEMBER_PLURAL' | translate) }}
+        </span>
+      </div>
+      <mat-icon class="card-arrow">chevron_right</mat-icon>
+    </div>
+  </div>
+
+  <!-- ── Business Detail View ──────────────────────────────────────────── -->
+  <div class="biz-detail" *ngIf="selectedBiz && !loading">
+
+    <!-- Back nav -->
+    <button class="btn-back" (click)="clearSelection()">
+      <mat-icon>arrow_back</mat-icon>
+      {{ 'COMMON.BACK' | translate }}
+    </button>
+
+    <!-- Detail hero -->
+    <div class="detail-hero">
+      <div class="detail-hero-icon">
+        <mat-icon>business</mat-icon>
+      </div>
+      <div class="detail-hero-text">
+        <h2 class="detail-biz-name">{{ selectedBiz.businessName }}</h2>
+        <div class="detail-chips">
+          <span class="role-chip" [class.owner]="selectedBiz.role === 'Owner'">{{ selectedBiz.role }}</span>
+          <span class="status-chip" [class.active]="selectedBiz.status === 'Active'">{{ selectedBiz.status }}</span>
+        </div>
+      </div>
+      <!-- Owner actions in hero -->
+      <div class="detail-hero-actions" *ngIf="isOwner()">
+        <button class="btn-outline" (click)="migrateServices()">
+          <mat-icon>sync_alt</mat-icon>
+          {{ 'BUSINESSES.MIGRATE_BTN' | translate }}
+        </button>
+        <button class="btn-primary" (click)="showAddMemberPanel = !showAddMemberPanel">
+          <mat-icon>person_add</mat-icon>
+          {{ 'BUSINESSES.ADD_MEMBER' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Detail content: 2-col on desktop -->
+    <div class="detail-layout">
+
+      <!-- Left column: Business info -->
+      <div class="detail-col">
+        <div class="info-card">
+          <div class="card-section-title">
+            <mat-icon>info</mat-icon>
+            <span>{{ 'BUSINESSES.BIZ_INFO_TITLE' | translate }}</span>
+          </div>
+
+          <div *ngIf="bizDetailLoading" class="card-loading">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+
+          <div *ngIf="bizDetail && !bizDetailLoading" class="info-rows">
+            <div class="info-row" *ngIf="bizDetail.description">
+              <span class="info-label"><mat-icon>notes</mat-icon> {{ 'BUSINESSES.DESCRIPTION' | translate }}</span>
+              <span class="info-value desc">{{ bizDetail.description }}</span>
+            </div>
+            <div class="info-row" *ngIf="bizDetail.address">
+              <span class="info-label"><mat-icon>location_on</mat-icon> {{ 'BUSINESSES.ADDRESS' | translate }}</span>
+              <span class="info-value">
+                {{ bizDetail.address.houseNameNumber }}{{ bizDetail.address.street1 ? ', ' + bizDetail.address.street1 : '' }}{{ bizDetail.address.street2 ? ', ' + bizDetail.address.street2 : '' }},
+                {{ bizDetail.address.city }}{{ bizDetail.address.district ? ', ' + bizDetail.address.district : '' }},
+                {{ bizDetail.address.state }}, {{ bizDetail.address.country }} {{ bizDetail.address.zipPostalCode }}
+              </span>
+            </div>
+            <div class="info-row" *ngIf="bizDetail.phone">
+              <span class="info-label"><mat-icon>phone</mat-icon> {{ 'BUSINESSES.PHONE' | translate }}</span>
+              <span class="info-value">{{ bizDetail.phone }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label"><mat-icon>miscellaneous_services</mat-icon> {{ 'BUSINESSES.SERVICES_COUNT' | translate }}</span>
+              <span class="info-value">{{ bizDetail.serviceCount }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: Members -->
+      <div class="detail-col">
+        <div class="members-card">
+          <div class="card-section-title">
+            <mat-icon>group</mat-icon>
+            <span>{{ 'BUSINESSES.MEMBERS' | translate }}</span>
+            <span class="member-count-badge">{{ members.length }}</span>
+          </div>
+
+          <!-- Add member panel -->
+          <div class="add-member-panel" *ngIf="showAddMemberPanel && isOwner()">
+            <p class="add-member-hint">{{ 'BUSINESSES.ADD_MEMBER_TITLE' | translate }}</p>
+            <form #addForm="ngForm" (ngSubmit)="onAddMember(addForm)">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>{{ 'BUSINESSES.MEMBER_EMAIL' | translate }} <span class="required">*</span></label>
+                  <input type="email" class="form-control" name="addMemberEmail"
+                         [(ngModel)]="addMemberEmail" required email placeholder="pro@example.com" />
+                </div>
+                <div class="form-group">
+                  <label>{{ 'BUSINESSES.MEMBER_ROLE' | translate }}</label>
+                  <select class="form-control" name="addMemberRole" [(ngModel)]="addMemberRole">
+                    <option value="Member">Member</option>
+                    <option value="Owner">Owner</option>
+                  </select>
+                </div>
+              </div>
+              <div class="alert alert-error" *ngIf="addMemberError">
+                <mat-icon>error_outline</mat-icon> {{ addMemberError }}
+              </div>
+              <div class="panel-actions">
+                <button type="button" class="btn-secondary" (click)="showAddMemberPanel = false">
+                  {{ 'COMMON.CANCEL' | translate }}
+                </button>
+                <button type="submit" class="btn-primary" [disabled]="!addForm.valid || addMemberLoading">
+                  <mat-spinner *ngIf="addMemberLoading" diameter="14"></mat-spinner>
+                  <mat-icon *ngIf="!addMemberLoading">person_add</mat-icon>
+                  {{ addMemberLoading ? ('COMMON.SAVING' | translate) : ('BUSINESSES.ADD_MEMBER' | translate) }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Members loading -->
+          <div class="card-loading" *ngIf="membersLoading">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+
+          <!-- Member list -->
+          <div class="member-list" *ngIf="!membersLoading">
+            <div class="member-row" *ngFor="let m of members">
+              <div class="member-avatar">{{ (m.proName || 'P')[0].toUpperCase() }}</div>
+              <div class="member-info">
+                <span class="member-name">{{ m.proName || ('Pro #' + m.proId) }}</span>
+                <span class="member-email">{{ m.proEmail }}</span>
+              </div>
+              <span class="role-chip small" [class.owner]="m.role === 'Owner'">{{ m.role }}</span>
+              <button class="btn-revoke" *ngIf="isOwner() && m.role !== 'Owner'" (click)="removeMember(m.id)"
+                      [title]="'BUSINESSES.REMOVE' | translate">
+                <mat-icon>person_remove</mat-icon>
+              </button>
+            </div>
+            <div class="empty-members" *ngIf="members.length === 0">
+              <mat-icon>group_off</mat-icon>
+              <p>{{ 'BUSINESSES.NO_MEMBERS' | translate }}</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

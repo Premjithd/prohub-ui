@@ -1,0 +1,77 @@
+<div class="my-users-page">
+
+  <div class="page-header">
+    <div class="header-text">
+      <h1>My Team</h1>
+      <p class="subtitle">Users linked to your business</p>
+    </div>
+    <button class="btn-invite" (click)="openInvitePanel()">+ Invite User</button>
+  </div>
+
+  <!-- Invite Panel -->
+  <div class="invite-panel" *ngIf="showInvitePanel">
+    <div class="invite-card">
+      <h3>Invite a User</h3>
+      <p class="invite-hint">Enter the email address of the person you'd like to add to your team. They'll receive a link to set up their account.</p>
+
+      <div class="form-group">
+        <label>Email address</label>
+        <input
+          type="email"
+          class="form-control"
+          [(ngModel)]="inviteEmail"
+          placeholder="name@example.com"
+          (keydown.enter)="sendInvite()"
+        />
+      </div>
+
+      <div class="invite-error" *ngIf="inviteError">{{ inviteError }}</div>
+      <div class="invite-success" *ngIf="inviteSuccess">{{ inviteSuccess }}</div>
+
+      <div class="invite-actions">
+        <button class="btn-cancel" (click)="closeInvitePanel()">Cancel</button>
+        <button class="btn-send" [disabled]="inviteLoading" (click)="sendInvite()">
+          {{ inviteLoading ? 'Sending…' : 'Send Invitation' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading team members…</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-state" *ngIf="error && !loading">{{ error }}</div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && !error && users.length === 0">
+    <div class="empty-icon">👥</div>
+    <h3>No team members yet</h3>
+    <p>Invite users to join your business. They'll be linked to your business name and activities.</p>
+    <button class="btn-invite" (click)="openInvitePanel()">+ Invite your first user</button>
+  </div>
+
+  <!-- User list -->
+  <div class="user-list" *ngIf="!loading && users.length > 0">
+    <div class="user-card" *ngFor="let u of users">
+      <div class="user-avatar">
+        {{ displayName(u)[0]?.toUpperCase() || '?' }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ displayName(u) }}</div>
+        <div class="user-email" *ngIf="u.user">{{ u.user.email }}</div>
+        <div class="user-meta">
+          <span class="status-badge" [class]="'status-' + u.status.toLowerCase()">
+            {{ u.status }}
+          </span>
+          <span class="joined-date">Added {{ u.createdAt | date:'mediumDate' }}</span>
+        </div>
+      </div>
+      <button class="btn-revoke" (click)="revoke(u.id)" title="Remove from team">✕</button>
+    </div>
+  </div>
+
+</div>

@@ -25,30 +25,186 @@
       </div>
     </div>
 
-    <!-- Step 1: Basic Information -->
-    <form #step1Form="ngForm" (ngSubmit)="onStep1Next(step1Form)" *ngIf="currentStep === 1">
+    <!-- ── Step 1: Business Setup (Optional) ──────────────────────────── -->
+    <div *ngIf="currentStep === 1">
 
-      <div class="form-group">
-        <label for="BusinessName">{{ 'AUTH.REGISTER_PRO.BUSINESS_NAME' | translate }} <span class="required">*</span></label>
-        <input type="text" id="BusinessName" name="BusinessName" class="form-control"
-               #bizNameField="ngModel"
-               [class.is-invalid]="bizNameField.invalid && (bizNameField.dirty || bizNameField.touched)"
-               [(ngModel)]="businessName" required [placeholder]="'AUTH.REGISTER_PRO.BUSINESS_NAME_PLACEHOLDER' | translate" />
-        <small class="field-error" *ngIf="bizNameField.invalid && (bizNameField.dirty || bizNameField.touched)">{{ 'AUTH.REGISTER_PRO.BUSINESS_NAME_REQUIRED' | translate }}</small>
+      <div class="step1-intro">
+        <div class="step1-intro-icon">🏢</div>
+        <div>
+          <p class="step1-intro-title">{{ 'AUTH.REGISTER_PRO.STEP1_INTRO_TITLE' | translate }}</p>
+          <p class="step1-intro-desc">{{ 'AUTH.REGISTER_PRO.STEP1_INTRO_DESC' | translate }}</p>
+        </div>
+      </div>
+
+      <form #step1Form="ngForm" (ngSubmit)="onStep1Save(step1Form)">
+
+        <div class="form-group">
+          <label for="bizName">{{ 'AUTH.REGISTER_PRO.BIZ_NAME' | translate }} <span class="required">*</span></label>
+          <input type="text" id="bizName" name="bizName" class="form-control"
+                 #bizNameField="ngModel"
+                 [class.is-invalid]="bizNameField.invalid && (bizNameField.dirty || bizNameField.touched)"
+                 [(ngModel)]="bizName" required
+                 [placeholder]="'AUTH.REGISTER_PRO.BIZ_NAME_PLACEHOLDER' | translate" />
+          <small class="field-error" *ngIf="bizNameField.invalid && (bizNameField.dirty || bizNameField.touched)">
+            {{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}
+          </small>
+        </div>
+
+        <!-- Business Phone -->
+        <div class="form-group">
+          <label>{{ 'AUTH.REGISTER_PRO.BIZ_PHONE' | translate }} <span class="required">*</span></label>
+          <div class="phone-input-group">
+            <select class="form-control dial-code-select" name="bizPhoneDialCode"
+                    [(ngModel)]="bizPhoneDialCode" (ngModelChange)="onBizDialCodeChange()">
+              <option *ngFor="let c of countryCodes" [value]="c.code">{{ c.label }}</option>
+            </select>
+            <input type="tel" name="bizPhoneNumber" class="form-control"
+                   #bizPhoneField="ngModel"
+                   [class.is-invalid]="(bizPhoneField.invalid && (bizPhoneField.dirty || bizPhoneField.touched)) || bizPhoneInvalid"
+                   [(ngModel)]="bizPhoneNumber" required
+                   [placeholder]="'AUTH.REGISTER_PRO.PHONE_PLACEHOLDER' | translate"
+                   (blur)="onBizPhoneBlur()"
+                   (ngModelChange)="onBizPhoneChange()" />
+          </div>
+          <small class="field-error" *ngIf="bizPhoneField.invalid && (bizPhoneField.dirty || bizPhoneField.touched)">{{ 'AUTH.REGISTER_PRO.PHONE_REQUIRED' | translate }}</small>
+          <small class="field-error" *ngIf="bizPhoneInvalid && !bizPhoneField.hasError('required')">{{ 'AUTH.REGISTER_PRO.PHONE_INVALID' | translate }}</small>
+        </div>
+
+        <!-- Business Address -->
+        <div class="address-section-label">{{ 'AUTH.REGISTER_PRO.BIZ_ADDRESS' | translate }}</div>
+
+        <div class="form-group">
+          <label>{{ 'AUTH.REGISTER_PRO.SEARCH_ADDRESS' | translate }}</label>
+          <div class="autocomplete-container">
+            <input #bizAddressInput type="text" class="form-control"
+                   [placeholder]="'AUTH.REGISTER_PRO.SEARCH_ADDRESS_PLACEHOLDER' | translate"
+                   (input)="onBizAddressInput($event)"
+                   (blur)="hideBizAddressList()"
+                   autocomplete="off" />
+            <div class="address-dropdown" *ngIf="showBizAddressList && bizAddressPredictions.length > 0">
+              <div *ngFor="let p of bizAddressPredictions" class="address-item"
+                   (mousedown)="$event.preventDefault()" (click)="onBizAddressSelected(p)">
+                <div class="address-main">{{ p.mainText }}</div>
+                <div class="address-secondary">{{ p.secondaryText }}</div>
+              </div>
+            </div>
+            <div class="address-loading" *ngIf="bizAddressLoading">{{ 'COMMON.SEARCHING' | translate }}</div>
+          </div>
+          <small class="text-muted">{{ 'AUTH.REGISTER_PRO.SEARCH_ADDRESS_HINT' | translate }}</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bizHouseNameNumber">{{ 'AUTH.REGISTER_PRO.HOUSE' | translate }} <span class="required">*</span></label>
+            <input type="text" id="bizHouseNameNumber" name="bizHouseNameNumber" class="form-control"
+                   #bizHouseField="ngModel"
+                   [class.is-invalid]="bizHouseField.invalid && (bizHouseField.dirty || bizHouseField.touched)"
+                   [(ngModel)]="bizHouseNameNumber" required placeholder="12A" />
+            <small class="field-error" *ngIf="bizHouseField.invalid && (bizHouseField.dirty || bizHouseField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
+          <div class="form-group">
+            <label for="bizZipPostalCode">{{ 'AUTH.REGISTER_PRO.ZIP' | translate }} <span class="required">*</span></label>
+            <input type="text" id="bizZipPostalCode" name="bizZipPostalCode" class="form-control"
+                   #bizZipField="ngModel"
+                   [class.is-invalid]="bizZipField.invalid && (bizZipField.dirty || bizZipField.touched)"
+                   [(ngModel)]="bizZipPostalCode" required placeholder="695001"
+                   (blur)="onBizZipBlur()" />
+            <small class="zip-lookup-hint" *ngIf="bizZipLookupLoading">{{ 'AUTH.REGISTER_PRO.ZIP_FILLING' | translate }}</small>
+            <small class="field-error" *ngIf="bizZipField.invalid && (bizZipField.dirty || bizZipField.touched) && !bizZipLookupLoading">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bizStreet1">{{ 'AUTH.REGISTER_PRO.STREET' | translate }} <span class="required">*</span></label>
+          <input type="text" id="bizStreet1" name="bizStreet1" class="form-control"
+                 #bizStreet1Field="ngModel"
+                 [class.is-invalid]="bizStreet1Field.invalid && (bizStreet1Field.dirty || bizStreet1Field.touched)"
+                 [(ngModel)]="bizStreet1" required [placeholder]="'AUTH.REGISTER_PRO.STREET' | translate" />
+          <small class="field-error" *ngIf="bizStreet1Field.invalid && (bizStreet1Field.dirty || bizStreet1Field.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+        </div>
+
+        <div class="form-group">
+          <label for="bizStreet2">{{ 'AUTH.REGISTER_PRO.STREET2' | translate }}</label>
+          <input type="text" id="bizStreet2" name="bizStreet2" class="form-control"
+                 [(ngModel)]="bizStreet2" placeholder="Floor, unit, etc." />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bizCity">{{ 'AUTH.REGISTER_PRO.CITY' | translate }} <span class="required">*</span></label>
+            <input type="text" id="bizCity" name="bizCity" class="form-control"
+                   #bizCityField="ngModel"
+                   [class.is-invalid]="bizCityField.invalid && (bizCityField.dirty || bizCityField.touched)"
+                   [(ngModel)]="bizCity" required [placeholder]="'AUTH.REGISTER_PRO.CITY' | translate" />
+            <small class="field-error" *ngIf="bizCityField.invalid && (bizCityField.dirty || bizCityField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
+          <div class="form-group">
+            <label for="bizDistrict">{{ 'AUTH.REGISTER_PRO.DISTRICT' | translate }}</label>
+            <input type="text" id="bizDistrict" name="bizDistrict" class="form-control"
+                   [(ngModel)]="bizDistrict" [placeholder]="'AUTH.REGISTER_PRO.DISTRICT' | translate" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bizState">{{ 'AUTH.REGISTER_PRO.STATE' | translate }} <span class="required">*</span></label>
+            <input type="text" id="bizState" name="bizState" class="form-control"
+                   #bizStateField="ngModel"
+                   [class.is-invalid]="bizStateField.invalid && (bizStateField.dirty || bizStateField.touched)"
+                   [(ngModel)]="bizState" required [placeholder]="'AUTH.REGISTER_PRO.STATE' | translate" />
+            <small class="field-error" *ngIf="bizStateField.invalid && (bizStateField.dirty || bizStateField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
+          <div class="form-group">
+            <label for="bizCountry">{{ 'AUTH.REGISTER_PRO.COUNTRY' | translate }} <span class="required">*</span></label>
+            <input type="text" id="bizCountry" name="bizCountry" class="form-control"
+                   #bizCountryField="ngModel"
+                   [class.is-invalid]="bizCountryField.invalid && (bizCountryField.dirty || bizCountryField.touched)"
+                   [(ngModel)]="bizCountry" required [placeholder]="'AUTH.REGISTER_PRO.COUNTRY' | translate" />
+            <small class="field-error" *ngIf="bizCountryField.invalid && (bizCountryField.dirty || bizCountryField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
+        </div>
+
+        <div class="error-msg" *ngIf="step1Error">{{ step1Error }}</div>
+
+        <div class="step1-actions">
+          <button type="button" class="btn-skip" (click)="skipBusiness()">
+            {{ 'AUTH.REGISTER_PRO.SKIP_SOLO' | translate }}
+          </button>
+          <button type="submit" class="btn-submit" [disabled]="!step1Form.valid || step1Loading || bizPhoneInvalid">
+            {{ step1Loading ? ('AUTH.REGISTER_PRO.SAVING' | translate) : ('AUTH.REGISTER_PRO.SAVE_CONTINUE' | translate) }}
+            <span class="btn-arrow" *ngIf="!step1Loading">→</span>
+          </button>
+        </div>
+
+        <p class="login-link">{{ 'AUTH.REGISTER_PRO.HAVE_ACCOUNT' | translate }} <a routerLink="/auth/login">{{ 'AUTH.REGISTER_PRO.SIGN_IN' | translate }}</a></p>
+
+      </form>
+    </div>
+
+    <!-- ── Step 2: Create Business Login ──────────────────────────────── -->
+    <form #step2Form="ngForm" (ngSubmit)="onStep2Submit(step2Form)" *ngIf="currentStep === 2">
+
+      <div class="step2-banner" *ngIf="savedBusinessId">
+        <span class="banner-icon">✓</span>
+        <span>{{ 'AUTH.REGISTER_PRO.BIZ_SAVED_BANNER' | translate }}</span>
+      </div>
+      <div class="step2-banner solo-banner" *ngIf="!savedBusinessId">
+        <span class="banner-icon">👤</span>
+        <span>{{ 'AUTH.REGISTER_PRO.SOLO_BANNER' | translate }}</span>
       </div>
 
       <div class="form-group">
-        <label for="Name">{{ 'AUTH.REGISTER_PRO.FULL_NAME' | translate }} <span class="required">*</span></label>
-        <input type="text" id="Name" name="Name" class="form-control"
+        <label for="proName">{{ 'AUTH.REGISTER_PRO.FULL_NAME' | translate }} <span class="required">*</span></label>
+        <input type="text" id="proName" name="proName" class="form-control"
                #nameField="ngModel"
                [class.is-invalid]="nameField.invalid && (nameField.dirty || nameField.touched)"
-               [(ngModel)]="name" required [placeholder]="'AUTH.REGISTER_PRO.FULL_NAME_PLACEHOLDER' | translate" />
+               [(ngModel)]="proName" required [placeholder]="'AUTH.REGISTER_PRO.FULL_NAME_PLACEHOLDER' | translate" />
         <small class="field-error" *ngIf="nameField.invalid && (nameField.dirty || nameField.touched)">{{ 'AUTH.REGISTER_PRO.FULL_NAME_REQUIRED' | translate }}</small>
       </div>
 
       <div class="form-group">
         <label for="email">{{ 'AUTH.REGISTER_PRO.EMAIL' | translate }} <span class="required">*</span></label>
-        <input type="email" id="email" name="Email" class="form-control"
+        <input type="email" id="email" name="email" class="form-control"
                #emailField="ngModel"
                [class.is-invalid]="emailField.invalid && (emailField.dirty || emailField.touched)"
                [(ngModel)]="email" required email [placeholder]="'AUTH.REGISTER_PRO.EMAIL_PLACEHOLDER' | translate" />
@@ -59,156 +215,141 @@
       </div>
 
       <div class="form-group">
-        <label for="phone">{{ 'AUTH.REGISTER_PRO.PHONE' | translate }} <span class="required">*</span></label>
-        <input type="tel" id="phone" name="PhoneNumber" class="form-control"
-               #phoneField="ngModel"
-               [class.is-invalid]="phoneField.invalid && (phoneField.dirty || phoneField.touched)"
-               [(ngModel)]="phoneNumber" required pattern="^[0-9]{10}$" [placeholder]="'AUTH.REGISTER_PRO.PHONE_PLACEHOLDER' | translate" />
-        <small class="field-error" *ngIf="phoneField.invalid && (phoneField.dirty || phoneField.touched)">
-          <span *ngIf="phoneField.hasError('required')">{{ 'AUTH.REGISTER_PRO.PHONE_REQUIRED' | translate }}</span>
-          <span *ngIf="phoneField.hasError('pattern')">{{ 'AUTH.REGISTER_PRO.PHONE_INVALID' | translate }}</span>
-        </small>
+        <label for="proPhone">{{ 'AUTH.REGISTER_PRO.PHONE' | translate }} <span class="required">*</span></label>
+        <div class="phone-input-group">
+          <select class="form-control dial-code-select" name="proPhoneDialCode"
+                  [(ngModel)]="proPhoneDialCode" (ngModelChange)="onProDialCodeChange()">
+            <option *ngFor="let c of countryCodes" [value]="c.code">{{ c.label }}</option>
+          </select>
+          <input type="tel" id="proPhone" name="proPhone" class="form-control"
+                 #proPhoneField="ngModel"
+                 [class.is-invalid]="(proPhoneField.invalid && (proPhoneField.dirty || proPhoneField.touched)) || proPhoneInvalid"
+                 [(ngModel)]="proPhoneNumber" required
+                 [placeholder]="'AUTH.REGISTER_PRO.PHONE_PLACEHOLDER' | translate"
+                 (blur)="onProPhoneBlur()"
+                 (ngModelChange)="onProPhoneChange()" />
+        </div>
+        <small class="field-error" *ngIf="proPhoneField.invalid && (proPhoneField.dirty || proPhoneField.touched)">{{ 'AUTH.REGISTER_PRO.PHONE_REQUIRED' | translate }}</small>
+        <small class="field-error" *ngIf="proPhoneInvalid && !proPhoneField.hasError('required')">{{ 'AUTH.REGISTER_PRO.PHONE_INVALID' | translate }}</small>
       </div>
 
       <div class="form-group">
         <label for="password">{{ 'AUTH.REGISTER_PRO.PASSWORD' | translate }} <span class="required">*</span></label>
-        <input type="password" id="password" name="Password" class="form-control"
+        <input type="password" id="password" name="password" class="form-control"
                #passwordField="ngModel"
                [class.is-invalid]="passwordField.invalid && (passwordField.dirty || passwordField.touched)"
-               [(ngModel)]="password" required minlength="6" [placeholder]="'AUTH.REGISTER_PRO.PASSWORD_PLACEHOLDER' | translate" />
+               [(ngModel)]="password" required minlength="6"
+               [placeholder]="'AUTH.REGISTER_PRO.PASSWORD_PLACEHOLDER' | translate" />
         <small class="field-error" *ngIf="passwordField.invalid && (passwordField.dirty || passwordField.touched)">
           <span *ngIf="passwordField.hasError('required')">{{ 'AUTH.REGISTER_PRO.PASSWORD_REQUIRED' | translate }}</span>
           <span *ngIf="passwordField.hasError('minlength')">{{ 'AUTH.REGISTER_PRO.PASSWORD_MIN' | translate }}</span>
         </small>
       </div>
 
-      <div class="error-msg" *ngIf="step1Error">
-        {{ step1Error }}
-        <a *ngIf="step1ShowLoginLink" routerLink="/auth/login" class="error-login-link">Log in instead</a>
-      </div>
+      <!-- Solo Pro: location section (no business address) -->
+      <ng-container *ngIf="!savedBusinessId">
+        <div class="location-divider">
+          <span>{{ 'AUTH.REGISTER_PRO.YOUR_LOCATION' | translate }}</span>
+        </div>
+        <p class="location-hint">{{ 'AUTH.REGISTER_PRO.YOUR_LOCATION_HINT' | translate }}</p>
 
-      <button type="submit" class="btn-submit" [disabled]="!step1Form.valid || step1Loading || step1ShowLoginLink">
-        {{ step1Loading ? ('AUTH.REGISTER_PRO.SAVING' | translate) : ('AUTH.REGISTER_PRO.NEXT' | translate) }}
-        <span class="btn-arrow" *ngIf="!step1Loading">→</span>
-      </button>
-
-      <p class="login-link">{{ 'AUTH.REGISTER_PRO.HAVE_ACCOUNT' | translate }} <a routerLink="/login">{{ 'AUTH.REGISTER_PRO.SIGN_IN' | translate }}</a></p>
-    </form>
-
-    <!-- Step 2: Address -->
-    <form #step2Form="ngForm" (ngSubmit)="onStep2Submit(step2Form)" *ngIf="currentStep === 2">
-
-      <div class="step2-banner">
-        <span class="banner-icon">✓</span>
-        <span>{{ 'AUTH.REGISTER_PRO.STEP2_BANNER' | translate }}</span>
-      </div>
-
-      <div class="form-group">
-        <label for="addressAutocomplete">{{ 'AUTH.REGISTER_PRO.SEARCH_ADDRESS' | translate }}</label>
-        <div class="autocomplete-container">
-          <input
-            #addressInput
-            type="text"
-            id="addressAutocomplete"
-            class="form-control"
-            [placeholder]="'AUTH.REGISTER_PRO.SEARCH_ADDRESS_PLACEHOLDER' | translate"
-            (input)="onAddressInput($event)"
-            (blur)="hideAddressList()"
-            autocomplete="off"
-          />
-          <div class="address-dropdown" *ngIf="showAddressList && addressPredictions.length > 0">
-            <div
-              *ngFor="let prediction of addressPredictions"
-              class="address-item"
-              (mousedown)="$event.preventDefault()"
-              (click)="onAddressSelected(prediction)"
-            >
-              <div class="address-main">{{ prediction.mainText }}</div>
-              <div class="address-secondary">{{ prediction.secondaryText }}</div>
+        <div class="form-group">
+          <label>{{ 'AUTH.REGISTER_PRO.SEARCH_ADDRESS' | translate }}</label>
+          <div class="autocomplete-container">
+            <input #proAddressInput type="text" class="form-control"
+                   [placeholder]="'AUTH.REGISTER_PRO.SEARCH_ADDRESS_PLACEHOLDER' | translate"
+                   (input)="onProAddressInput($event)"
+                   (blur)="hideProAddressList()"
+                   autocomplete="off" />
+            <div class="address-dropdown" *ngIf="showProAddressList && proAddressPredictions.length > 0">
+              <div *ngFor="let p of proAddressPredictions" class="address-item"
+                   (mousedown)="$event.preventDefault()" (click)="onProAddressSelected(p)">
+                <div class="address-main">{{ p.mainText }}</div>
+                <div class="address-secondary">{{ p.secondaryText }}</div>
+              </div>
             </div>
           </div>
-          <div class="address-loading" *ngIf="addressLoading">{{ 'COMMON.SEARCHING' | translate }}</div>
         </div>
-        <small class="text-muted">{{ 'AUTH.REGISTER_PRO.SEARCH_ADDRESS_HINT' | translate }}</small>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="houseNameNumber">{{ 'AUTH.REGISTER_PRO.HOUSE' | translate }} <span class="required">*</span></label>
-          <input type="text" id="houseNameNumber" name="houseNameNumber" class="form-control"
-                 #houseField="ngModel"
-                 [class.is-invalid]="houseField.invalid && (houseField.dirty || houseField.touched)"
-                 [(ngModel)]="houseNameNumber" required placeholder="12A" />
-          <small class="field-error" *ngIf="houseField.invalid && (houseField.dirty || houseField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="proHouse">{{ 'AUTH.REGISTER_PRO.HOUSE' | translate }} <span class="required">*</span></label>
+            <input type="text" id="proHouse" name="proHouseNameNumber" class="form-control"
+                   #proHouseField="ngModel"
+                   [class.is-invalid]="proHouseField.invalid && (proHouseField.dirty || proHouseField.touched)"
+                   [(ngModel)]="proHouseNameNumber" required placeholder="12A" />
+            <small class="field-error" *ngIf="proHouseField.invalid && (proHouseField.dirty || proHouseField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
+          <div class="form-group">
+            <label for="proZip">{{ 'AUTH.REGISTER_PRO.ZIP' | translate }} <span class="required">*</span></label>
+            <input type="text" id="proZip" name="proZipPostalCode" class="form-control"
+                   #proZipField="ngModel"
+                   [class.is-invalid]="proZipField.invalid && (proZipField.dirty || proZipField.touched)"
+                   [(ngModel)]="proZipPostalCode" required placeholder="695001"
+                   (blur)="onProZipBlur()" />
+            <small class="zip-lookup-hint" *ngIf="proZipLookupLoading">{{ 'AUTH.REGISTER_PRO.ZIP_FILLING' | translate }}</small>
+            <small class="field-error" *ngIf="proZipField.invalid && (proZipField.dirty || proZipField.touched) && !proZipLookupLoading">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="zipPostalCode">{{ 'AUTH.REGISTER_PRO.ZIP' | translate }} <span class="required">*</span></label>
-          <input type="text" id="zipPostalCode" name="zipPostalCode" class="form-control"
-                 #zipField="ngModel"
-                 [class.is-invalid]="zipField.invalid && (zipField.dirty || zipField.touched)"
-                 [(ngModel)]="zipPostalCode" required placeholder="695001" />
-          <small class="field-error" *ngIf="zipField.invalid && (zipField.dirty || zipField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
-        </div>
-      </div>
 
-      <div class="form-group">
-        <label for="street1">{{ 'AUTH.REGISTER_PRO.STREET' | translate }} <span class="required">*</span></label>
-        <input type="text" id="street1" name="street1" class="form-control"
-               #street1Field="ngModel"
-               [class.is-invalid]="street1Field.invalid && (street1Field.dirty || street1Field.touched)"
-               [(ngModel)]="street1" required [placeholder]="'AUTH.REGISTER_PRO.STREET' | translate" />
-        <small class="field-error" *ngIf="street1Field.invalid && (street1Field.dirty || street1Field.touched)">{{ 'AUTH.REGISTER_PRO.STREET_REQUIRED' | translate }}</small>
-      </div>
-
-      <div class="form-group">
-        <label for="street2">{{ 'AUTH.REGISTER_PRO.STREET2' | translate }}</label>
-        <input type="text" id="street2" name="street2" class="form-control"
-               [(ngModel)]="street2" placeholder="Apartment, suite, etc." />
-      </div>
-
-      <div class="form-row">
         <div class="form-group">
-          <label for="city">{{ 'AUTH.REGISTER_PRO.CITY' | translate }} <span class="required">*</span></label>
-          <input type="text" id="city" name="city" class="form-control"
-                 #cityField="ngModel"
-                 [class.is-invalid]="cityField.invalid && (cityField.dirty || cityField.touched)"
-                 [(ngModel)]="city" required [placeholder]="'AUTH.REGISTER_PRO.CITY' | translate" />
-          <small class="field-error" *ngIf="cityField.invalid && (cityField.dirty || cityField.touched)">{{ 'AUTH.REGISTER_PRO.CITY_REQUIRED' | translate }}</small>
+          <label for="proStreet1">{{ 'AUTH.REGISTER_PRO.STREET' | translate }} <span class="required">*</span></label>
+          <input type="text" id="proStreet1" name="proStreet1" class="form-control"
+                 #proStreet1Field="ngModel"
+                 [class.is-invalid]="proStreet1Field.invalid && (proStreet1Field.dirty || proStreet1Field.touched)"
+                 [(ngModel)]="proStreet1" required [placeholder]="'AUTH.REGISTER_PRO.STREET' | translate" />
+          <small class="field-error" *ngIf="proStreet1Field.invalid && (proStreet1Field.dirty || proStreet1Field.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
         </div>
-        <div class="form-group">
-          <label for="district">{{ 'AUTH.REGISTER_PRO.DISTRICT' | translate }}</label>
-          <input type="text" id="district" name="district" class="form-control"
-                 [(ngModel)]="district" [placeholder]="'AUTH.REGISTER_PRO.DISTRICT' | translate" />
-        </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="state">{{ 'AUTH.REGISTER_PRO.STATE' | translate }} <span class="required">*</span></label>
-          <input type="text" id="state" name="state" class="form-control"
-                 #stateField="ngModel"
-                 [class.is-invalid]="stateField.invalid && (stateField.dirty || stateField.touched)"
-                 [(ngModel)]="state" required [placeholder]="'AUTH.REGISTER_PRO.STATE' | translate" />
-          <small class="field-error" *ngIf="stateField.invalid && (stateField.dirty || stateField.touched)">{{ 'AUTH.REGISTER_PRO.STATE_REQUIRED' | translate }}</small>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="proCity">{{ 'AUTH.REGISTER_PRO.CITY' | translate }} <span class="required">*</span></label>
+            <input type="text" id="proCity" name="proCity" class="form-control"
+                   #proCityField="ngModel"
+                   [class.is-invalid]="proCityField.invalid && (proCityField.dirty || proCityField.touched)"
+                   [(ngModel)]="proCity" required [placeholder]="'AUTH.REGISTER_PRO.CITY' | translate" />
+            <small class="field-error" *ngIf="proCityField.invalid && (proCityField.dirty || proCityField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
+          <div class="form-group">
+            <label for="proDistrict">{{ 'AUTH.REGISTER_PRO.DISTRICT' | translate }}</label>
+            <input type="text" id="proDistrict" name="proDistrict" class="form-control"
+                   [(ngModel)]="proDistrict" [placeholder]="'AUTH.REGISTER_PRO.DISTRICT' | translate" />
+          </div>
         </div>
-        <div class="form-group">
-          <label for="country">{{ 'AUTH.REGISTER_PRO.COUNTRY' | translate }} <span class="required">*</span></label>
-          <input type="text" id="country" name="country" class="form-control"
-                 #countryField="ngModel"
-                 [class.is-invalid]="countryField.invalid && (countryField.dirty || countryField.touched)"
-                 [(ngModel)]="country" required [placeholder]="'AUTH.REGISTER_PRO.COUNTRY' | translate" />
-          <small class="field-error" *ngIf="countryField.invalid && (countryField.dirty || countryField.touched)">{{ 'AUTH.REGISTER_PRO.COUNTRY_REQUIRED' | translate }}</small>
-        </div>
-      </div>
 
-      <div class="error-msg" *ngIf="step2Error">{{ step2Error }}</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="proState">{{ 'AUTH.REGISTER_PRO.STATE' | translate }} <span class="required">*</span></label>
+            <input type="text" id="proState" name="proState" class="form-control"
+                   #proStateField="ngModel"
+                   [class.is-invalid]="proStateField.invalid && (proStateField.dirty || proStateField.touched)"
+                   [(ngModel)]="proState" required [placeholder]="'AUTH.REGISTER_PRO.STATE' | translate" />
+            <small class="field-error" *ngIf="proStateField.invalid && (proStateField.dirty || proStateField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
+          <div class="form-group">
+            <label for="proCountry">{{ 'AUTH.REGISTER_PRO.COUNTRY' | translate }} <span class="required">*</span></label>
+            <input type="text" id="proCountry" name="proCountry" class="form-control"
+                   #proCountryField="ngModel"
+                   [class.is-invalid]="proCountryField.invalid && (proCountryField.dirty || proCountryField.touched)"
+                   [(ngModel)]="proCountry" required [placeholder]="'AUTH.REGISTER_PRO.COUNTRY' | translate" />
+            <small class="field-error" *ngIf="proCountryField.invalid && (proCountryField.dirty || proCountryField.touched)">{{ 'AUTH.REGISTER_PRO.REQUIRED' | translate }}</small>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="error-msg" *ngIf="step2Error">
+        {{ step2Error }}
+        <a *ngIf="step2ShowLoginLink" routerLink="/auth/login" class="error-login-link">Log in instead</a>
+      </div>
 
       <div class="step2-actions">
         <button type="button" class="btn-back" (click)="goBack()">{{ 'AUTH.REGISTER_PRO.BACK' | translate }}</button>
-        <button type="submit" class="btn-submit" [disabled]="!step2Form.valid || step2Loading">
-          {{ step2Loading ? ('AUTH.REGISTER_PRO.CREATING' | translate) : ('AUTH.REGISTER_PRO.COMPLETE' | translate) }}
+        <button type="submit" class="btn-submit" [disabled]="!step2Form.valid || step2Loading || proPhoneInvalid">
+          {{ step2Loading ? ('AUTH.REGISTER_PRO.CREATING' | translate) : ('AUTH.REGISTER_PRO.CREATE_LOGIN' | translate) }}
         </button>
       </div>
+
+      <p class="login-link">{{ 'AUTH.REGISTER_PRO.HAVE_ACCOUNT' | translate }} <a routerLink="/auth/login">{{ 'AUTH.REGISTER_PRO.SIGN_IN' | translate }}</a></p>
 
     </form>
 

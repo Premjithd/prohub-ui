@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MyServicesService } from '../../services/my-services.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { Auth } from '../../core/services/auth';
@@ -12,7 +14,7 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-add-service',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslateModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslateModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './add-service.html',
   styleUrls: ['./add-service.scss']
 })
