@@ -1,11 +1,13 @@
 import { Component, Inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { PaymentService } from '../../services/payment.service';
+import { PaymentMethodService, PaymentMethod, CheckoutContext } from '../../core/services/payment-method.service';
 import { CreatePaymentRequest } from '../../models/payment.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -20,7 +22,7 @@ export interface RazorpayCheckoutData {
   consumerName: string;
   consumerEmail: string;
   consumerPhone: string;
-  prefillVpa?: string;
+  prefillVpa?: string; // optional backward compat — overridden by picker selection
 }
 
 @Component({
@@ -35,229 +37,423 @@ export interface RazorpayCheckoutData {
     MatSnackBarModule
   ],
   template: `
-    <div class="razorpay-dialog-container">
-      <div class="dialog-header">
-        <h2>Payment Checkout</h2>
-        <button mat-icon-button (click)="onCancel()" class="close-btn" [disabled]="processing">
+    <div class="rzp-wrap">
+
+      <!-- Header -->
+      <div class="rzp-head">
+        <div class="rzp-head-icon">
+          <mat-icon>lock</mat-icon>
+        </div>
+        <div class="rzp-head-text">
+          <h2>Complete Payment</h2>
+          <p>{{ data.jobTitle }}</p>
+        </div>
+        <button mat-icon-button class="rzp-close" (click)="onCancel()" [disabled]="processing">
           <mat-icon>close</mat-icon>
         </button>
       </div>
 
-      <div class="dialog-content">
-        <div class="job-summary">
-          <h3>{{ data.jobTitle }}</h3>
-          <p>Bid Amount: <strong>₹{{ data.bidAmount.toFixed(2) }}</strong></p>
-          <p>For: <strong>{{ data.consumerName }}</strong></p>
-        </div>
-
-        <div class="rate-breakdown" *ngIf="rateSplit">
-          <h4>Payment Breakdown</h4>
-          <div class="breakdown-item">
-            <span>Bid Amount:</span>
-            <strong>₹{{ rateSplit.bidAmount.toFixed(2) }}</strong>
-          </div>
-          <div class="breakdown-item">
-            <span>Platform Fee ({{ rateSplit.platformFeePercent }}%):</span>
-            <strong>₹{{ rateSplit.platformFee.toFixed(2) }}</strong>
-          </div>
-          <div class="breakdown-item">
-            <span>GST on Fee ({{ rateSplit.gstPercent }}%):</span>
-            <strong>₹{{ rateSplit.gstOnPlatformFee.toFixed(2) }}</strong>
-          </div>
-          <div class="breakdown-item total">
-            <span>Total Amount to Pay:</span>
-            <strong>₹{{ (rateSplit.bidAmount + rateSplit.platformFee + rateSplit.gstOnPlatformFee).toFixed(2) }}</strong>
-          </div>
-        </div>
-
-        <div *ngIf="errorMessage" class="error-message">
-          <mat-icon>error</mat-icon>
-          <span>{{ errorMessage }}</span>
-        </div>
-
-        <div *ngIf="processing" class="processing">
-          <mat-spinner diameter="40"></mat-spinner>
-          <p>Initializing payment...</p>
-        </div>
+      <!-- Full-screen loader while order is fetching -->
+      <div class="rzp-init-loading" *ngIf="processing && !rateSplit && !errorMessage">
+        <mat-spinner diameter="34"></mat-spinner>
+        <p>Preparing checkout...</p>
       </div>
 
-      <div class="dialog-actions">
-        <button mat-button (click)="onCancel()" [disabled]="processing">
-          Cancel
-        </button>
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="initiatePayment()"
-          [disabled]="processing || !!errorMessage"
-        >
-          <mat-icon>payment</mat-icon>
-          Pay Now <span *ngIf="rateSplit">(₹{{ (rateSplit.bidAmount + rateSplit.platformFee + rateSplit.gstOnPlatformFee).toFixed(2) }})</span>
-        </button>
-      </div>
+      <ng-container *ngIf="rateSplit || errorMessage">
+        <div class="rzp-body">
+
+          <!-- ── Payment Method Picker ──────────────────────────────── -->
+          <div class="rzp-section">
+            <div class="rzp-section-header">
+              <mat-icon>account_balance_wallet</mat-icon>
+              <span>Payment Method</span>
+            </div>
+
+            <div class="rzp-context-loading" *ngIf="loadingContext">
+              <mat-spinner diameter="16"></mat-spinner>
+              <span>Loading saved methods...</span>
+            </div>
+
+            <ng-container *ngIf="!loadingContext">
+              <!-- Saved methods list -->
+              <div class="rzp-method-list" *ngIf="checkoutMethods.length > 0">
+                <div
+                  class="rzp-method-row"
+                  *ngFor="let m of checkoutMethods"
+                  [class.active]="selectedMethodId === m.id"
+                  (click)="selectedMethodId = m.id">
+                  <mat-icon class="rzp-radio">{{ selectedMethodId === m.id ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+                  <div class="rzp-method-badge" [class.upi]="m.type === 'UPI'" [class.bank]="m.type === 'Bank'">
+                    <mat-icon>{{ m.type === 'UPI' ? 'qr_code_2' : 'account_balance' }}</mat-icon>
+                  </div>
+                  <div class="rzp-method-text">
+                    <div class="rzp-method-name">
+                      {{ m.label || (m.type === 'UPI' ? 'UPI' : 'Bank Account') }}
+                      <span *ngIf="m.isDefault" class="rzp-def-pill">Default</span>
+                    </div>
+                    <div class="rzp-method-detail">
+                      {{ m.type === 'UPI' ? m.upiVpa : ((m.bankAccountHolderName ? m.bankAccountHolderName + ' · ' : '') + m.bankAccountNumber) }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- "Other method" option -->
+                <div
+                  class="rzp-method-row"
+                  [class.active]="selectedMethodId === null"
+                  (click)="selectedMethodId = null">
+                  <mat-icon class="rzp-radio">{{ selectedMethodId === null ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+                  <div class="rzp-method-badge other">
+                    <mat-icon>add_card</mat-icon>
+                  </div>
+                  <div class="rzp-method-text">
+                    <div class="rzp-method-name">Other method</div>
+                    <div class="rzp-method-detail">Card, net banking, wallet &amp; more</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- No saved methods -->
+              <div class="rzp-no-methods" *ngIf="checkoutMethods.length === 0">
+                <mat-icon>credit_card_off</mat-icon>
+                <span>No saved methods. You can pay using Razorpay's checkout.</span>
+                <a class="rzp-add-link" (click)="goToSettings()">Add method</a>
+              </div>
+            </ng-container>
+          </div>
+
+          <!-- ── Order Summary ──────────────────────────────────────── -->
+          <div class="rzp-section" *ngIf="rateSplit">
+            <div class="rzp-section-header">
+              <mat-icon>receipt_long</mat-icon>
+              <span>Order Summary</span>
+            </div>
+            <div class="rzp-breakdown">
+              <div class="rzp-bd-row">
+                <span>Service charge</span>
+                <span>₹{{ rateSplit.bidAmount.toFixed(2) }}</span>
+              </div>
+              <div class="rzp-bd-row">
+                <span>Platform fee ({{ rateSplit.platformFeePercent }}%)</span>
+                <span>₹{{ rateSplit.platformFee.toFixed(2) }}</span>
+              </div>
+              <div class="rzp-bd-row">
+                <span>GST on platform fee</span>
+                <span>₹{{ rateSplit.gstOnPlatformFee.toFixed(2) }}</span>
+              </div>
+              <div class="rzp-bd-total">
+                <span>Total</span>
+                <span class="rzp-total-val">₹{{ totalAmount.toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Billing Address ────────────────────────────────────── -->
+          <div class="rzp-section rzp-addr-section" *ngIf="billingAddress">
+            <div class="rzp-section-header">
+              <mat-icon>location_on</mat-icon>
+              <span>Billing Address</span>
+            </div>
+            <p class="rzp-addr-text">{{ formatAddress(billingAddress) }}</p>
+          </div>
+
+          <!-- Error -->
+          <div class="rzp-error" *ngIf="errorMessage">
+            <mat-icon>error_outline</mat-icon> {{ errorMessage }}
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="rzp-footer">
+          <button mat-button (click)="onCancel()" [disabled]="processing" class="rzp-cancel-btn">Cancel</button>
+          <button
+            class="rzp-pay-btn"
+            (click)="initiatePayment()"
+            [disabled]="processing || !!errorMessage || !rateSplit">
+            <mat-spinner *ngIf="processing" diameter="16"></mat-spinner>
+            <mat-icon *ngIf="!processing">lock</mat-icon>
+            {{ processing ? 'Processing...' : ('Pay ₹' + (rateSplit ? totalAmount.toFixed(2) : '')) }}
+          </button>
+        </div>
+      </ng-container>
+
     </div>
   `,
   styles: [`
-    .razorpay-dialog-container {
+    .rzp-wrap {
       width: 100%;
+      min-width: 360px;
+      max-width: 520px;
       display: flex;
       flex-direction: column;
-      min-width: 400px;
+      max-height: 90vh;
     }
 
-    .dialog-header {
+    .rzp-head {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid #eaecf5;
+    }
+
+    .rzp-head-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      mat-icon { color: white; font-size: 1.2rem; width: 1.2rem; height: 1.2rem; }
+    }
+
+    .rzp-head-text {
+      flex: 1;
+      min-width: 0;
+      h2 { margin: 0 0 0.1rem; font-size: 1.05rem; font-weight: 700; color: #1a1a2e; }
+      p { margin: 0; font-size: 0.82rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    }
+
+    .rzp-close { flex-shrink: 0; color: #aaa; }
+
+    .rzp-init-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 3rem 2rem;
+      p { margin: 0; color: #888; font-size: 0.9rem; }
+    }
+
+    .rzp-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.5rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .rzp-section {
+      background: #fafbff;
+      border: 1px solid #eaecf5;
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+    }
+
+    .rzp-section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-bottom: 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; color: #667eea; }
+    }
+
+    .rzp-context-loading {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #aaa;
+      font-size: 0.84rem;
+    }
+
+    .rzp-method-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .rzp-method-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.65rem 0.75rem;
+      border: 1.5px solid #e8eaf5;
+      border-radius: 10px;
+      cursor: pointer;
+      background: white;
+      transition: border-color 0.15s, background 0.15s;
+
+      &.active {
+        border-color: #667eea;
+        background: #f5f3ff;
+      }
+
+      &:hover:not(.active) {
+        border-color: #c5cbf5;
+      }
+    }
+
+    .rzp-radio {
+      font-size: 1.1rem;
+      width: 1.1rem;
+      height: 1.1rem;
+      color: #ccc;
+      flex-shrink: 0;
+    }
+
+    .rzp-method-row.active .rzp-radio { color: #667eea; }
+
+    .rzp-method-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+
+      &.upi  { background: #e3f2fd; mat-icon { color: #1565c0; } }
+      &.bank { background: #e8f5e9; mat-icon { color: #2e7d32; } }
+      &.other { background: #f3f0ff; mat-icon { color: #7c3aed; } }
+    }
+
+    .rzp-method-text { flex: 1; min-width: 0; }
+
+    .rzp-method-name {
+      font-size: 0.87rem;
+      font-weight: 600;
+      color: #222;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .rzp-def-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: #fff8e1;
+      color: #f57f17;
+      border-radius: 20px;
+      padding: 0.05rem 0.45rem;
+    }
+
+    .rzp-method-detail {
+      font-size: 0.79rem;
+      color: #999;
+      margin-top: 0.1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rzp-no-methods {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #aaa;
+      font-size: 0.84rem;
+      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; color: #ccc; }
+    }
+
+    .rzp-add-link {
+      margin-left: auto;
+      font-size: 0.82rem;
+      color: #667eea;
+      font-weight: 600;
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
+
+    .rzp-breakdown { display: flex; flex-direction: column; }
+
+    .rzp-bd-row {
       display: flex;
       justify-content: space-between;
+      padding: 0.38rem 0;
+      font-size: 0.87rem;
+      color: #666;
+      border-bottom: 1px solid #f0f0f8;
+      &:last-child { border-bottom: none; }
+    }
+
+    .rzp-bd-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.6rem 0 0.1rem;
+      border-top: 2px solid #eaecf5;
+      margin-top: 0.2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .rzp-total-val { color: #2e7d32; font-size: 1.1rem; }
+
+    .rzp-addr-text { margin: 0; font-size: 0.85rem; color: #555; line-height: 1.5; }
+
+    .rzp-error {
+      display: flex;
       align-items: center;
-      padding: 1.5rem 1.5rem 1rem 1.5rem;
-      border-bottom: 1px solid #e0e0e0;
-      margin-bottom: 1.5rem;
-
-      h2 {
-        margin: 0;
-        font-size: 1.5rem;
-        color: #333;
-      }
-
-      .close-btn {
-        margin: -0.5rem;
-      }
+      gap: 0.5rem;
+      padding: 0.7rem 0.9rem;
+      background: #fff0f0;
+      border: 1px solid #ffcdd2;
+      border-radius: 8px;
+      color: #c62828;
+      font-size: 0.87rem;
+      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
     }
 
-    .dialog-content {
-      padding: 0 1.5rem;
-      flex: 1;
+    .rzp-footer {
       display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-
-      .job-summary {
-        padding: 1rem;
-        background-color: #f5f5f5;
-        border-radius: 4px;
-
-        h3 {
-          margin: 0 0 0.5rem 0;
-          font-size: 1.1rem;
-          color: #333;
-        }
-
-        p {
-          margin: 0.25rem 0;
-          color: #666;
-          font-size: 0.95rem;
-
-          strong {
-            color: #333;
-            font-weight: 600;
-          }
-        }
-      }
-
-      .rate-breakdown {
-        padding: 1rem;
-        background-color: #fafafa;
-        border: 1px solid #e8e8e8;
-        border-radius: 4px;
-
-        h4 {
-          margin: 0 0 1rem 0;
-          font-size: 0.95rem;
-          color: #666;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .breakdown-item {
-          display: flex;
-          justify-content: space-between;
-          padding: 0.5rem 0;
-          font-size: 0.9rem;
-          color: #666;
-          border-bottom: 1px solid #e8e8e8;
-
-          &:last-child {
-            border-bottom: none;
-          }
-
-          strong {
-            color: #333;
-            font-weight: 600;
-          }
-
-          &.total {
-            padding-top: 1rem;
-            border-top: 2px solid #e8e8e8;
-            margin-top: 0.5rem;
-            font-weight: 600;
-            color: #333;
-
-            strong {
-              color: #4caf50;
-              font-size: 1.05rem;
-            }
-          }
-        }
-      }
-
-      .error-message {
-        padding: 1rem;
-        background-color: #ffebee;
-        border-left: 4px solid #f44336;
-        border-radius: 2px;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: #c62828;
-
-        mat-icon {
-          color: #f44336;
-        }
-      }
-
-      .processing {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        padding: 2rem;
-
-        p {
-          margin: 0;
-          color: #666;
-          font-size: 0.9rem;
-        }
-      }
-    }
-
-    .dialog-actions {
-      display: flex;
+      align-items: center;
       justify-content: flex-end;
-      gap: 1rem;
-      padding: 1.5rem;
-      border-top: 1px solid #e0e0e0;
-      background-color: #f9f9f9;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #eaecf5;
+      background: white;
+    }
 
-      button {
-        min-width: 120px;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
+    .rzp-cancel-btn { color: #888; }
+
+    .rzp-pay-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.65rem 1.6rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+      &:hover:not(:disabled) { opacity: 0.91; }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
   `]
 })
 export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
+  // Order state
   processing = false;
   errorMessage = '';
   rateSplit: any;
   scriptLoaded = false;
+  private orderData: any = null;
   private destroy$ = new Subject<void>();
-  private orderData: any = null;  // Store order data to avoid duplicate API calls
+
+  // Payment method picker
+  checkoutMethods: PaymentMethod[] = [];
+  selectedMethodId: number | null = null;
+  billingAddress: CheckoutContext['billingAddress'] | null = null;
+  loadingContext = false;
 
   constructor(
     private paymentService: PaymentService,
+    private pmService: PaymentMethodService,
+    private router: Router,
     public dialogRef: MatDialogRef<RazorpayCheckoutComponent>,
     @Inject(MAT_DIALOG_DATA) public data: RazorpayCheckoutData,
     private snackBar: MatSnackBar,
@@ -268,6 +464,7 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fetchPaymentOrder();
+    this.loadCheckoutContext();
   }
 
   ngOnDestroy(): void {
@@ -275,122 +472,120 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadRazorpayScript(): void {
-    if (window.Razorpay) {
-      this.scriptLoaded = true;
-      return;
-    }
+  get selectedVpa(): string | undefined {
+    if (this.selectedMethodId === null) return this.data.prefillVpa;
+    const method = this.checkoutMethods.find(m => m.id === this.selectedMethodId);
+    return method?.type === 'UPI' ? (method.upiVpa ?? undefined) : undefined;
+  }
 
+  get totalAmount(): number {
+    if (!this.rateSplit) return 0;
+    return this.rateSplit.bidAmount + this.rateSplit.platformFee + this.rateSplit.gstOnPlatformFee;
+  }
+
+  private loadRazorpayScript(): void {
+    if (window.Razorpay) { this.scriptLoaded = true; return; }
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
-    script.onload = () => {
-      this.scriptLoaded = true;
-    };
-    script.onerror = () => {
-      this.errorMessage = 'Failed to load payment gateway. Please try again.';
-    };
+    script.onload = () => { this.scriptLoaded = true; };
+    script.onerror = () => { this.errorMessage = 'Failed to load payment gateway. Please try again.'; this.cdr.markForCheck(); };
     document.head.appendChild(script);
   }
 
   private fetchPaymentOrder(): void {
     this.processing = true;
     this.errorMessage = '';
-    console.log('[RazorpayCheckout] Starting fetchPaymentOrder, processing=true');
-    
     const request: CreatePaymentRequest = {
       jobId: this.data.jobId,
       bidId: this.data.bidId,
       amount: this.data.bidAmount
     };
-
-    console.log('[RazorpayCheckout] Fetching payment order:', request);
-
     this.paymentService.createPaymentOrder(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (order) => {
-          console.log('[RazorpayCheckout] Payment order received:', order);
-          // Store order data for later use
           this.orderData = order;
-
-          // Calculate bid amount (what the professional receives ultimately)
           const bidAmount = order.totalAmount - order.platformFee - order.gstOnPlatformFee;
-          
           this.rateSplit = {
-            bidAmount: bidAmount,
+            bidAmount,
             platformFeePercent: 10,
             platformFee: order.platformFee,
             gstPercent: 18,
             gstOnPlatformFee: order.gstOnPlatformFee,
             proPayOut: order.proPayout
           };
-          console.log('[RazorpayCheckout] Rate split calculated:', this.rateSplit);
-          console.log('[RazorpayCheckout] About to set processing=false');
           this.processing = false;
-          console.log('[RazorpayCheckout] processing set to false. Current value:', this.processing);
-          this.cdr.markForCheck();  // Trigger change detection
-          console.log('[RazorpayCheckout] Change detection marked');
+          this.cdr.markForCheck();
         },
         error: (error) => {
-          console.error('[RazorpayCheckout] Error in subscription:', error);
-          const errorMsg = error?.error?.message || error?.message || 'Failed to initialize payment. Please try again.';
-          this.errorMessage = errorMsg;
-          console.error('[RazorpayCheckout] Error message set to:', this.errorMessage);
+          this.errorMessage = error?.error?.message || 'Failed to initialize payment. Please try again.';
           this.processing = false;
-          this.cdr.markForCheck();  // Trigger change detection on error too
-          console.log('[RazorpayCheckout] Processing set to false after error. Current value:', this.processing);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private loadCheckoutContext(): void {
+    this.loadingContext = true;
+    this.pmService.getCheckoutContext()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ctx) => {
+          this.checkoutMethods = ctx.paymentMethods;
+          this.billingAddress = ctx.billingAddress;
+          // Auto-select: prefer default, then first UPI, then first method
+          const def = ctx.paymentMethods.find(m => m.isDefault);
+          const firstUpi = ctx.paymentMethods.find(m => m.type === 'UPI');
+          const autoSelect = def ?? firstUpi ?? ctx.paymentMethods[0];
+          this.selectedMethodId = autoSelect?.id ?? null;
+          this.loadingContext = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          // Pro role or API error — no saved methods
+          this.loadingContext = false;
+          this.cdr.markForCheck();
         }
       });
   }
 
   initiatePayment(): void {
-    console.log('[RazorpayCheckout] Initiate payment called');
-    
     if (!this.scriptLoaded || !window.Razorpay) {
-      console.error('[RazorpayCheckout] Razorpay script not loaded');
       this.errorMessage = 'Payment gateway not loaded. Please refresh and try again.';
       this.cdr.markForCheck();
       return;
     }
-
     if (!this.orderData) {
-      console.error('[RazorpayCheckout] Order data not available');
       this.errorMessage = 'Payment order data not available. Please try again.';
       this.cdr.markForCheck();
       return;
     }
 
-    console.log('[RazorpayCheckout] Opening Razorpay with order:', this.orderData);
     this.processing = true;
     this.errorMessage = '';
     this.cdr.markForCheck();
 
     try {
+      const vpa = this.selectedVpa;
       const options = {
         key: this.orderData.key,
-        amount: (this.orderData.totalAmount * 100),  // Convert to paisa
+        amount: this.orderData.totalAmount * 100,
         currency: this.orderData.currency,
         order_id: this.orderData.orderId,
         name: 'yProHub',
-        description: `Payment for job: ${this.data.jobTitle}`,
+        description: `Payment for: ${this.data.jobTitle}`,
         customer_notify: 1,
         prefill: {
           name: this.data.consumerName,
           email: this.data.consumerEmail,
           contact: this.data.consumerPhone.replace(/\D/g, ''),
-          ...(this.data.prefillVpa ? { vpa: this.data.prefillVpa } : {})
+          ...(vpa ? { vpa } : {})
         },
-        theme: {
-          color: '#3f51b5'
-        },
-        handler: (response: any) => {
-          console.log('[RazorpayCheckout] Payment handler response:', response);
-          this.verifyPayment(response);
-        },
+        theme: { color: '#667eea' },
+        handler: (response: any) => { this.verifyPayment(response); },
         modal: {
           ondismiss: () => {
-            console.log('[RazorpayCheckout] Payment modal dismissed');
             this.processing = false;
             this.cdr.markForCheck();
             this.snackBar.open('Payment cancelled', 'Close', { duration: 3000 });
@@ -399,12 +594,10 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
       };
 
       const rzp1 = new window.Razorpay(options);
-      console.log('[RazorpayCheckout] Razorpay checkout instance created');
       rzp1.open();
       this.processing = false;
       this.cdr.markForCheck();
     } catch (err) {
-      console.error('[RazorpayCheckout] Error opening Razorpay:', err);
       this.processing = false;
       this.errorMessage = 'Failed to open payment gateway. Please try again.';
       this.cdr.markForCheck();
@@ -412,32 +605,22 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
   }
 
   private verifyPayment(response: any): void {
-    console.log('[RazorpayCheckout] Verifying payment with response:', response);
     this.processing = true;
     this.cdr.markForCheck();
 
-    const verifyRequest = {
+    this.paymentService.verifyPayment({
       razorpayOrderId: response.razorpay_order_id,
       razorpayPaymentId: response.razorpay_payment_id,
       razorpaySignature: response.razorpay_signature
-    };
-
-    this.paymentService.verifyPayment(verifyRequest)
-      .pipe(takeUntil(this.destroy$))
+    }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
-          console.log('[RazorpayCheckout] Payment verified successfully:', result);
           this.processing = false;
           this.cdr.markForCheck();
           this.snackBar.open('Payment successful! Job activated.', 'Close', { duration: 5000 });
-          this.dialogRef.close({
-            success: true,
-            paymentId: result.paymentId,
-            jobStatus: result.jobStatus
-          });
+          this.dialogRef.close({ success: true, paymentId: result.paymentId, jobStatus: result.jobStatus });
         },
-        error: (error) => {
-          console.error('[RazorpayCheckout] Payment verification error:', error);
+        error: () => {
           this.processing = false;
           this.errorMessage = 'Payment verification failed. Please contact support.';
           this.cdr.markForCheck();
@@ -445,9 +628,18 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
       });
   }
 
+  goToSettings(): void {
+    this.dialogRef.close();
+    this.router.navigate(['/settings']);
+  }
+
+  formatAddress(addr: CheckoutContext['billingAddress']): string {
+    if (!addr) return '';
+    return [addr.houseNameNumber, addr.street1, addr.street2, addr.city, addr.state, addr.zipPostalCode]
+      .filter(Boolean).join(', ');
+  }
+
   onCancel(): void {
-    if (!this.processing) {
-      this.dialogRef.close();
-    }
+    if (!this.processing) this.dialogRef.close();
   }
 }
