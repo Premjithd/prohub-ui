@@ -1,5 +1,5 @@
 import { APIRequestContext, expect } from '@playwright/test';
-import { E2E_ADDRESS, E2E_PRO, E2E_USER } from './test-users';
+import { E2E_ADDRESS, E2E_ADMIN, E2E_PRO, E2E_USER } from './test-users';
 
 // Must match apiUrl in prohub-ui/src/environments/environment.ts
 export const API_URL = 'https://localhost:7042/api';
@@ -40,6 +40,31 @@ export async function ensureUserAccount(request: APIRequestContext): Promise<voi
   expect(complete.ok(), `user registration step 2 failed: ${await complete.text()}`).toBe(true);
 }
 
+/**
+ * Creates the e2e admin account (as a regular user) if it doesn't exist yet.
+ * The caller must promote it via db.promoteE2eAdmin() afterwards. Idempotent.
+ */
+export async function ensureAdminAccount(request: APIRequestContext): Promise<void> {
+  const draft = await request.post(`${API_URL}/auth/user/register/draft`, {
+    data: {
+      firstName: E2E_ADMIN.firstName,
+      lastName: E2E_ADMIN.lastName,
+      email: E2E_ADMIN.email,
+      password: E2E_ADMIN.password,
+      phoneNumber: E2E_ADMIN.phoneNumber,
+    },
+  });
+
+  if (draft.status() === 400) return; // already registered
+  expect(draft.ok(), `admin draft registration failed: ${await draft.text()}`).toBe(true);
+
+  const { userId } = await draft.json();
+  const complete = await request.post(`${API_URL}/auth/user/register/complete/${userId}`, {
+    data: { ...E2E_ADDRESS },
+  });
+  expect(complete.ok(), `admin registration step 2 failed: ${await complete.text()}`).toBe(true);
+}
+
 /** Creates the e2e pro account if it doesn't exist yet. Idempotent. */
 export async function ensureProAccount(request: APIRequestContext): Promise<void> {
   const draft = await request.post(`${API_URL}/auth/pro/register/draft`, {
@@ -68,13 +93,14 @@ const sessionCache = new Map<string, { token: string; id: number }>();
 /** Logs in via the API and returns token + account id — for test data setup. */
 export async function apiLoginWithId(
   request: APIRequestContext,
-  role: 'user' | 'pro'
+  role: 'user' | 'pro' | 'admin'
 ): Promise<{ token: string; id: number }> {
   const cached = sessionCache.get(role);
   if (cached) return cached;
 
-  const creds = role === 'user' ? E2E_USER : E2E_PRO;
-  const res = await request.post(`${API_URL}/auth/${role}/login`, {
+  const creds = role === 'user' ? E2E_USER : role === 'pro' ? E2E_PRO : E2E_ADMIN;
+  const endpoint = role === 'pro' ? 'pro' : 'user'; // admins log in via the user endpoint
+  const res = await request.post(`${API_URL}/auth/${endpoint}/login`, {
     data: { email: creds.email, password: creds.password },
   });
   expect(res.ok(), `${role} API login failed: ${await res.text()}`).toBe(true);
@@ -87,7 +113,7 @@ export async function apiLoginWithId(
 /** Logs in via the API and returns the JWT — for API-based test data setup. */
 export async function apiLogin(
   request: APIRequestContext,
-  role: 'user' | 'pro'
+  role: 'user' | 'pro' | 'admin'
 ): Promise<string> {
   return (await apiLoginWithId(request, role)).token;
 }
@@ -198,6 +224,20 @@ export async function apiSubmitCompletion(
     data: { completionNotes: notes },
   });
   expect(res.ok(), `completion submission failed: ${await res.text()}`).toBe(true);
+}
+
+/** User disputes the submitted completion → completion becomes 'Disputed'. */
+export async function apiDisputeCompletion(
+  request: APIRequestContext,
+  userToken: string,
+  jobId: number,
+  reason = 'E2E dispute — work not as agreed.'
+): Promise<void> {
+  const res = await request.post(`${API_URL}/jobs/${jobId}/completion/dispute`, {
+    headers: auth(userToken),
+    data: { reason },
+  });
+  expect(res.ok(), `dispute failed: ${await res.text()}`).toBe(true);
 }
 
 /** User verifies the submitted completion → job becomes 'Completed'. */

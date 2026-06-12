@@ -1,8 +1,15 @@
 import { test as setup } from '@playwright/test';
 import { LoginPage } from '../pages/login.page';
-import { assertBackendUp, ensureProAccount, ensureUserAccount } from '../fixtures/api';
-import { verifyE2eEmails } from '../fixtures/db';
-import { E2E_PRO, E2E_USER, PRO_STORAGE_STATE, USER_STORAGE_STATE } from '../fixtures/test-users';
+import { assertBackendUp, ensureAdminAccount, ensureProAccount, ensureUserAccount } from '../fixtures/api';
+import { promoteE2eAdmin, verifyE2eEmails } from '../fixtures/db';
+import {
+  ADMIN_STORAGE_STATE,
+  E2E_ADMIN,
+  E2E_PRO,
+  E2E_USER,
+  PRO_STORAGE_STATE,
+  USER_STORAGE_STATE,
+} from '../fixtures/test-users';
 
 /**
  * Runs once before all tests: makes sure the e2e accounts exist, logs in
@@ -27,11 +34,24 @@ setup('authenticate as user', async ({ page, request }) => {
 setup('authenticate as pro', async ({ page, request }) => {
   await assertBackendUp(request);
   await ensureProAccount(request);
-  verifyE2eEmails(); // also called here — the two setup tests can run in any order
+  verifyE2eEmails(); // also called here — the setup tests can run in any order
 
   const login = new LoginPage(page);
   await login.goto();
   await login.loginAndWait('pro', E2E_PRO.email, E2E_PRO.password);
 
   await page.context().storageState({ path: PRO_STORAGE_STATE });
+});
+
+setup('authenticate as admin', async ({ page, request }) => {
+  await assertBackendUp(request);
+  await ensureAdminAccount(request); // registered as a user...
+  promoteE2eAdmin();                 // ...then promoted via SQL
+
+  // Admins sign in through the user (Customer) login form
+  const login = new LoginPage(page);
+  await login.goto();
+  await login.loginAndWait('user', E2E_ADMIN.email, E2E_ADMIN.password);
+
+  await page.context().storageState({ path: ADMIN_STORAGE_STATE });
 });

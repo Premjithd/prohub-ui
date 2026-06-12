@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { E2E_PRO, E2E_USER } from './test-users';
+import { E2E_ADMIN, E2E_PRO, E2E_USER } from './test-users';
 
 /**
  * Direct LocalDB access for test staging that has no API:
@@ -32,4 +32,13 @@ export function verifyE2eEmails(): void {
  */
 export function setJobStatus(jobId: number, status: string): void {
   runSql(`UPDATE Jobs SET Status = '${status}' WHERE Id = ${jobId}`);
+}
+
+/**
+ * Promotes the e2e admin account to the Admin role. Admin accounts are
+ * normally created via the invite flow (email link) — for e2e the account is
+ * registered as a regular user and the role is flipped directly.
+ */
+export function promoteE2eAdmin(): void {
+  runSql(`UPDATE Users SET UserType = 'Admin', IsEmailVerified = 1 WHERE Email = '${E2E_ADMIN.email}'`);
 }

@@ -36,5 +36,15 @@ export const E2E_PRO = {
   businessName: 'E2E Testing Services',
 };
 
+// Registered as a normal user, then promoted to Admin via SQL in auth.setup
+export const E2E_ADMIN = {
+  firstName: 'E2E',
+  lastName: 'Admin',
+  email: 'e2e.admin@yprohub.test',
+  password: 'E2eTest!123',
+  phoneNumber: '+919876500003',
+};
+
 export const USER_STORAGE_STATE = '.auth/user.json';
 export const PRO_STORAGE_STATE = '.auth/pro.json';
+export const ADMIN_STORAGE_STATE = '.auth/admin.json';
