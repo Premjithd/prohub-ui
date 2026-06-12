@@ -10,6 +10,7 @@ import { UserService } from '../../core/services/user';
 import { ProService } from '../../core/services/pro';
 import { VerificationService } from '../../core/services/verification.service';
 import { KycService, KycStatus } from '../../core/services/kyc.service';
+import { PaymentMethodService, PaymentMethod } from '../../core/services/payment-method.service';
 
 type VerifStep = 'idle' | 'sending' | 'code-sent' | 'verifying';
 
@@ -40,6 +41,21 @@ export class SettingsComponent implements OnInit {
   phoneError = '';
   phoneSuccess = '';
 
+  // Payment methods (all users)
+  paymentMethods: PaymentMethod[] = [];
+  pmLoading = false;
+  showAddPm = false;
+  pmType: 'UPI' | 'Bank' = 'UPI';
+  pmUpiVpa = '';
+  pmBankHolder = '';
+  pmBankAccount = '';
+  pmBankIfsc = '';
+  pmLabel = '';
+  pmIsDefault = false;
+  pmSaving = false;
+  pmSaveError = '';
+  pmDeleteId: number | null = null;
+
   // KYC (Pro only)
   kycStatus: KycStatus | null = null;
   kycLoading = false;
@@ -60,12 +76,14 @@ export class SettingsComponent implements OnInit {
     private proService: ProService,
     private verificationService: VerificationService,
     private kycService: KycService,
+    private pmService: PaymentMethodService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.userType = this.auth.getUserType();
     this.loadProfile();
+    this.loadPaymentMethods();
   }
 
   get isPro(): boolean { return this.userType === 'Pro'; }
@@ -302,6 +320,89 @@ export class SettingsComponent implements OnInit {
   get canSubmitKyc(): boolean {
     return !!(this.kycStatus?.aadhaarUploaded && this.kycStatus?.panUploaded &&
       this.kycStatus?.kycStatus !== 'Approved');
+  }
+
+  // ── Payment Methods ────────────────────────────────────────────────────────
+
+  loadPaymentMethods(): void {
+    this.pmLoading = true;
+    this.pmService.getAll().subscribe({
+      next: (methods) => {
+        this.paymentMethods = methods;
+        this.pmLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.pmLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  addPaymentMethod(): void {
+    this.pmSaveError = '';
+    if (this.pmType === 'UPI' && !this.pmUpiVpa.trim()) {
+      this.pmSaveError = 'UPI ID is required.'; return;
+    }
+    if (this.pmType === 'Bank' && (!this.pmBankAccount.trim() || !this.pmBankIfsc.trim())) {
+      this.pmSaveError = 'Account number and IFSC code are required.'; return;
+    }
+    this.pmSaving = true;
+    this.pmService.create({
+      type: this.pmType,
+      label: this.pmLabel.trim() || undefined,
+      isDefault: this.pmIsDefault,
+      upiVpa: this.pmType === 'UPI' ? this.pmUpiVpa.trim() : undefined,
+      bankAccountHolderName: this.pmType === 'Bank' ? this.pmBankHolder.trim() : undefined,
+      bankAccountNumber: this.pmType === 'Bank' ? this.pmBankAccount.trim() : undefined,
+      bankIfsc: this.pmType === 'Bank' ? this.pmBankIfsc.trim() : undefined,
+    }).subscribe({
+      next: (pm) => {
+        if (pm.isDefault) {
+          this.paymentMethods = this.paymentMethods.map(m => ({ ...m, isDefault: false }));
+        }
+        this.paymentMethods = [...this.paymentMethods, pm];
+        this.pmSaving = false;
+        this.showAddPm = false;
+        this.resetPmForm();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.pmSaveError = err?.error?.message || 'Failed to save payment method.';
+        this.pmSaving = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  deletePaymentMethod(id: number): void {
+    this.pmDeleteId = id;
+    this.pmService.delete(id).subscribe({
+      next: () => {
+        this.paymentMethods = this.paymentMethods.filter(m => m.id !== id);
+        this.pmDeleteId = null;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.pmDeleteId = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  setDefaultPaymentMethod(id: number): void {
+    this.pmService.setDefault(id).subscribe({
+      next: () => {
+        this.paymentMethods = this.paymentMethods.map(m => ({ ...m, isDefault: m.id === id }));
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  resetPmForm(): void {
+    this.pmType = 'UPI';
+    this.pmUpiVpa = '';
+    this.pmBankHolder = '';
+    this.pmBankAccount = '';
+    this.pmBankIfsc = '';
+    this.pmLabel = '';
+    this.pmIsDefault = false;
+    this.pmSaveError = '';
   }
 
   kycStatusLabel(status: string): string {

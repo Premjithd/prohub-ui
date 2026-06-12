@@ -123,6 +123,131 @@
       </div>
     </div>
 
+    <!-- ── Payment Methods ──────────────────────────────────────────────────── -->
+    <div class="settings-card">
+      <div class="card-section-header">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <div>
+          <h2>{{ 'SETTINGS.PM_TITLE' | translate }}</h2>
+          <p class="card-hint-inline">{{ 'SETTINGS.PM_SUBTITLE' | translate }}</p>
+        </div>
+      </div>
+
+      <p class="card-hint">
+        {{ isPro ? ('SETTINGS.PM_HINT_PRO' | translate) : ('SETTINGS.PM_HINT_USER' | translate) }}
+      </p>
+
+      <div *ngIf="pmLoading" class="kyc-loading">
+        <mat-spinner diameter="20"></mat-spinner>
+        <span>{{ 'COMMON.LOADING' | translate }}</span>
+      </div>
+
+      <ng-container *ngIf="!pmLoading">
+
+        <div *ngIf="paymentMethods.length === 0 && !showAddPm" class="pm-empty">
+          <mat-icon>credit_card_off</mat-icon>
+          <span>{{ 'SETTINGS.PM_EMPTY' | translate }}</span>
+        </div>
+
+        <div class="pm-list" *ngIf="paymentMethods.length > 0">
+          <div class="pm-item" *ngFor="let pm of paymentMethods">
+            <div class="pm-icon-badge" [class.upi]="pm.type === 'UPI'" [class.bank]="pm.type === 'Bank'">
+              <mat-icon>{{ pm.type === 'UPI' ? 'qr_code_2' : 'account_balance' }}</mat-icon>
+            </div>
+            <div class="pm-item-info">
+              <div class="pm-item-title">
+                <span class="pm-type-label">{{ pm.type === 'UPI' ? ('SETTINGS.PM_TYPE_UPI' | translate) : ('SETTINGS.PM_TYPE_BANK' | translate) }}</span>
+                <span *ngIf="pm.label" class="pm-custom-label">· {{ pm.label }}</span>
+                <span *ngIf="pm.isDefault" class="pm-default-badge">
+                  <mat-icon>star</mat-icon>{{ 'SETTINGS.PM_DEFAULT_BADGE' | translate }}
+                </span>
+              </div>
+              <div class="pm-item-meta">
+                <span *ngIf="pm.type === 'UPI'">{{ pm.upiVpa }}</span>
+                <span *ngIf="pm.type === 'Bank'">
+                  {{ pm.bankAccountHolderName ? pm.bankAccountHolderName + ' · ' : '' }}{{ pm.bankAccountNumber }}<span *ngIf="pm.bankIfsc" class="pm-ifsc">{{ pm.bankIfsc }}</span>
+                </span>
+              </div>
+            </div>
+            <div class="pm-actions">
+              <button *ngIf="!pm.isDefault" class="btn-pm-ghost" (click)="setDefaultPaymentMethod(pm.id)" title="{{ 'SETTINGS.PM_SET_DEFAULT_CHECK' | translate }}">
+                <mat-icon>star_border</mat-icon>
+              </button>
+              <button class="btn-pm-danger" (click)="deletePaymentMethod(pm.id)" [disabled]="pmDeleteId === pm.id">
+                <mat-spinner *ngIf="pmDeleteId === pm.id" diameter="14"></mat-spinner>
+                <mat-icon *ngIf="pmDeleteId !== pm.id">delete_outline</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add form panel -->
+        <div class="pm-add-panel" *ngIf="showAddPm">
+          <h3>{{ 'SETTINGS.PM_ADD_HEADER' | translate }}</h3>
+
+          <div class="pm-type-toggle">
+            <button [class.active]="pmType === 'UPI'" (click)="pmType = 'UPI'">
+              <mat-icon>qr_code_2</mat-icon>{{ 'SETTINGS.PM_TYPE_UPI' | translate }}
+            </button>
+            <button [class.active]="pmType === 'Bank'" (click)="pmType = 'Bank'">
+              <mat-icon>account_balance</mat-icon>{{ 'SETTINGS.PM_TYPE_BANK' | translate }}
+            </button>
+          </div>
+
+          <div *ngIf="pmType === 'UPI'" class="pm-form-fields">
+            <div class="pm-field">
+              <label>{{ 'SETTINGS.PM_UPI_VPA' | translate }}</label>
+              <input type="text" [(ngModel)]="pmUpiVpa" placeholder="yourname@upi" class="pm-input" />
+            </div>
+          </div>
+
+          <div *ngIf="pmType === 'Bank'" class="pm-form-fields">
+            <div class="pm-field">
+              <label>{{ 'SETTINGS.PM_BANK_HOLDER' | translate }}</label>
+              <input type="text" [(ngModel)]="pmBankHolder" placeholder="Account holder name" class="pm-input" />
+            </div>
+            <div class="pm-field">
+              <label>{{ 'SETTINGS.PM_BANK_ACCOUNT' | translate }}</label>
+              <input type="text" [(ngModel)]="pmBankAccount" placeholder="Account number" class="pm-input" />
+            </div>
+            <div class="pm-field">
+              <label>{{ 'SETTINGS.PM_BANK_IFSC' | translate }}</label>
+              <input type="text" [(ngModel)]="pmBankIfsc" placeholder="e.g. SBIN0001234" class="pm-input" />
+            </div>
+          </div>
+
+          <div class="pm-form-fields">
+            <div class="pm-field">
+              <label>{{ 'SETTINGS.PM_LABEL_FIELD' | translate }} <span class="optional-hint">({{ 'COMMON.OPTIONAL' | translate }})</span></label>
+              <input type="text" [(ngModel)]="pmLabel" placeholder="e.g. Personal, Business" class="pm-input" />
+            </div>
+            <div class="pm-default-check">
+              <input type="checkbox" id="pmIsDefault" [(ngModel)]="pmIsDefault" />
+              <label for="pmIsDefault">{{ 'SETTINGS.PM_SET_DEFAULT_CHECK' | translate }}</label>
+            </div>
+          </div>
+
+          <p *ngIf="pmSaveError" class="verif-error"><mat-icon>error_outline</mat-icon> {{ pmSaveError }}</p>
+
+          <div class="pm-form-actions">
+            <button class="btn-verify" (click)="addPaymentMethod()" [disabled]="pmSaving">
+              <mat-spinner *ngIf="pmSaving" diameter="16"></mat-spinner>
+              <mat-icon *ngIf="!pmSaving">save</mat-icon>
+              {{ pmSaving ? ('SETTINGS.PM_SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+            </button>
+            <button class="btn-resend" (click)="showAddPm = false; resetPmForm()">{{ 'COMMON.CANCEL' | translate }}</button>
+          </div>
+        </div>
+
+        <div class="pm-add-trigger" *ngIf="!showAddPm">
+          <button class="btn-pm-add" (click)="showAddPm = true">
+            <mat-icon>add</mat-icon>{{ 'SETTINGS.PM_ADD' | translate }}
+          </button>
+        </div>
+
+      </ng-container>
+    </div>
+
     <!-- ── KYC Documents (Pros only) ───────────────────────────────────────── -->
     <ng-container *ngIf="isPro">
       <div class="settings-card kyc-card">

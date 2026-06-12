@@ -852,6 +852,23 @@
     "BUSINESS_TITLE": "Business Account",
     "BUSINESS_SUBTITLE": "Create and manage business entities with your team.",
     "BUSINESS_HINT": "A Business account lets you operate under a registered name, add team members, and share services.",
-    "MANAGE_BUSINESSES": "Manage Businesses"
+    "MANAGE_BUSINESSES": "Manage Businesses",
+    "PM_TITLE": "Payment Methods",
+    "PM_SUBTITLE": "Manage saved payment methods for transactions",
+    "PM_HINT_USER": "Saved payment methods are used during checkout to pay for services.",
+    "PM_HINT_PRO": "Add a bank account or UPI ID to receive payouts when jobs are completed.",
+    "PM_EMPTY": "No payment methods saved yet.",
+    "PM_ADD": "Add Payment Method",
+    "PM_ADD_HEADER": "Add New Payment Method",
+    "PM_TYPE_UPI": "UPI",
+    "PM_TYPE_BANK": "Bank Account",
+    "PM_UPI_VPA": "UPI ID / VPA",
+    "PM_BANK_HOLDER": "Account Holder Name",
+    "PM_BANK_ACCOUNT": "Account Number",
+    "PM_BANK_IFSC": "IFSC Code",
+    "PM_LABEL_FIELD": "Label",
+    "PM_SET_DEFAULT_CHECK": "Set as default",
+    "PM_DEFAULT_BADGE": "Default",
+    "PM_SAVING": "Saving..."
   }
 }
