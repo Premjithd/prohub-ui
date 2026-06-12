@@ -42,10 +42,13 @@ npx playwright test -g "add a UPI method"
 
 `tests/auth.setup.ts` runs before everything else:
 
-1. Creates the e2e accounts (`e2e.user@yprohub.test`, `e2e.pro@yprohub.test`)
-   via the backend registration API — idempotent, skipped if they exist.
+1. Creates the e2e accounts (`e2e.user@yprohub.test`, `e2e.pro@yprohub.test`,
+   `e2e.admin@yprohub.test`) via the backend registration API — idempotent,
+   skipped if they exist. The admin account is registered as a regular user
+   and promoted to the Admin role via SQL (admin invites are email-only).
 2. Logs in through the real login page once per role.
-3. Saves browser storage to `.auth/user.json` / `.auth/pro.json`.
+3. Saves browser storage to `.auth/user.json` / `.auth/pro.json` /
+   `.auth/admin.json`.
 
 Every test then starts pre-authenticated by declaring which state it wants:
 
@@ -74,8 +77,12 @@ e2e/
     auth.setup.ts        — auth bootstrap (runs first)
     auth/                — login specs
     settings/            — settings page + payment methods specs
-    jobs/                — post-job wizard + full job lifecycle specs
-                           (bid, reject, accept, work-update phases)
+    jobs/                — post-job wizard, job lifecycle (bid/reject/accept/
+                           phases), bid journeys, withdrawal, completion+review
+    messages/            — user↔pro messaging specs
+    payments/            — checkout dialog with method selection (Razorpay
+                           script stubbed; create-order mocked)
+    admin/               — dispute resolution (admin role)
 ```
 
 ## Conventions when adding tests
