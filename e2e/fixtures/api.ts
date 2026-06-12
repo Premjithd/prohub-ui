@@ -186,6 +186,32 @@ export async function apiSetJobPhases(
   expect(res.ok(), `setting job phases failed: ${await res.text()}`).toBe(true);
 }
 
+/** Pro submits job completion → job becomes 'Completion Submitted'. */
+export async function apiSubmitCompletion(
+  request: APIRequestContext,
+  proToken: string,
+  jobId: number,
+  notes = 'E2E completion — work done as agreed.'
+): Promise<void> {
+  const res = await request.put(`${API_URL}/jobs/${jobId}/complete`, {
+    headers: auth(proToken),
+    data: { completionNotes: notes },
+  });
+  expect(res.ok(), `completion submission failed: ${await res.text()}`).toBe(true);
+}
+
+/** User verifies the submitted completion → job becomes 'Completed'. */
+export async function apiVerifyCompletion(
+  request: APIRequestContext,
+  userToken: string,
+  jobId: number
+): Promise<void> {
+  const res = await request.post(`${API_URL}/jobs/${jobId}/completion/verify`, {
+    headers: auth(userToken),
+  });
+  expect(res.ok(), `completion verification failed: ${await res.text()}`).toBe(true);
+}
+
 /**
  * Sends a direct message. senderType is the SENDER's role; the backend infers
  * the recipient type (User↔Pro) and creates the conversation if needed.
