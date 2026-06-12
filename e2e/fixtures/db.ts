@@ -1,4 +1,6 @@
 import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { E2E_ADMIN, E2E_PRO, E2E_USER } from './test-users';
 
 /**
@@ -11,8 +13,27 @@ import { E2E_ADMIN, E2E_PRO, E2E_USER } from './test-users';
  * backend uses.
  */
 
-const SQL_SERVER = '(localdb)\\mssqllocaldb';
-const SQL_DB = 'ProhubDB';
+/**
+ * Single source of truth for the test database: the backend's Test-environment
+ * connection string (appsettings.Test.json). Run the backend with
+ * ASPNETCORE_ENVIRONMENT=Test so the API and this staging code share one DB.
+ */
+function readTestConnection(): { server: string; database: string } {
+  const appsettingsPath = join(
+    __dirname,
+    '../../../ProHubAPI/ServiceProviderAPI/appsettings.Test.json'
+  );
+  const config = JSON.parse(readFileSync(appsettingsPath, 'utf8'));
+  const conn: string = config?.ConnectionStrings?.DefaultConnection ?? '';
+  const server = /Server=([^;]+)/i.exec(conn)?.[1];
+  const database = /Database=([^;]+)/i.exec(conn)?.[1];
+  if (!server || !database) {
+    throw new Error(`Could not parse Server/Database from appsettings.Test.json: "${conn}"`);
+  }
+  return { server, database };
+}
+
+const { server: SQL_SERVER, database: SQL_DB } = readTestConnection();
 
 function runSql(query: string): void {
   execSync(`sqlcmd -S "${SQL_SERVER}" -d ${SQL_DB} -Q "${query.replace(/"/g, '\\"')}"`, {

@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideAppInitializer, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS, withXsrfConfiguration, withFetch } from '@angular/common/http';
 import { MSAL_INSTANCE, MsalService } from '@azure/msal-angular';
@@ -9,6 +9,7 @@ import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { loadRuntimeConfig } from './core/config/runtime-config';
 
 // MSAL Configuration
 const msalConfig: Configuration = {
@@ -29,6 +30,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
+    provideAppInitializer(() => loadRuntimeConfig()),
     provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
     provideClientHydration(withEventReplay()),
     provideHttpClient(

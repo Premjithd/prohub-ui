@@ -16,6 +16,10 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   outputDir: './test-results',
+  // Swap public/config.json -> config.e2e.json for the run (points the UI at the
+  // local Test backend), then restore the committed file afterward.
+  globalSetup: './global-setup.ts',
+  globalTeardown: './global-teardown.ts',
   // Files run in parallel, but tests within a file run in order — tests in
   // one file often share account state (e.g. payment methods CRUD).
   fullyParallel: false,
