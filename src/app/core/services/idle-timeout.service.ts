@@ -2,7 +2,6 @@ import { Injectable, NgZone, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Auth } from './auth';
-import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -31,14 +30,10 @@ export class IdleTimeoutService {
 
     this.isInitialized = true;
 
-    // Listen for browser close/page unload and logout user
-    this.ngZone.runOutsideAngular(() => {
-      window.addEventListener('beforeunload', () => {
-        if (this.auth.isAuthenticated()) {
-          this.logoutOnBrowserClose();
-        }
-      });
-    });
+    // NOTE: no beforeunload logout here. beforeunload fires on page refresh and
+    // in-tab navigation too, so hooking it logged users out on every F5.
+    // Session safety is covered by the 30-minute idle timeout below and the
+    // 15-minute JWT lifetime with server-side revocation.
 
     // Run outside Angular zone to avoid triggering change detection on every activity
     this.ngZone.runOutsideAngular(() => {
@@ -76,27 +71,6 @@ export class IdleTimeoutService {
     const destination = this.router.url.startsWith('/profile') ? '/' : '/auth/login';
     this.auth.logout();
     this.router.navigate([destination]);
-  }
-
-  private logoutOnBrowserClose(): void {
-    // Use sendBeacon to ensure request completes even if page is unloading
-    const token = this.auth.getToken();
-    const userType = this.auth.getUserType();
-    
-    if (token && userType) {
-      const logoutEndpoint = `${environment.apiUrl}/auth/${userType.toLowerCase()}/logout`;
-      
-      // Send logout beacon with token in headers
-      const headers = new Headers();
-      headers.append('Content-Type', 'application/json');
-      headers.append('Authorization', `Bearer ${token}`);
-      
-      // Send beacon with logout data
-      navigator.sendBeacon(logoutEndpoint, JSON.stringify({ logout: true }));
-    }
-    
-    // Clear local storage
-    this.auth.logout();
   }
 
   stopIdleTimer(): void {

@@ -1,0 +1,37 @@
+import { test as setup } from '@playwright/test';
+import { LoginPage } from '../pages/login.page';
+import { assertBackendUp, ensureProAccount, ensureUserAccount } from '../fixtures/api';
+import { verifyE2eEmails } from '../fixtures/db';
+import { E2E_PRO, E2E_USER, PRO_STORAGE_STATE, USER_STORAGE_STATE } from '../fixtures/test-users';
+
+/**
+ * Runs once before all tests: makes sure the e2e accounts exist, logs in
+ * through the real UI once per role, and saves the browser storage so every
+ * test starts already authenticated.
+ */
+
+setup('authenticate as user', async ({ page, request }) => {
+  await assertBackendUp(request);
+  await ensureUserAccount(request);
+  // Posting jobs and bidding require a verified email; the verification code
+  // is only delivered by email, so flip the flag directly in LocalDB.
+  verifyE2eEmails();
+
+  const login = new LoginPage(page);
+  await login.goto();
+  await login.loginAndWait('user', E2E_USER.email, E2E_USER.password);
+
+  await page.context().storageState({ path: USER_STORAGE_STATE });
+});
+
+setup('authenticate as pro', async ({ page, request }) => {
+  await assertBackendUp(request);
+  await ensureProAccount(request);
+  verifyE2eEmails(); // also called here — the two setup tests can run in any order
+
+  const login = new LoginPage(page);
+  await login.goto();
+  await login.loginAndWait('pro', E2E_PRO.email, E2E_PRO.password);
+
+  await page.context().storageState({ path: PRO_STORAGE_STATE });
+});
