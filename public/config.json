@@ -1,4 +1,4 @@
 {
-  "apiUrl": "https://yprohubapi-esffhuhgeae5ajhj.southindia-01.azurewebsites.net/api",
-  "hubUrl": "https://yprohubapi-esffhuhgeae5ajhj.southindia-01.azurewebsites.net"
+  "apiUrl": "https://localhost:7042/api",
+  "hubUrl": "https://localhost:7042"
 }

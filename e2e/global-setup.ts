@@ -15,6 +15,11 @@ const BACKUP = join(__dirname, '../public/config.json.orig');
 const E2E_CONFIG = join(__dirname, 'config.e2e.json');
 
 export default function globalSetup(): void {
+  // When targeting a deployed UI, the app loads config.json from that server;
+  // the local swap is irrelevant, so leave the committed file alone.
+  if (process.env.E2E_BASE_URL) {
+    return;
+  }
   // Recover from a previous crashed run that left the e2e config in place.
   if (existsSync(BACKUP)) {
     renameSync(BACKUP, PUBLIC_CONFIG);

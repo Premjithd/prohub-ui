@@ -40,7 +40,8 @@ test.describe('Admin dispute resolution — UI', () => {
     const reason = `E2E dispute reason ${Date.now()}`;
     const { userToken, job } = await stageDisputedJob(request, 'admin resolve', reason);
 
-    await page.goto('/admin-users');
+    // Disputes now live in their own admin view, reachable via the ?view= param.
+    await page.goto('/admin-users?view=disputes');
     const card = page.locator('.dispute-card').filter({ hasText: job.title });
     await expect(card).toBeVisible({ timeout: 15_000 });
 
@@ -51,7 +52,11 @@ test.describe('Admin dispute resolution — UI', () => {
 
     await card.getByRole('button', { name: /complete for pro/i }).click();
 
-    // Card leaves the open-disputes banner once resolved
+    // A resolution comment is now required before completing.
+    await card.locator('textarea').fill('E2E admin resolution: work verified as completed.');
+    await card.getByRole('button', { name: /confirm complete/i }).click();
+
+    // Card leaves the open-disputes list once resolved
     await expect(card).toHaveCount(0, { timeout: 15_000 });
 
     // Backend state: job Completed, completion Verified
@@ -64,7 +69,8 @@ test.describe('Admin dispute resolution — UI', () => {
   test('refund resolution asks for confirmation and can be cancelled', async ({ page, request }) => {
     const { job } = await stageDisputedJob(request, 'refund confirm');
 
-    await page.goto('/admin-users');
+    // Disputes now live in their own admin view, reachable via the ?view= param.
+    await page.goto('/admin-users?view=disputes');
     const card = page.locator('.dispute-card').filter({ hasText: job.title });
     await expect(card).toBeVisible({ timeout: 15_000 });
 
@@ -108,10 +114,22 @@ test.describe('Admin dispute resolution — API rules', () => {
 
     const res = await request.post(`${API_URL}/admin/jobs/${job.id}/completion/resolve`, {
       headers: { Authorization: `Bearer ${adminToken}` },
-      data: { resolution: 'complete' },
+      data: { resolution: 'complete', notes: 'resolution comment' },
     });
     expect(res.status()).toBe(400);
     expect(await res.text()).toContain('not in Disputed status');
+  });
+
+  test('a resolution comment is required', async ({ request }) => {
+    const adminToken = await apiLogin(request, 'admin');
+    const { job } = await stageDisputedJob(request, 'no comment');
+
+    const res = await request.post(`${API_URL}/admin/jobs/${job.id}/completion/resolve`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+      data: { resolution: 'complete' },
+    });
+    expect(res.status()).toBe(400);
+    expect(await res.text()).toContain('resolution comment is required');
   });
 
   test('refund resolution requires a completed payment', async ({ request }) => {
@@ -120,7 +138,7 @@ test.describe('Admin dispute resolution — API rules', () => {
 
     const res = await request.post(`${API_URL}/admin/jobs/${job.id}/completion/resolve`, {
       headers: { Authorization: `Bearer ${adminToken}` },
-      data: { resolution: 'refund' },
+      data: { resolution: 'refund', notes: 'resolution comment' },
     });
     expect(res.status()).toBe(400);
     expect(await res.text()).toContain('No completed payment found');

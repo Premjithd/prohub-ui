@@ -14,30 +14,57 @@ import { E2E_ADMIN, E2E_PRO, E2E_USER } from './test-users';
  */
 
 /**
- * Single source of truth for the test database: the backend's Test-environment
- * connection string (appsettings.Test.json). Run the backend with
- * ASPNETCORE_ENVIRONMENT=Test so the API and this staging code share one DB.
+ * Source of the test database connection, in priority order:
+ *  1. E2E_SQL_CONNECTION env var — a full connection string (used to point the
+ *     suite at a remote/Azure SQL database with SQL auth).
+ *  2. The backend's Test-environment connection string (appsettings.Test.json),
+ *     for the default local LocalDB run.
  */
-function readTestConnection(): { server: string; database: string } {
-  const appsettingsPath = join(
-    __dirname,
-    '../../../ProHubAPI/ServiceProviderAPI/appsettings.Test.json'
-  );
-  const config = JSON.parse(readFileSync(appsettingsPath, 'utf8'));
-  const conn: string = config?.ConnectionStrings?.DefaultConnection ?? '';
-  const server = /Server=([^;]+)/i.exec(conn)?.[1];
-  const database = /Database=([^;]+)/i.exec(conn)?.[1];
-  if (!server || !database) {
-    throw new Error(`Could not parse Server/Database from appsettings.Test.json: "${conn}"`);
-  }
-  return { server, database };
+interface SqlTarget {
+  server: string;
+  database: string;
+  user?: string;
+  password?: string;
 }
 
-const { server: SQL_SERVER, database: SQL_DB } = readTestConnection();
+function readSqlTarget(): SqlTarget {
+  let conn = process.env.E2E_SQL_CONNECTION;
+  if (!conn) {
+    const appsettingsPath = join(
+      __dirname,
+      '../../../ProHubAPI/ServiceProviderAPI/appsettings.Test.json'
+    );
+    conn = JSON.parse(readFileSync(appsettingsPath, 'utf8'))?.ConnectionStrings?.DefaultConnection ?? '';
+  }
+  const get = (keys: string[]): string | undefined => {
+    for (const key of keys) {
+      const match = new RegExp(`(?:^|;)\\s*${key}\\s*=\\s*([^;]+)`, 'i').exec(conn!);
+      if (match) return match[1].trim();
+    }
+    return undefined;
+  };
+  const server = get(['Server', 'Data Source']);
+  const database = get(['Database', 'Initial Catalog']);
+  if (!server || !database) {
+    throw new Error(`Could not parse Server/Database from the SQL connection string`);
+  }
+  return { server, database, user: get(['User ID', 'User Id', 'UID']), password: get(['Password', 'PWD']) };
+}
+
+const target = readSqlTarget();
 
 function runSql(query: string): void {
-  execSync(`sqlcmd -S "${SQL_SERVER}" -d ${SQL_DB} -Q "${query.replace(/"/g, '\\"')}"`, {
+  // SQL auth (Azure) when a user is present, otherwise trusted auth (LocalDB).
+  // The password is passed via SQLCMDPASSWORD so it never appears on the command line.
+  const env = { ...process.env };
+  let authArgs = '';
+  if (target.user) {
+    authArgs = `-U "${target.user}" -N -C`;
+    env.SQLCMDPASSWORD = target.password ?? '';
+  }
+  execSync(`sqlcmd -S "${target.server}" -d "${target.database}" ${authArgs} -Q "${query.replace(/"/g, '\\"')}"`, {
     stdio: 'pipe',
+    env,
   });
 }
 

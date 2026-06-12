@@ -1,8 +1,8 @@
 import { APIRequestContext, expect } from '@playwright/test';
 import { E2E_ADDRESS, E2E_ADMIN, E2E_PRO, E2E_USER } from './test-users';
 
-// Must match apiUrl in prohub-ui/src/environments/environment.ts
-export const API_URL = 'https://localhost:7042/api';
+// Defaults to the local backend; override with E2E_API_URL to target a deployed API.
+export const API_URL = process.env.E2E_API_URL || 'https://localhost:7042/api';
 
 /** Fails fast with a clear message if the backend is not running. */
 export async function assertBackendUp(request: APIRequestContext): Promise<void> {

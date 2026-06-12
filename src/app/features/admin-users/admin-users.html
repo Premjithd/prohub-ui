@@ -26,17 +26,31 @@
   </div>
 
   <!-- â”€â”€ DISPUTES BANNER (always visible) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-  <div class="disputes-banner" *ngIf="disputes.length > 0 || isLoadingDisputes">
+  <div class="disputes-banner" *ngIf="activeView === 'disputes'">
     <div class="disputes-banner-title">
-      <mat-icon>flag</mat-icon>
-      Open Disputes
-      <span class="dispute-count" *ngIf="disputes.length > 0">{{ disputes.length }}</span>
+      <mat-icon>gavel</mat-icon>
+      Disputes
     </div>
+
+    <div class="dispute-tabs">
+      <button type="button" [class.active]="disputeTab === 'open'" (click)="setDisputeTab('open')">
+        Open <span class="dispute-count" *ngIf="disputes.length > 0">{{ disputes.length }}</span>
+      </button>
+      <button type="button" [class.active]="disputeTab === 'resolved'" (click)="setDisputeTab('resolved')">
+        Resolved
+      </button>
+    </div>
+
+    <ng-container *ngIf="disputeTab === 'open'">
 
     <div *ngIf="isLoadingDisputes" class="disputes-loading">
       <mat-spinner diameter="24"></mat-spinner>
       <span>Loading disputes...</span>
     </div>
+
+    <p *ngIf="!isLoadingDisputes && disputes.length === 0" class="disputes-empty">
+      <mat-icon>verified</mat-icon> No open disputes.
+    </p>
 
     <div class="disputes-list" *ngIf="!isLoadingDisputes">
       <div *ngFor="let d of disputes" class="dispute-card">
@@ -69,17 +83,38 @@
             <button mat-stroked-button (click)="refundConfirmJobId = null" [disabled]="resolvingDisputeId === d.jobId">
               Cancel
             </button>
-            <button mat-raised-button color="warn" (click)="confirmRefund(d.jobId)" [disabled]="resolvingDisputeId === d.jobId">
+            <button mat-raised-button color="warn" (click)="confirmRefund(d.jobId)" [disabled]="resolvingDisputeId === d.jobId || !refundNotes.trim()">
               <mat-icon>{{ resolvingDisputeId === d.jobId ? 'hourglass_empty' : 'currency_rupee' }}</mat-icon>
               {{ resolvingDisputeId === d.jobId ? 'Processing...' : 'Confirm Refund' }}
             </button>
           </div>
         </div>
 
-        <div class="dispute-actions" *ngIf="refundConfirmJobId !== d.jobId">
+        <!-- Inline complete confirm form (comment required) -->
+        <div *ngIf="completeConfirmJobId === d.jobId" class="refund-confirm-form">
+          <p class="refund-confirm-warning complete-warning">
+            <mat-icon>check_circle</mat-icon>
+            This marks the job <strong>Completed in the pro's favour</strong> and releases payment. Add a comment explaining the decision.
+          </p>
+          <mat-form-field appearance="outline" class="refund-notes-field">
+            <mat-label>Resolution comment (required)</mat-label>
+            <textarea matInput [(ngModel)]="completeNotes" rows="2" placeholder="Explain why the work is being marked complete..."></textarea>
+          </mat-form-field>
+          <div class="refund-confirm-actions">
+            <button mat-stroked-button (click)="completeConfirmJobId = null" [disabled]="resolvingDisputeId === d.jobId">
+              Cancel
+            </button>
+            <button mat-raised-button color="accent" (click)="confirmComplete(d.jobId)" [disabled]="resolvingDisputeId === d.jobId || !completeNotes.trim()">
+              <mat-icon>{{ resolvingDisputeId === d.jobId ? 'hourglass_empty' : 'check_circle' }}</mat-icon>
+              {{ resolvingDisputeId === d.jobId ? 'Processing...' : 'Confirm Complete' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="dispute-actions" *ngIf="refundConfirmJobId !== d.jobId && completeConfirmJobId !== d.jobId">
           <button
             mat-raised-button color="accent"
-            (click)="resolveDispute(d.jobId, 'complete')"
+            (click)="openCompleteConfirm(d.jobId)"
             [disabled]="resolvingDisputeId === d.jobId"
             title="Mark the job as Completed in favour of the professional">
             <mat-icon>check_circle</mat-icon>
@@ -96,10 +131,149 @@
         </div>
       </div>
     </div>
+    </ng-container>
+
+    <!-- RESOLVED TAB -->
+    <ng-container *ngIf="disputeTab === 'resolved'">
+      <div class="resolved-filters">
+        <label>From <input type="date" [(ngModel)]="resolvedFrom"></label>
+        <label>To <input type="date" [(ngModel)]="resolvedTo"></label>
+        <input class="resolved-search" type="text" [(ngModel)]="resolvedSearch"
+               placeholder="Search job, consumer or pro..." (keyup.enter)="applyResolvedFilters()">
+        <button type="button" class="resolved-apply" (click)="applyResolvedFilters()">Apply</button>
+        <button type="button" class="resolved-clear" *ngIf="resolvedFrom || resolvedTo || resolvedSearch" (click)="clearResolvedFilters()">Clear</button>
+      </div>
+
+      <div *ngIf="isLoadingResolved" class="disputes-loading">
+        <mat-spinner diameter="24"></mat-spinner><span>Loading...</span>
+      </div>
+
+      <p *ngIf="!isLoadingResolved && resolvedDisputes.length === 0" class="disputes-empty">
+        <mat-icon>history</mat-icon> No resolved disputes for these filters.
+      </p>
+
+      <div class="disputes-list" *ngIf="!isLoadingResolved && resolvedDisputes.length > 0">
+        <div *ngFor="let r of resolvedDisputes" class="dispute-card resolved-card">
+          <div class="dispute-card-header">
+            <span class="dispute-job-title">{{ r.jobTitle }}</span>
+            <span class="resolution-badge"
+                  [class.refund]="r.resolution === 'refund'"
+                  [class.complete]="r.resolution === 'complete'">
+              {{ r.resolution === 'refund' ? 'Refunded' : 'Completed for Pro' }}
+            </span>
+          </div>
+          <div class="dispute-parties">
+            <span><mat-icon>person</mat-icon> Consumer: {{ r.consumer?.name }} ({{ r.consumer?.email }})</span>
+            <span><mat-icon>engineering</mat-icon> Pro: {{ r.pro?.businessName || r.pro?.name || '—' }}<ng-container *ngIf="r.pro?.email"> ({{ r.pro?.email }})</ng-container></span>
+          </div>
+          <p class="dispute-reason"><strong>Dispute reason:</strong> {{ r.disputeReason }}</p>
+          <p class="dispute-completion-notes" *ngIf="r.resolutionNotes"><strong>Resolution comment:</strong> {{ r.resolutionNotes }}</p>
+          <p *ngIf="r.paymentAmount != null" class="dispute-payment-amount">
+            <mat-icon>currency_rupee</mat-icon><strong>Payment:</strong> ₹{{ r.paymentAmount | number:'1.2-2' }}
+          </p>
+          <div class="resolved-meta">
+            <span><mat-icon>event_available</mat-icon> Resolved {{ r.resolvedAt | date:'MMM d, y, h:mm a' }}</span>
+            <span *ngIf="r.resolvedBy"><mat-icon>admin_panel_settings</mat-icon> By {{ r.resolvedBy.name }}</span>
+            <span><mat-icon>flag</mat-icon> Disputed {{ r.disputedAt | date:'MMM d, y' }}</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
   </div>
 
   <!-- â”€â”€ PANEL AREA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <div class="admin-panel-area" [ngSwitch]="activeView">
+
+    <!-- == DASHBOARD PANEL == -->
+    <ng-container *ngSwitchCase="'dashboard'">
+      <div class="dashboard-panel">
+
+        <!-- Date range -->
+        <div class="dash-daterange">
+          <div class="dash-presets">
+            <button type="button" [class.active]="dateRangePreset === '7d'"   (click)="applyPreset('7d')">7 days</button>
+            <button type="button" [class.active]="dateRangePreset === '30d'"  (click)="applyPreset('30d')">30 days</button>
+            <button type="button" [class.active]="dateRangePreset === '90d'"  (click)="applyPreset('90d')">90 days</button>
+            <button type="button" [class.active]="dateRangePreset === 'year'" (click)="applyPreset('year')">This year</button>
+            <button type="button" [class.active]="dateRangePreset === 'all'"  (click)="applyPreset('all')">All time</button>
+          </div>
+          <div class="dash-custom">
+            <label>From <input type="date" [(ngModel)]="customFrom"></label>
+            <label>To <input type="date" [(ngModel)]="customTo"></label>
+            <button type="button" class="dash-apply" (click)="applyCustomRange()" [disabled]="!customFrom && !customTo">Apply</button>
+          </div>
+        </div>
+
+        <!-- Metric cards -->
+        <div class="dash-metrics">
+          <div class="metric-card">
+            <mat-icon class="metric-icon users">group</mat-icon>
+            <div class="metric-body">
+              <span class="metric-value">{{ isLoadingMetrics ? '…' : (metrics?.users ?? 0) }}</span>
+              <span class="metric-label">Users joined</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <mat-icon class="metric-icon pros">engineering</mat-icon>
+            <div class="metric-body">
+              <span class="metric-value">{{ isLoadingMetrics ? '…' : (metrics?.pros ?? 0) }}</span>
+              <span class="metric-label">Pros joined</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <mat-icon class="metric-icon biz">storefront</mat-icon>
+            <div class="metric-body">
+              <span class="metric-value">{{ isLoadingMetrics ? '…' : (metrics?.businesses ?? 0) }}</span>
+              <span class="metric-label">Businesses joined</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jobs by category -->
+        <div class="dash-jobs">
+          <div class="dash-jobs-header">
+            <h2><mat-icon>category</mat-icon> Jobs posted by category</h2>
+            <div class="dash-region">
+              <select [ngModel]="dashCountry" (ngModelChange)="onDashCountryChange($event)">
+                <option value="">All countries</option>
+                <option *ngFor="let c of dashCountries" [value]="c">{{ c }}</option>
+              </select>
+              <select [ngModel]="dashState" (ngModelChange)="onDashStateChange($event)">
+                <option value="">All states</option>
+                <option *ngFor="let s of dashStates" [value]="s">{{ s }}</option>
+              </select>
+              <select [ngModel]="dashDistrict" (ngModelChange)="onDashDistrictChange($event)">
+                <option value="">All districts</option>
+                <option *ngFor="let d of dashDistricts" [value]="d">{{ d }}</option>
+              </select>
+              <button type="button" class="dash-region-clear" *ngIf="dashCountry || dashState || dashDistrict" (click)="clearDashRegion()">Clear</button>
+            </div>
+          </div>
+
+          <div *ngIf="isLoadingJobsByCat" class="dash-loading">
+            <mat-spinner diameter="24"></mat-spinner><span>Loading…</span>
+          </div>
+
+          <p *ngIf="!isLoadingJobsByCat && jobsByCategory.length === 0" class="dash-empty">
+            No jobs posted for the selected region and time frame.
+          </p>
+
+          <div class="cat-bars" *ngIf="!isLoadingJobsByCat && jobsByCategory.length > 0">
+            <div class="cat-bar-row" *ngFor="let row of jobsByCategory">
+              <span class="cat-bar-label">
+                <span class="cat-bar-icon" *ngIf="row.categoryIcon">{{ row.categoryIcon }}</span>
+                {{ row.categoryName }}
+              </span>
+              <span class="cat-bar-track">
+                <span class="cat-bar-fill" [style.width.%]="barPct(row.count)"></span>
+              </span>
+              <span class="cat-bar-count">{{ row.count }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </ng-container>
 
     <!-- â•â• SEARCH PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <ng-container *ngSwitchCase="'search'">

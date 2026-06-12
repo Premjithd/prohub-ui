@@ -30,7 +30,8 @@ export default defineConfig({
   timeout: 45_000,
 
   use: {
-    baseURL: 'http://localhost:4200',
+    // Defaults to the local dev server; override with E2E_BASE_URL to target a deployed UI.
+    baseURL: process.env.E2E_BASE_URL || 'http://localhost:4200',
     // Backend dev cert (https://localhost:7042) is self-signed
     ignoreHTTPSErrors: true,
     trace: 'retain-on-failure',
@@ -48,11 +49,15 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: 'npm start',
-    cwd: '..',
-    url: 'http://localhost:4200',
-    reuseExistingServer: true,
-    timeout: 180_000,
-  },
+  // Only start the local dev server when targeting localhost; a deployed
+  // E2E_BASE_URL is already running.
+  webServer: process.env.E2E_BASE_URL
+    ? undefined
+    : {
+        command: 'npm start',
+        cwd: '..',
+        url: 'http://localhost:4200',
+        reuseExistingServer: true,
+        timeout: 180_000,
+      },
 });

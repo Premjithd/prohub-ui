@@ -43,6 +43,27 @@ export interface CommissionConfig {
   maxCommissionPercent: number;
 }
 
+export interface RegistrationMetrics {
+  users: number;
+  pros: number;
+  businesses: number;
+}
+
+export interface CategoryJobCount {
+  categoryId: number | null;
+  categoryName: string;
+  categoryIcon?: string | null;
+  count: number;
+}
+
+export interface JobsByCategoryFilter {
+  country?: string;
+  state?: string;
+  district?: string;
+  from?: string;
+  to?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -169,6 +190,34 @@ export class AdminUsersService {
 
   getDisputes(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/disputes`);
+  }
+
+  // History of resolved disputes, with optional date range (ISO) and free-text search.
+  getResolvedDisputes(from?: string, to?: string, search?: string): Observable<any[]> {
+    const params: Record<string, string> = {};
+    if (from) params['from'] = from;
+    if (to) params['to'] = to;
+    if (search) params['search'] = search;
+    return this.http.get<any[]>(`${this.apiUrl}/admin/disputes/resolved`, { params });
+  }
+
+  // Dashboard: counts of users/pros/businesses joined in a time frame (ISO timestamps).
+  getRegistrationMetrics(from?: string, to?: string): Observable<RegistrationMetrics> {
+    const params: Record<string, string> = {};
+    if (from) params['from'] = from;
+    if (to) params['to'] = to;
+    return this.http.get<RegistrationMetrics>(`${this.apiUrl}/admin/metrics/registrations`, { params });
+  }
+
+  // Dashboard: job counts per category for a selected region/date range.
+  getJobsByCategory(filter: JobsByCategoryFilter = {}): Observable<CategoryJobCount[]> {
+    const params: Record<string, string> = {};
+    if (filter.country) params['country'] = filter.country;
+    if (filter.state) params['state'] = filter.state;
+    if (filter.district) params['district'] = filter.district;
+    if (filter.from) params['from'] = filter.from;
+    if (filter.to) params['to'] = filter.to;
+    return this.http.get<CategoryJobCount[]>(`${this.apiUrl}/admin/metrics/jobs-by-category`, { params });
   }
 
   getAdminPayments(status?: string, userId?: number, proId?: number): Observable<any[]> {

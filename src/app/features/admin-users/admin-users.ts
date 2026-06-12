@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { AdminUsersService, Job, CommissionConfig } from '../../core/services/admin-users.service';
+import { AdminUsersService, Job, CommissionConfig, RegistrationMetrics, CategoryJobCount } from '../../core/services/admin-users.service';
 import { User } from '../../core/models/user.model';
 import { Pro } from '../../core/models/pro.model';
 import { Auth } from '../../core/services/auth';
@@ -25,7 +25,7 @@ import { SettingsService } from '../../core/services/settings.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { ServiceCategory } from '../../core/models/service-category.model';
 
-type AdminView = 'search' | 'service-areas' | 'invite-admin' | 'geocode' | 'settings' | 'categories';
+type AdminView = 'dashboard' | 'disputes' | 'search' | 'service-areas' | 'invite-admin' | 'geocode' | 'settings' | 'categories';
 
 @Component({
   selector: 'app-admin-users',
@@ -49,10 +49,12 @@ type AdminView = 'search' | 'service-areas' | 'invite-admin' | 'geocode' | 'sett
 export class AdminUsersComponent implements OnInit, OnDestroy {
 
   // ── Navigation ────────────────────────────────────────────────────────────
-  activeView: AdminView = 'search';
+  activeView: AdminView = 'dashboard';
   showToolsMenu = false;
 
   readonly navItems: { id: AdminView; label: string; icon: string }[] = [
+    { id: 'dashboard',     label: 'Dashboard',         icon: 'dashboard'    },
+    { id: 'disputes',      label: 'Disputes',          icon: 'gavel'        },
     { id: 'search',        label: 'User / Pro Search', icon: 'manage_search' },
     { id: 'service-areas', label: 'Service Areas',     icon: 'location_on'   },
     { id: 'categories',    label: 'Categories',        icon: 'category'      },
@@ -64,6 +66,8 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   setView(view: AdminView): void {
     this.activeView = view;
     this.showToolsMenu = false;
+    if (view === 'dashboard') this.loadDashboard();
+    if (view === 'disputes') this.loadDisputes();
     if (view === 'settings') { this.loadSettings(); this.loadCommissionConfig(); }
     if (view === 'categories') this.loadAdminCategories();
     if (view === 'geocode') this.loadPendingGeocodes();
@@ -76,6 +80,106 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   getActiveViewIcon(): string {
     return this.navItems.find(n => n.id === this.activeView)?.icon ?? 'menu';
   }
+
+  // ── Dashboard ─────────────────────────────────────────────────────────────
+  dateRangePreset: '7d' | '30d' | '90d' | 'year' | 'all' | 'custom' = '30d';
+  customFrom = '';
+  customTo = '';
+  metrics: RegistrationMetrics | null = null;
+  isLoadingMetrics = false;
+  jobsByCategory: CategoryJobCount[] = [];
+  isLoadingJobsByCat = false;
+  dashCountry = '';
+  dashState = '';
+  dashDistrict = '';
+
+  loadDashboard(): void {
+    this.loadRegistrationMetrics();
+    this.loadJobsByCategory();
+  }
+
+  private computeRange(): { from?: string; to?: string } {
+    const now = new Date();
+    const iso = (d: Date) => d.toISOString();
+    const daysAgo = (n: number) => iso(new Date(now.getTime() - n * 86400000));
+    if (this.dateRangePreset === 'all') return {};
+    if (this.dateRangePreset === 'custom') {
+      const r: { from?: string; to?: string } = {};
+      if (this.customFrom) r.from = new Date(this.customFrom).toISOString();
+      if (this.customTo) {
+        // make 'to' inclusive of the selected day by using the next day as the exclusive bound
+        const t = new Date(this.customTo);
+        t.setDate(t.getDate() + 1);
+        r.to = t.toISOString();
+      }
+      return r;
+    }
+    if (this.dateRangePreset === 'year') return { from: iso(new Date(now.getFullYear(), 0, 1)), to: iso(now) };
+    const days = this.dateRangePreset === '7d' ? 7 : this.dateRangePreset === '90d' ? 90 : 30;
+    return { from: daysAgo(days), to: iso(now) };
+  }
+
+  applyPreset(preset: '7d' | '30d' | '90d' | 'year' | 'all'): void {
+    this.dateRangePreset = preset;
+    this.loadDashboard();
+  }
+
+  applyCustomRange(): void {
+    this.dateRangePreset = 'custom';
+    this.loadDashboard();
+  }
+
+  loadRegistrationMetrics(): void {
+    const { from, to } = this.computeRange();
+    this.isLoadingMetrics = true;
+    this.adminUsersService.getRegistrationMetrics(from, to).subscribe({
+      next: (m) => { this.metrics = m; this.isLoadingMetrics = false; this.cdr.markForCheck(); },
+      error: () => { this.isLoadingMetrics = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  loadJobsByCategory(): void {
+    const { from, to } = this.computeRange();
+    this.isLoadingJobsByCat = true;
+    this.adminUsersService.getJobsByCategory({
+      country: this.dashCountry || undefined,
+      state: this.dashState || undefined,
+      district: this.dashDistrict || undefined,
+      from, to,
+    }).subscribe({
+      next: (rows) => { this.jobsByCategory = rows ?? []; this.isLoadingJobsByCat = false; this.cdr.markForCheck(); },
+      error: () => { this.isLoadingJobsByCat = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  get jobsByCategoryMax(): number {
+    return this.jobsByCategory.reduce((m, r) => Math.max(m, r.count), 0);
+  }
+
+  barPct(count: number): number {
+    const max = this.jobsByCategoryMax;
+    return max > 0 ? Math.round((count / max) * 100) : 0;
+  }
+
+  // Region dropdown options, reusing the service areas already loaded in ngOnInit.
+  get dashCountries(): string[] {
+    return [...new Set(this.serviceAreas.map(a => a.country).filter((c): c is string => !!c))].sort();
+  }
+  get dashStates(): string[] {
+    const src = this.dashCountry ? this.serviceAreas.filter(a => a.country === this.dashCountry) : this.serviceAreas;
+    return [...new Set(src.map(a => a.state).filter((s): s is string => !!s))].sort();
+  }
+  get dashDistricts(): string[] {
+    const src = this.serviceAreas.filter(a =>
+      (!this.dashCountry || a.country === this.dashCountry) &&
+      (!this.dashState || a.state === this.dashState));
+    return [...new Set(src.map(a => a.district).filter((d): d is string => !!d))].sort();
+  }
+
+  onDashCountryChange(val: string): void { this.dashCountry = val; this.dashState = ''; this.dashDistrict = ''; this.loadJobsByCategory(); }
+  onDashStateChange(val: string): void { this.dashState = val; this.dashDistrict = ''; this.loadJobsByCategory(); }
+  onDashDistrictChange(val: string): void { this.dashDistrict = val; this.loadJobsByCategory(); }
+  clearDashRegion(): void { this.dashCountry = ''; this.dashState = ''; this.dashDistrict = ''; this.loadJobsByCategory(); }
 
   // ── Search ────────────────────────────────────────────────────────────────
   searchQuery = '';
@@ -222,6 +326,16 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   resolvingDisputeId: number | null = null;
   refundConfirmJobId: number | null = null;
   refundNotes = '';
+  completeConfirmJobId: number | null = null;
+  completeNotes = '';
+
+  // Disputes view sub-tabs (open vs resolved history)
+  disputeTab: 'open' | 'resolved' = 'open';
+  resolvedDisputes: any[] = [];
+  isLoadingResolved = false;
+  resolvedFrom = '';
+  resolvedTo = '';
+  resolvedSearch = '';
 
   // ── Relationships ─────────────────────────────────────────────────────────
   linkedUsers: LinkedUser[] = [];
@@ -557,6 +671,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.loadInvitations();
     this.loadDisputes();
     this.loadServiceAreas();
+    this.loadDashboard();
   }
 
   // ── Disputes ──────────────────────────────────────────────────────────────
@@ -576,16 +691,34 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     });
   }
 
+  setDisputeTab(tab: 'open' | 'resolved'): void {
+    this.disputeTab = tab;
+    if (tab === 'resolved' && this.resolvedDisputes.length === 0) this.loadResolvedDisputes();
+  }
+
+  openCompleteConfirm(jobId: number): void {
+    this.completeConfirmJobId = jobId;
+    this.completeNotes = '';
+    this.refundConfirmJobId = null;
+  }
+
+  confirmComplete(jobId: number): void {
+    if (!this.completeNotes.trim()) return;
+    this.resolveDispute(jobId, 'complete', this.completeNotes.trim());
+  }
+
   openRefundConfirm(jobId: number): void {
     this.refundConfirmJobId = jobId;
     this.refundNotes = '';
+    this.completeConfirmJobId = null;
   }
 
   confirmRefund(jobId: number): void {
-    this.resolveDispute(jobId, 'refund', this.refundNotes.trim() || undefined);
+    if (!this.refundNotes.trim()) return;
+    this.resolveDispute(jobId, 'refund', this.refundNotes.trim());
   }
 
-  resolveDispute(jobId: number, resolution: 'complete' | 'refund', notes?: string): void {
+  resolveDispute(jobId: number, resolution: 'complete' | 'refund', notes: string): void {
     this.resolvingDisputeId = jobId;
     this.adminUsersService.resolveDispute(jobId, resolution, notes).subscribe({
       next: (result) => {
@@ -593,6 +726,10 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
         this.resolvingDisputeId = null;
         this.refundConfirmJobId = null;
         this.refundNotes = '';
+        this.completeConfirmJobId = null;
+        this.completeNotes = '';
+        // Reflect the new resolution in the history tab next time it's viewed.
+        this.resolvedDisputes = [];
         this.snack.open(result.message, 'OK', { duration: 4000, panelClass: 'snack-success' });
         this.cdr.markForCheck();
       },
@@ -603,6 +740,29 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  loadResolvedDisputes(): void {
+    this.isLoadingResolved = true;
+    const from = this.resolvedFrom ? new Date(this.resolvedFrom).toISOString() : undefined;
+    let to: string | undefined;
+    if (this.resolvedTo) {
+      const t = new Date(this.resolvedTo);
+      t.setDate(t.getDate() + 1); // make the 'to' day inclusive
+      to = t.toISOString();
+    }
+    this.adminUsersService.getResolvedDisputes(from, to, this.resolvedSearch.trim() || undefined).subscribe({
+      next: (rows) => { this.resolvedDisputes = rows ?? []; this.isLoadingResolved = false; this.cdr.markForCheck(); },
+      error: () => { this.isLoadingResolved = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  applyResolvedFilters(): void { this.loadResolvedDisputes(); }
+  clearResolvedFilters(): void {
+    this.resolvedFrom = '';
+    this.resolvedTo = '';
+    this.resolvedSearch = '';
+    this.loadResolvedDisputes();
   }
 
   // ── Invitations ───────────────────────────────────────────────────────────

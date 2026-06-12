@@ -7,6 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "apply-prod-config": "node -e \"require('fs').copyFileSync('config.prod.json','dist/prohub-ui/browser/config.json')\"",
+    "build:azure": "ng build && npm run apply-prod-config",
     "serve:ssr:prohub-ui": "node dist/prohub-ui/server/server.mjs"
   },
   "prettier": {
