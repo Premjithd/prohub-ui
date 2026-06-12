@@ -162,6 +162,41 @@
           </button>
         </div>
 
+        <!-- Your Bid (Open jobs — bid awaiting a decision; withdrawal possible) -->
+        <div *ngIf="job.status === 'Open' && getProBid() as proBid" class="customer-communication-section your-bid-section">
+          <h3>
+            <mat-icon>how_to_vote</mat-icon>
+            {{ 'MY_JOB_PRO_DETAILS.YOUR_BID_TITLE' | translate }}
+          </h3>
+          <div class="bid-details-grid">
+            <div class="detail-item">
+              <span class="label">{{ 'MY_JOB_PRO_DETAILS.BID_AMOUNT' | translate }}</span>
+              <span class="value bid-amount">₹{{ proBid.bidAmount | number: '1.2-2' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">{{ 'MY_JOB_PRO_DETAILS.BID_STATUS' | translate }}</span>
+              <span class="value">{{ getBidStatus(proBid.status) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">{{ 'MY_JOB_PRO_DETAILS.BID_DATE' | translate }}</span>
+              <span class="value">{{ proBid.createdAt | date: 'MMM dd, yyyy' }}</span>
+            </div>
+          </div>
+          <div class="bid-actions">
+            <button
+              *ngIf="proBid.status === 'Pending'"
+              mat-stroked-button
+              color="warn"
+              (click)="withdrawBid()"
+              [disabled]="withdrawingBid"
+              class="withdraw-btn"
+              matTooltip="Withdraw your bid">
+              <mat-icon>undo</mat-icon>
+              {{ withdrawingBid ? ('MY_JOB_PRO_DETAILS.WITHDRAWING' | translate) : ('MY_JOB_PRO_DETAILS.WITHDRAW_BID' | translate) }}
+            </button>
+          </div>
+        </div>
+
         <!-- Customer Communication Section -->
         <div *ngIf="job.status === 'Payment Made' || job.status === 'Pro Confirmed' || job.status === 'In Progress' || job.status === 'Completion Submitted' || job.status === 'Completed'" class="customer-communication-section">
           <h3>

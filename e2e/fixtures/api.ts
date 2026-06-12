@@ -62,15 +62,15 @@ export async function ensureProAccount(request: APIRequestContext): Promise<void
   expect(complete.ok(), `pro registration step 2 failed: ${await complete.text()}`).toBe(true);
 }
 
-// Tokens cached per worker process — tests in the same file reuse them
-const tokenCache = new Map<string, string>();
+// Sessions cached per worker process — tests in the same file reuse them
+const sessionCache = new Map<string, { token: string; id: number }>();
 
-/** Logs in via the API and returns the JWT — for API-based test data setup. */
-export async function apiLogin(
+/** Logs in via the API and returns token + account id — for test data setup. */
+export async function apiLoginWithId(
   request: APIRequestContext,
   role: 'user' | 'pro'
-): Promise<string> {
-  const cached = tokenCache.get(role);
+): Promise<{ token: string; id: number }> {
+  const cached = sessionCache.get(role);
   if (cached) return cached;
 
   const creds = role === 'user' ? E2E_USER : E2E_PRO;
@@ -79,8 +79,17 @@ export async function apiLogin(
   });
   expect(res.ok(), `${role} API login failed: ${await res.text()}`).toBe(true);
   const body = await res.json();
-  tokenCache.set(role, body.token);
-  return body.token;
+  const session = { token: body.token, id: body.id };
+  sessionCache.set(role, session);
+  return session;
+}
+
+/** Logs in via the API and returns the JWT — for API-based test data setup. */
+export async function apiLogin(
+  request: APIRequestContext,
+  role: 'user' | 'pro'
+): Promise<string> {
+  return (await apiLoginWithId(request, role)).token;
 }
 
 const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
@@ -175,6 +184,24 @@ export async function apiSetJobPhases(
     data: { jobPhases: phases },
   });
   expect(res.ok(), `setting job phases failed: ${await res.text()}`).toBe(true);
+}
+
+/**
+ * Sends a direct message. senderType is the SENDER's role; the backend infers
+ * the recipient type (User↔Pro) and creates the conversation if needed.
+ */
+export async function apiSendMessage(
+  request: APIRequestContext,
+  senderToken: string,
+  senderType: 'User' | 'Pro',
+  recipientId: number,
+  content: string
+): Promise<void> {
+  const res = await request.post(`${API_URL}/messages/send`, {
+    headers: auth(senderToken),
+    data: { content, recipientId, senderType },
+  });
+  expect(res.ok(), `sending message failed: ${await res.text()}`).toBe(true);
 }
 
 /** Toggles completion of one phase (the "work update" action). */

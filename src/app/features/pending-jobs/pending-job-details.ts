@@ -224,6 +224,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
       case 'Accepted':
         return 'accent';
       case 'Rejected':
+      case 'Withdrawn':
         return 'warn';
       default:
         return '';
@@ -238,8 +239,10 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         return 'Accepted';
       case 'Rejected':
         return 'Rejected';
+      case 'Withdrawn':
+        return 'Withdrawn';
       default:
-        return 'Unknown';
+        return status || 'Unknown';
     }
   }
 
