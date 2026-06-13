@@ -1,8 +1,8 @@
 ﻿{
   "LANG": {
     "EN": "English",
-    "ML": "à´®à´²à´¯à´¾à´³à´‚",
-    "HI": "à¤¹à¤¿à¤¨à¥à¤¦à¥€"
+    "ML": "മലയാളം",
+    "HI": "हिन्दी"
   },
   "NAV": {
     "HOME": "Home",
@@ -44,7 +44,7 @@
     "FAQ": "FAQ",
     "TERMS": "Terms & Conditions",
     "PRIVACY": "Privacy Policy",
-    "COPYRIGHT": "Â© 2026 yProHub. All rights reserved."
+    "COPYRIGHT": "© 2026 yProHub. All rights reserved."
   },
   "COMMON": {
     "LOADING": "Loading...",
@@ -85,7 +85,7 @@
       "PASSWORD_MIN": "Password must be at least 6 characters",
       "FORGOT": "Forgot password?",
       "SIGN_IN": "Sign In",
-      "SIGNING_IN": "Signing inâ€¦",
+      "SIGNING_IN": "Signing in…",
       "NO_ACCOUNT": "Don't have an account?",
       "CREATE_ONE": "Create one here"
     },
@@ -244,7 +244,7 @@
       "EMAIL_REQUIRED": "Email is required",
       "EMAIL_INVALID": "Enter a valid email address",
       "SEND": "Send Reset Link",
-      "SENDING": "Sendingâ€¦",
+      "SENDING": "Sending…",
       "BACK_TO_LOGIN": "Back to Login"
     },
     "RESET": {
@@ -258,9 +258,9 @@
       "CONFIRM_REQUIRED": "Please confirm your password",
       "MISMATCH": "Passwords do not match",
       "SET": "Set New Password",
-      "SAVING": "Savingâ€¦",
+      "SAVING": "Saving…",
       "BACK_TO_LOGIN": "Back to Login",
-      "REDIRECTING": "Redirecting to loginâ€¦"
+      "REDIRECTING": "Redirecting to login…"
     }
   },
   "ABOUT": {
@@ -299,11 +299,11 @@
     "CTA_BECOME_PRO": "Become a Pro"
   },
   "SERVICES": {
-    "HERO_TAG": "Verified professionals Â· Secure payments",
+    "HERO_TAG": "Verified professionals · Secure payments",
     "HERO_TITLE_1": "Hire the Right",
     "HERO_TITLE_2": "Professional",
     "HERO_ACCENT": "Today",
-    "HERO_SUB": "Browse services, compare prices, and book trusted pros â€” all in one place.",
+    "HERO_SUB": "Browse services, compare prices, and book trusted pros — all in one place.",
     "SEARCH_PLACEHOLDER": "Search services, skills, or business name...",
     "SEARCH_BTN": "Search",
     "POST_JOB": "Post a Job",
@@ -317,8 +317,8 @@
     "SEARCH_RESULTS": "Search Results",
     "SERVICES_COUNT": "services",
     "SORT_POPULAR": "Popular",
-    "SORT_PRICE_LOW": "Price â†‘",
-    "SORT_PRICE_HIGH": "Price â†“",
+    "SORT_PRICE_LOW": "Price ↑",
+    "SORT_PRICE_HIGH": "Price ↓",
     "DETAILS": "Details",
     "BOOK_NOW": "Book Now",
     "NO_SERVICES_TITLE": "No services found",
@@ -363,7 +363,7 @@
   },
   "HOME": {
     "WELCOME_BACK": "Welcome back, {{name}}",
-    "ADMIN_SUBTITLE": "Platform overview â€” manage users, materials, and services.",
+    "ADMIN_SUBTITLE": "Platform overview — manage users, materials, and services.",
     "PRO_SUBTITLE": "Here's a quick look at your work.",
     "USER_SUBTITLE": "What would you like to do today?",
     "POST_JOB": "Post a Job",
@@ -432,11 +432,11 @@
     "DESC_MIN": "Description must be at least 20 characters",
     "DESC_MAX": "Description must not exceed 2000 characters",
     "CHARS": "characters",
-    "PRICE_LABEL": "Starting Price (â‚¹)",
+    "PRICE_LABEL": "Starting Price (₹)",
     "PRICE_PLACEHOLDER": "e.g., 500",
     "PRICE_REQUIRED": "Price is required",
-    "PRICE_MIN": "Price must be at least â‚¹1",
-    "PRICE_MAX": "Price cannot exceed â‚¹99,99,999",
+    "PRICE_MIN": "Price must be at least ₹1",
+    "PRICE_MAX": "Price cannot exceed ₹99,99,999",
     "CAT_LABEL": "Service Category",
     "CAT_SELECT": "-- Select a Category --",
     "CAT_ERROR": "Couldn't load categories.",
@@ -520,8 +520,8 @@
     "AGREE_REQUIRED": "You must agree to be contacted",
     "SEND": "Send Message",
     "SENDING": "Sending...",
-    "SUCCESS": "âœ“ Thank you! Your message has been sent successfully. We'll get back to you soon.",
-    "ERROR": "âœ— There was an error sending your message. Please try again.",
+    "SUCCESS": "✓ Thank you! Your message has been sent successfully. We'll get back to you soon.",
+    "ERROR": "✗ There was an error sending your message. Please try again.",
     "INFO_TITLE": "Contact Information",
     "OFFICE_TITLE": "Our Office",
     "OFFICE_TEXT": "yProHub Headquarters, San Francisco, CA 94102, United States",
@@ -598,8 +598,8 @@
     "SEARCH_PLACEHOLDER": "Title or description...",
     "CATEGORY_LABEL": "Category",
     "CATEGORY_ALL": "All Categories",
-    "MIN_BUDGET": "Min Budget (â‚¹)",
-    "MAX_BUDGET": "Max Budget (â‚¹)",
+    "MIN_BUDGET": "Min Budget (₹)",
+    "MAX_BUDGET": "Max Budget (₹)",
     "RESET": "Reset",
     "DISTANCE": "Distance:",
     "PROXIMITY_WITHIN": "Showing jobs within {{km}} km of your location",
@@ -704,13 +704,13 @@
     "VERIFIED": "Verified",
     "UNVERIFIED": "Unverified",
     "VERIFY_NOW": "Verify now",
-    "SENDING": "Sendingâ€¦",
-    "VERIFYING": "Verifyingâ€¦",
+    "SENDING": "Sending…",
+    "VERIFYING": "Verifying…",
     "CONFIRM": "Confirm",
     "RESEND_CODE": "Resend code",
     "NOT_SET": "Not set",
     "SAVE_CHANGES": "Save Changes",
-    "SAVING": "Savingâ€¦",
+    "SAVING": "Saving…",
     "CANCEL": "Cancel",
     "EARNINGS": "Earnings",
     "NO_PAYOUTS": "No payouts yet. Complete jobs to earn money.",
@@ -730,7 +730,7 @@
     "COUNTRY": "Country",
     "POSTAL_CODE": "Postal Code",
     "DISTRICT": "District",
-    "SELECT_DISTRICT": "â€” Select district â€”",
+    "SELECT_DISTRICT": "— Select district —",
     "HOUSE_NUMBER": "House / Number",
     "EMAIL_CODE_PROMPT": "Enter the 6-digit code sent to"
   },

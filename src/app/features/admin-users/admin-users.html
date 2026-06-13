@@ -1,6 +1,6 @@
 ﻿<div class="admin-users-container" (click)="showToolsMenu = false">
 
-  <!-- â”€â”€ HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
   <div class="admin-header">
     <div class="header-top">
       <h1><mat-icon>admin_panel_settings</mat-icon> Admin Dashboard</h1>
@@ -25,7 +25,7 @@
     </div>
   </div>
 
-  <!-- â”€â”€ DISPUTES BANNER (always visible) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <!-- ── DISPUTES BANNER (always visible) ──────────────────────────────── -->
   <div class="disputes-banner" *ngIf="activeView === 'disputes'">
     <div class="disputes-banner-title">
       <mat-icon>gavel</mat-icon>
@@ -66,14 +66,14 @@
         <p *ngIf="d.completionNotes" class="dispute-completion-notes"><strong>Pro notes:</strong> {{ d.completionNotes }}</p>
         <p *ngIf="d.paymentAmount != null" class="dispute-payment-amount">
           <mat-icon>currency_rupee</mat-icon>
-          <strong>Payment amount:</strong> â‚¹{{ d.paymentAmount | number:'1.2-2' }}
+          <strong>Payment amount:</strong> ₹{{ d.paymentAmount | number:'1.2-2' }}
         </p>
 
         <!-- Inline refund confirm form -->
         <div *ngIf="refundConfirmJobId === d.jobId" class="refund-confirm-form">
           <p class="refund-confirm-warning">
             <mat-icon>warning</mat-icon>
-            This will refund <strong>â‚¹{{ d.paymentAmount | number:'1.2-2' }}</strong> to the consumer and reopen the job for rebidding.
+            This will refund <strong>₹{{ d.paymentAmount | number:'1.2-2' }}</strong> to the consumer and reopen the job for rebidding.
           </p>
           <mat-form-field appearance="outline" class="refund-notes-field">
             <mat-label>Reason for refund</mat-label>
@@ -181,7 +181,7 @@
     </ng-container>
   </div>
 
-  <!-- â”€â”€ PANEL AREA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <!-- ── PANEL AREA ─────────────────────────────────────────────────────── -->
   <div class="admin-panel-area" [ngSwitch]="activeView">
 
     <!-- == DASHBOARD PANEL == -->
@@ -275,7 +275,7 @@
       </div>
     </ng-container>
 
-    <!-- â•â• SEARCH PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══ SEARCH PANEL ══════════════════════════════════════════════════ -->
     <ng-container *ngSwitchCase="'search'">
       <div class="panel-search-layout">
 
@@ -586,7 +586,7 @@
                       <mat-icon>person</mat-icon>
                       <div class="rel-info">
                         <div class="rel-name">{{ u.name }}</div>
-                        <div class="rel-email">{{ u.email }} &nbsp;Â·&nbsp; ID: {{ u.id }}</div>
+                        <div class="rel-email">{{ u.email }} &nbsp;·&nbsp; ID: {{ u.id }}</div>
                       </div>
                       <button mat-icon-button color="warn" title="Remove" (click)="removeUserFromPro(u.id)">
                         <mat-icon>link_off</mat-icon>
@@ -608,7 +608,7 @@
                       <mat-icon>engineering</mat-icon>
                       <div class="rel-info">
                         <div class="rel-name">{{ p.name }}</div>
-                        <div class="rel-email">{{ p.businessName }} &nbsp;Â·&nbsp; {{ p.email }}</div>
+                        <div class="rel-email">{{ p.businessName }} &nbsp;·&nbsp; {{ p.email }}</div>
                       </div>
                     </div>
                   </div>
@@ -652,15 +652,15 @@
                     <div class="ep-amounts">
                       <div class="ep-amount-item">
                         <span class="ep-amt-label">Total paid</span>
-                        <span class="ep-amt-value">â‚¹{{ p.amount | number:'1.2-2' }}</span>
+                        <span class="ep-amt-value">₹{{ p.amount | number:'1.2-2' }}</span>
                       </div>
                       <div class="ep-amount-item">
                         <span class="ep-amt-label">Platform fee</span>
-                        <span class="ep-amt-value">â‚¹{{ p.platformFee | number:'1.2-2' }}</span>
+                        <span class="ep-amt-value">₹{{ p.platformFee | number:'1.2-2' }}</span>
                       </div>
                       <div class="ep-amount-item">
                         <span class="ep-amt-label">Pro payout</span>
-                        <span class="ep-amt-value">â‚¹{{ p.proPayOut | number:'1.2-2' }}</span>
+                        <span class="ep-amt-value">₹{{ p.proPayOut | number:'1.2-2' }}</span>
                       </div>
                     </div>
 
@@ -685,7 +685,7 @@
                         </span>
                         <span class="ep-rd-item">
                           <span class="ep-rd-label">Amount</span>
-                          <span class="ep-rd-value ep-refund-amount">â‚¹{{ (p.refundAmount ?? p.amount) | number:'1.2-2' }}</span>
+                          <span class="ep-rd-value ep-refund-amount">₹{{ (p.refundAmount ?? p.amount) | number:'1.2-2' }}</span>
                         </span>
                       </div>
                       <div *ngIf="p.refundReason" class="ep-rd-reason">
@@ -707,7 +707,7 @@
                       <div *ngIf="refundConfirmPaymentId === p.id" class="ep-refund-confirm">
                         <p class="ep-refund-warn">
                           <mat-icon>warning</mat-icon>
-                          Refund <strong>â‚¹{{ p.amount | number:'1.2-2' }}</strong> to consumer?
+                          Refund <strong>₹{{ p.amount | number:'1.2-2' }}</strong> to consumer?
                         </p>
                         <mat-form-field appearance="outline" class="ep-refund-notes">
                           <mat-label>Reason (optional)</mat-label>
@@ -819,7 +819,7 @@
       </div>
     </ng-container>
 
-    <!-- â•â• SERVICE AREAS PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══ SERVICE AREAS PANEL ═══════════════════════════════════════════ -->
     <ng-container *ngSwitchCase="'service-areas'">
       <div class="panel-card">
         <div class="panel-card-header">
@@ -849,7 +849,7 @@
           <div *ngIf="areaErrorMsg" class="area-error">{{ areaErrorMsg }}</div>
         </div>
 
-        <!-- â”€â”€ MAP VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+        <!-- ── MAP VIEW ─────────────────────────────────────────────────── -->
         <div *ngIf="showMapView" class="map-section">
           <div class="map-filters">
             <select class="map-select" [ngModel]="mapFilterCountry" (ngModelChange)="onMapCountryChange($event)">
@@ -880,7 +880,7 @@
           </p>
         </div>
 
-        <!-- â”€â”€ LIST VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+        <!-- ── LIST VIEW ────────────────────────────────────────────────── -->
         <ng-container *ngIf="!showMapView">
           <!-- List filters -->
           <div class="list-filters">
@@ -963,7 +963,7 @@
       </div>
     </ng-container>
 
-    <!-- â•â• INVITE ADMIN PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══ INVITE ADMIN PANEL ════════════════════════════════════════════ -->
     <ng-container *ngSwitchCase="'invite-admin'">
       <div class="panel-card">
         <div class="panel-card-header">
@@ -1061,7 +1061,7 @@
       </div>
     </ng-container>
 
-    <!-- â•â• GEOCODE PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══ GEOCODE PANEL ═════════════════════════════════════════════════ -->
     <ng-container *ngSwitchCase="'geocode'">
       <div class="panel-card">
         <div class="panel-card-header">

@@ -529,7 +529,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Settings ──────────────────��───────────────────────────────────────────
+  // ── Settings ───────────────────────────────────────────────────────────────
   settingsLoading = false;
   settingsSaving = false;
   showProCountOnCategories = false;
