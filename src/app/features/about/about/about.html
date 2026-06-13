@@ -92,42 +92,18 @@
     </div>
   </section>
 
-  <!-- Team Section -->
-  <section class="team-section">
+  <!-- Team Section (admin-managed; hidden unless enabled) -->
+  <section class="team-section" *ngIf="showTeam && teamMembers.length > 0">
     <div class="section-container">
       <h2>{{ 'ABOUT.TEAM_TITLE' | translate }}</h2>
       <p class="team-intro">{{ 'ABOUT.TEAM_INTRO' | translate }}</p>
       <div class="team-grid">
-        <div class="team-member">
-          <div class="member-avatar avatar-js">JS</div>
+        <div class="team-member" *ngFor="let member of teamMembers; let i = index">
+          <div class="member-avatar" [ngClass]="'avatar-' + ['js','sc','mj','er'][i % 4]">{{ member.initials }}</div>
           <div class="member-info">
-            <h3>John Smith</h3>
-            <p class="member-role">Founder &amp; CEO</p>
-            <p class="member-bio">10+ years in marketplace tech and service industry innovation.</p>
-          </div>
-        </div>
-        <div class="team-member">
-          <div class="member-avatar avatar-sc">SC</div>
-          <div class="member-info">
-            <h3>Sarah Chen</h3>
-            <p class="member-role">CTO</p>
-            <p class="member-bio">Full-stack engineer with expertise in secure payment systems and scalable platforms.</p>
-          </div>
-        </div>
-        <div class="team-member">
-          <div class="member-avatar avatar-mj">MJ</div>
-          <div class="member-info">
-            <h3>Mike Johnson</h3>
-            <p class="member-role">VP of Operations</p>
-            <p class="member-bio">20+ years in service industry management and professional networks.</p>
-          </div>
-        </div>
-        <div class="team-member">
-          <div class="member-avatar avatar-er">ER</div>
-          <div class="member-info">
-            <h3>Emma Rodriguez</h3>
-            <p class="member-role">Head of Trust &amp; Safety</p>
-            <p class="member-bio">Leading our verification and community safety initiatives.</p>
+            <h3>{{ member.name }}</h3>
+            <p class="member-role" *ngIf="member.role">{{ member.role }}</p>
+            <p class="member-bio" *ngIf="member.bio">{{ member.bio }}</p>
           </div>
         </div>
       </div>

@@ -32,7 +32,7 @@ export class LoginComponent {
       next: (response) => {
         this.isLoading = false;
         if (response.role === 'Admin') {
-          this.router.navigate(['/admin-users']);
+          this.router.navigate(['/']);
         } else if (response.role === 'Pro' && response.isProfileComplete === false) {
           this.router.navigate(['/auth/register/pro']);
         } else if (response.isProfileComplete === false) {

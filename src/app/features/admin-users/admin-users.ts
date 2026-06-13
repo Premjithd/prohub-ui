@@ -24,6 +24,7 @@ import { Payout } from '../../models/payout.model';
 import { SettingsService } from '../../core/services/settings.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { ServiceCategory } from '../../core/models/service-category.model';
+import { TeamService, TeamMember } from '../../core/services/team.service';
 
 type AdminView = 'dashboard' | 'disputes' | 'search' | 'service-areas' | 'invite-admin' | 'geocode' | 'settings' | 'categories';
 
@@ -68,7 +69,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.showToolsMenu = false;
     if (view === 'dashboard') this.loadDashboard();
     if (view === 'disputes') this.loadDisputes();
-    if (view === 'settings') { this.loadSettings(); this.loadCommissionConfig(); }
+    if (view === 'settings') { this.loadSettings(); this.loadCommissionConfig(); this.loadTeamSettings(); }
     if (view === 'categories') this.loadAdminCategories();
     if (view === 'geocode') this.loadPendingGeocodes();
   }
@@ -560,6 +561,99 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Our Team management (platform settings) ────────────────────────────────
+  showOurTeam = false;
+  ourTeamSaving = false;
+  teamMembers: TeamMember[] = [];
+  teamLoading = false;
+  showAddTeamForm = false;
+  addingTeamMember = false;
+  newTeamMember: Partial<TeamMember> = { name: '', role: '', bio: '', initials: '', displayOrder: 0, isActive: true };
+  editingTeamMemberId: number | null = null;
+  editTeamMember: Partial<TeamMember> = {};
+  savingTeamMemberId: number | null = null;
+
+  loadTeamSettings(): void {
+    this.settingsService.getSetting('show_our_team').subscribe(value => {
+      this.showOurTeam = value === 'true';
+      this.cdr.detectChanges();
+    });
+    this.teamLoading = true;
+    this.teamService.getAll().subscribe({
+      next: members => { this.teamMembers = members ?? []; this.teamLoading = false; this.cdr.detectChanges(); },
+      error: () => { this.teamLoading = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  toggleOurTeam(enabled: boolean): void {
+    this.ourTeamSaving = true;
+    this.settingsService.updateSetting('show_our_team', String(enabled)).subscribe({
+      next: () => {
+        this.showOurTeam = enabled;
+        this.ourTeamSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open(`Our Team section ${enabled ? 'shown' : 'hidden'}`, 'OK', { duration: 2500, panelClass: 'snack-success' });
+      },
+      error: () => {
+        this.ourTeamSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open('Failed to save setting', 'OK', { duration: 3000, panelClass: 'snack-error' });
+      }
+    });
+  }
+
+  submitNewTeamMember(): void {
+    if (!this.newTeamMember.name?.trim()) return;
+    this.addingTeamMember = true;
+    this.teamService.create(this.newTeamMember).subscribe({
+      next: m => {
+        this.teamMembers = [...this.teamMembers, m].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+        this.newTeamMember = { name: '', role: '', bio: '', initials: '', displayOrder: 0, isActive: true };
+        this.showAddTeamForm = false;
+        this.addingTeamMember = false;
+        this.cdr.detectChanges();
+        this.snack.open('Team member added', 'OK', { duration: 2000, panelClass: 'snack-success' });
+      },
+      error: () => { this.addingTeamMember = false; this.cdr.detectChanges(); this.snack.open('Failed to add member', 'OK', { duration: 3000, panelClass: 'snack-error' }); }
+    });
+  }
+
+  startEditTeamMember(m: TeamMember): void {
+    this.editingTeamMemberId = m.id;
+    this.editTeamMember = { ...m };
+    this.cdr.detectChanges();
+  }
+
+  cancelEditTeamMember(): void { this.editingTeamMemberId = null; this.cdr.detectChanges(); }
+
+  saveTeamMember(m: TeamMember): void {
+    if (!this.editTeamMember.name?.trim()) return;
+    this.savingTeamMemberId = m.id;
+    this.teamService.update(m.id, this.editTeamMember).subscribe({
+      next: updated => {
+        const idx = this.teamMembers.findIndex(x => x.id === m.id);
+        if (idx >= 0) this.teamMembers[idx] = updated;
+        this.teamMembers = [...this.teamMembers].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+        this.editingTeamMemberId = null;
+        this.savingTeamMemberId = null;
+        this.cdr.detectChanges();
+        this.snack.open('Team member updated', 'OK', { duration: 2000, panelClass: 'snack-success' });
+      },
+      error: () => { this.savingTeamMemberId = null; this.cdr.detectChanges(); this.snack.open('Failed to update member', 'OK', { duration: 3000, panelClass: 'snack-error' }); }
+    });
+  }
+
+  deleteTeamMember(m: TeamMember): void {
+    this.teamService.remove(m.id).subscribe({
+      next: () => {
+        this.teamMembers = this.teamMembers.filter(x => x.id !== m.id);
+        this.cdr.detectChanges();
+        this.snack.open('Team member removed', 'OK', { duration: 2000, panelClass: 'snack-info' });
+      },
+      error: () => { this.snack.open('Failed to remove member', 'OK', { duration: 3000, panelClass: 'snack-error' }); }
+    });
+  }
+
   // ── Commission Config ─────────────────────────────────────────────────────
   commissionConfig: CommissionConfig | null = null;
   commissionDraft: CommissionConfig = {
@@ -656,7 +750,8 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private payoutService: PayoutService,
     private settingsService: SettingsService,
-    private serviceCategoryService: ServiceCategoryService
+    private serviceCategoryService: ServiceCategoryService,
+    private teamService: TeamService
   ) {}
 
   ngOnInit(): void {

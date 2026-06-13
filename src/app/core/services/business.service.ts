@@ -40,6 +40,7 @@ export interface BusinessSummary {
   businessName: string;
   description?: string;
   status: string;
+  serviceRadiusKm?: number | null;
   role: string;
   joinedAt: string;
   address?: {
@@ -83,7 +84,7 @@ export class BusinessService {
     return this.http.post<{ id: number; businessName: string }>(this.base, req);
   }
 
-  updateBusiness(id: number, req: { businessName?: string; description?: string }): Observable<any> {
+  updateBusiness(id: number, req: { businessName?: string; description?: string; serviceRadiusKm?: number }): Observable<any> {
     return this.http.put<any>(`${this.base}/${id}`, req);
   }
 

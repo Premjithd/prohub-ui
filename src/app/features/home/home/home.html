@@ -151,7 +151,21 @@
       <section class="quick-actions">
         <div class="section-container">
           <div class="action-grid admin-grid">
-            <button class="action-card primary-action" (click)="navigateTo('/admin-users')">
+            <button class="action-card primary-action" (click)="navigateTo('/admin-users', {view: 'dashboard'})">
+              <span class="action-icon">📊</span>
+              <div class="card-text">
+                <strong>{{ 'HOME.DASHBOARD' | translate }}</strong>
+                <span>{{ 'HOME.DASHBOARD_DESC' | translate }}</span>
+              </div>
+            </button>
+            <button class="action-card" (click)="navigateTo('/admin-users', {view: 'disputes'})">
+              <span class="action-icon">⚖️</span>
+              <div class="card-text">
+                <strong>{{ 'HOME.DISPUTES' | translate }}</strong>
+                <span>{{ 'HOME.DISPUTES_DESC' | translate }}</span>
+              </div>
+            </button>
+            <button class="action-card" (click)="navigateTo('/admin-users', {view: 'search'})">
               <span class="action-icon">🛡️</span>
               <div class="card-text">
                 <strong>{{ 'HOME.USER_MGMT' | translate }}</strong>

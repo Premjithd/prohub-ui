@@ -1405,6 +1405,72 @@
           </div>
         </div>
 
+        <!-- Our Team Section -->
+        <div class="commission-section settings-tile">
+          <div class="geocode-item-header commission-section-header">
+            <mat-icon>groups</mat-icon>
+            <div>
+              <h3>Our Team Section</h3>
+              <p>Manage the team shown on the public About page and control whether it appears.</p>
+            </div>
+          </div>
+
+          <div class="setting-toggle-row">
+            <span class="setting-status" [class.enabled]="showOurTeam">
+              {{ showOurTeam ? 'Visible on /about' : 'Hidden' }}
+            </span>
+            <button class="geocode-run-btn" [disabled]="ourTeamSaving" (click)="toggleOurTeam(!showOurTeam)">
+              {{ ourTeamSaving ? 'Saving…' : (showOurTeam ? 'Hide section' : 'Show section') }}
+            </button>
+          </div>
+
+          <div *ngIf="teamLoading" class="geocode-loading">
+            <mat-spinner diameter="24"></mat-spinner><span>Loading team…</span>
+          </div>
+
+          <div class="team-admin-list" *ngIf="!teamLoading">
+            <div class="team-admin-row" *ngFor="let m of teamMembers">
+              <ng-container *ngIf="editingTeamMemberId !== m.id">
+                <span class="ta-avatar">{{ m.initials }}</span>
+                <div class="ta-info">
+                  <strong>{{ m.name }}</strong>
+                  <span>{{ m.role }}</span>
+                </div>
+                <span class="ta-badge" [class.off]="!m.isActive">{{ m.isActive ? 'Active' : 'Hidden' }}</span>
+                <button class="ta-btn" title="Edit" (click)="startEditTeamMember(m)"><mat-icon>edit</mat-icon></button>
+                <button class="ta-btn danger" title="Remove" (click)="deleteTeamMember(m)"><mat-icon>delete</mat-icon></button>
+              </ng-container>
+              <ng-container *ngIf="editingTeamMemberId === m.id">
+                <input [(ngModel)]="editTeamMember.name" placeholder="Name" class="ta-input" />
+                <input [(ngModel)]="editTeamMember.role" placeholder="Role" class="ta-input" />
+                <input [(ngModel)]="editTeamMember.initials" placeholder="JS" class="ta-input ta-input-sm" maxlength="4" />
+                <input type="number" [(ngModel)]="editTeamMember.displayOrder" placeholder="#" class="ta-input ta-input-sm" />
+                <label class="ta-check"><input type="checkbox" [(ngModel)]="editTeamMember.isActive" /> Active</label>
+                <button class="ta-btn" (click)="saveTeamMember(m)" [disabled]="savingTeamMemberId === m.id"><mat-icon>check</mat-icon></button>
+                <button class="ta-btn" (click)="cancelEditTeamMember()"><mat-icon>close</mat-icon></button>
+              </ng-container>
+            </div>
+            <p *ngIf="teamMembers.length === 0" class="ta-empty">No team members yet.</p>
+          </div>
+
+          <button class="geocode-run-btn ta-add-btn" *ngIf="!showAddTeamForm" (click)="showAddTeamForm = true">
+            <mat-icon>add</mat-icon> Add member
+          </button>
+          <div class="team-add-form" *ngIf="showAddTeamForm">
+            <input [(ngModel)]="newTeamMember.name" placeholder="Name *" class="ta-input" />
+            <input [(ngModel)]="newTeamMember.role" placeholder="Role" class="ta-input" />
+            <input [(ngModel)]="newTeamMember.initials" placeholder="Initials (e.g. JS)" class="ta-input ta-input-sm" maxlength="4" />
+            <input type="number" [(ngModel)]="newTeamMember.displayOrder" placeholder="Order #" class="ta-input ta-input-sm" />
+            <textarea [(ngModel)]="newTeamMember.bio" placeholder="Short bio" class="ta-input ta-textarea"></textarea>
+            <div class="ta-form-actions">
+              <button class="ta-btn-text" (click)="showAddTeamForm = false">Cancel</button>
+              <button class="geocode-run-btn" (click)="submitNewTeamMember()" [disabled]="addingTeamMember || !newTeamMember.name">
+                {{ addingTeamMember ? 'Adding…' : 'Add member' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Commission Config -->
         <div class="commission-section">
           <div class="geocode-item-header commission-section-header">
