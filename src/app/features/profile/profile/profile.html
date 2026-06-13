@@ -26,9 +26,6 @@
       <button class="ptb-tab" [class.active]="userSection === 'info'"    (click)="selectUserSection('info')">
         <mat-icon>person</mat-icon><span>{{ 'PROFILE.TAB_PROFILE' | translate }}</span>
       </button>
-      <button class="ptb-tab" [class.active]="userSection === 'payment'" (click)="selectUserSection('payment')">
-        <mat-icon>account_balance_wallet</mat-icon><span>{{ 'PROFILE.TAB_PAYMENT' | translate }}</span>
-      </button>
       <button class="ptb-tab" [class.active]="userSection === 'reviews'" (click)="selectUserSection('reviews')">
         <mat-icon>star</mat-icon><span>{{ 'PROFILE.TAB_REVIEWS' | translate }}</span>
       </button>
@@ -119,58 +116,6 @@
             <ng-container *ngIf="user.country">, {{ user.country }}</ng-container>
             <ng-container *ngIf="user.zipPostalCode"> — {{ user.zipPostalCode }}</ng-container>
           </p>
-        </div>
-      </div>
-    </ng-container>
-
-    <!-- ── PAYMENT section ────────────────────────────────────── -->
-    <ng-container *ngIf="!isEditing && userSection === 'payment'">
-      <div class="profile-card bank-card">
-        <div class="bank-card-header">
-          <h3 class="section-title"><mat-icon>account_balance_wallet</mat-icon> {{ 'PROFILE.PAYMENT_DETAILS' | translate }}</h3>
-          <button class="btn btn-secondary btn-sm" (click)="startEditPayment()" *ngIf="!isEditingPayment">
-            <mat-icon>edit</mat-icon> {{ user.upiVpa ? 'Edit' : 'Add' }}
-          </button>
-        </div>
-
-        <div class="alert success-alert sm" *ngIf="paymentSuccessMessage">
-          <mat-icon>check_circle</mat-icon><span>{{ paymentSuccessMessage }}</span>
-        </div>
-        <div class="alert error-alert sm" *ngIf="paymentErrorMessage">
-          <mat-icon>error</mat-icon><span>{{ paymentErrorMessage }}</span>
-        </div>
-
-        <!-- View mode -->
-        <ng-container *ngIf="!isEditingPayment">
-          <div *ngIf="!user.upiVpa" class="bank-empty">
-            <mat-icon>info</mat-icon>
-            <p>{{ 'PROFILE.NO_UPI' | translate }}</p>
-          </div>
-          <div *ngIf="user.upiVpa" class="field">
-            <span class="field-label">{{ 'PROFILE.SAVED_UPI' | translate }}</span>
-            <div class="field-value contact-row">
-              <mat-icon style="font-size:18px;color:#16a34a">qr_code</mat-icon>
-              <span>{{ user.upiVpa }}</span>
-            </div>
-            <span class="field-hint" style="margin-top:4px">{{ 'PROFILE.UPI_HINT' | translate }}</span>
-          </div>
-        </ng-container>
-
-        <!-- Edit form -->
-        <div class="bank-edit-form" *ngIf="isEditingPayment">
-          <div class="form-group">
-            <label>{{ 'PROFILE.UPI_LABEL' | translate }}</label>
-            <input type="text" [(ngModel)]="paymentUpiVpa" name="paymentUpi" [placeholder]="'PROFILE.UPI_PLACEHOLDER' | translate" />
-            <span class="field-hint">{{ 'PROFILE.UPI_BLANK_HINT' | translate }}</span>
-          </div>
-          <div class="form-actions">
-            <button class="btn btn-success btn-sm" (click)="savePaymentDetails()" [disabled]="paymentSaveLoading">
-              <mat-icon>save</mat-icon>{{ paymentSaveLoading ? ('PROFILE.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
-            </button>
-            <button class="btn btn-cancel btn-sm" (click)="cancelEditPayment()">
-              <mat-icon>close</mat-icon> {{ 'PROFILE.CANCEL' | translate }}
-            </button>
-          </div>
         </div>
       </div>
     </ng-container>
@@ -337,9 +282,6 @@
       <button class="ptb-tab" [class.active]="proSection === 'info'"     (click)="selectProSection('info')">
         <mat-icon>person</mat-icon><span>{{ 'PROFILE.TAB_PROFILE' | translate }}</span>
       </button>
-      <button class="ptb-tab" [class.active]="proSection === 'payout'"   (click)="selectProSection('payout')">
-        <mat-icon>account_balance</mat-icon><span>{{ 'PROFILE.TAB_PAYOUT' | translate }}</span>
-      </button>
       <button class="ptb-tab" [class.active]="proSection === 'earnings'" (click)="selectProSection('earnings')">
         <mat-icon>payments</mat-icon><span>{{ 'PROFILE.TAB_EARNINGS' | translate }}</span>
       </button>
@@ -379,10 +321,6 @@
           <div class="field">
             <span class="field-label">{{ 'PROFILE.BUSINESS_NAME' | translate }}</span>
             <span class="field-value">{{ pro.businessName || '—' }}</span>
-          </div>
-          <div class="field">
-            <span class="field-label">{{ 'PROFILE.SERVICE_RADIUS' | translate }}</span>
-            <span class="field-value">{{ pro.serviceRadiusKm ?? 25 }} km</span>
           </div>
         </div>
 
@@ -437,114 +375,6 @@
             <ng-container *ngIf="pro.country">, {{ pro.country }}</ng-container>
             <ng-container *ngIf="pro.zipPostalCode"> — {{ pro.zipPostalCode }}</ng-container>
           </p>
-        </div>
-      </div>
-    </ng-container>
-
-    <!-- ── PAYOUT section ───────────────────────────────────────── -->
-    <ng-container *ngIf="!isEditing && proSection === 'payout'">
-      <div class="profile-card bank-card">
-        <div class="bank-card-header">
-          <h3 class="section-title"><mat-icon>account_balance</mat-icon> {{ 'PROFILE.PAYOUT_BANK' | translate }}</h3>
-          <button class="btn btn-secondary btn-sm" (click)="startEditBank()" *ngIf="!isEditingBank">
-            <mat-icon>edit</mat-icon> {{ bankDetails?.hasBankDetails ? 'Edit' : 'Add' }}
-          </button>
-        </div>
-
-        <div *ngIf="bankDetailsLoading" class="bank-loading">
-          <mat-spinner diameter="24"></mat-spinner>
-        </div>
-
-        <div class="alert success-alert sm" *ngIf="bankSuccessMessage">
-          <mat-icon>check_circle</mat-icon><span>{{ bankSuccessMessage }}</span>
-        </div>
-        <div class="alert error-alert sm" *ngIf="bankErrorMessage">
-          <mat-icon>error</mat-icon><span>{{ bankErrorMessage }}</span>
-        </div>
-
-        <ng-container *ngIf="!bankDetailsLoading && !isEditingBank">
-          <div *ngIf="!bankDetails?.hasBankDetails" class="bank-empty">
-            <mat-icon>warning</mat-icon>
-            <p>{{ 'PROFILE.NO_PAYOUT' | translate }}</p>
-          </div>
-          <ng-container *ngIf="bankDetails?.hasBankDetails">
-            <div class="field-row">
-              <div class="field">
-                <span class="field-label">{{ 'PROFILE.PAYOUT_METHOD' | translate }}</span>
-                <span class="field-value">{{ bankDetails?.payoutMethod }}</span>
-              </div>
-            </div>
-            <ng-container *ngIf="bankDetails?.payoutMethod === 'UPI'">
-              <div class="field">
-                <span class="field-label">{{ 'PROFILE.UPI_VPA' | translate }}</span>
-                <span class="field-value">{{ bankDetails?.upiVpa }}</span>
-              </div>
-            </ng-container>
-            <ng-container *ngIf="bankDetails?.payoutMethod === 'Bank'">
-              <div class="field-row">
-                <div class="field">
-                  <span class="field-label">{{ 'PROFILE.ACCOUNT_HOLDER' | translate }}</span>
-                  <span class="field-value">{{ bankDetails?.bankAccountHolderName || '—' }}</span>
-                </div>
-                <div class="field">
-                  <span class="field-label">{{ 'PROFILE.ACCOUNT_NUMBER' | translate }}</span>
-                  <span class="field-value">****{{ (bankDetails?.bankAccountNumber ?? '').slice(-4) }}</span>
-                </div>
-              </div>
-              <div class="field">
-                <span class="field-label">{{ 'PROFILE.IFSC' | translate }}</span>
-                <span class="field-value">{{ bankDetails?.bankIfsc }}</span>
-              </div>
-            </ng-container>
-          </ng-container>
-        </ng-container>
-
-        <!-- Edit bank form -->
-        <div class="bank-edit-form" *ngIf="isEditingBank">
-          <div class="form-group">
-            <label>{{ 'PROFILE.PAYOUT_METHOD' | translate }}</label>
-            <div class="method-toggle">
-              <button class="method-btn" [class.active]="bankForm.payoutMethod === 'Bank'" (click)="bankForm.payoutMethod = 'Bank'">
-                <mat-icon>account_balance</mat-icon> {{ 'PROFILE.BANK_ACCOUNT' | translate }}
-              </button>
-              <button class="method-btn" [class.active]="bankForm.payoutMethod === 'UPI'" (click)="bankForm.payoutMethod = 'UPI'">
-                <mat-icon>qr_code</mat-icon> {{ 'PROFILE.UPI' | translate }}
-              </button>
-            </div>
-          </div>
-
-          <ng-container *ngIf="bankForm.payoutMethod === 'Bank'">
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ 'PROFILE.ACCT_HOLDER_LABEL' | translate }}</label>
-                <input type="text" [(ngModel)]="bankForm.bankAccountHolderName" name="bankHolderName" placeholder="As per bank records" />
-              </div>
-              <div class="form-group">
-                <label>{{ 'PROFILE.ACCT_NUMBER_LABEL' | translate }}</label>
-                <input type="text" [(ngModel)]="bankForm.bankAccountNumber" name="bankAccNum" placeholder="Bank account number" />
-              </div>
-            </div>
-            <div class="form-group half-width">
-              <label>{{ 'PROFILE.IFSC_CODE' | translate }}</label>
-              <input type="text" [(ngModel)]="bankForm.bankIfsc" name="bankIfsc" placeholder="e.g. HDFC0001234" style="text-transform:uppercase" />
-            </div>
-          </ng-container>
-
-          <ng-container *ngIf="bankForm.payoutMethod === 'UPI'">
-            <div class="form-group half-width">
-              <label>{{ 'PROFILE.UPI_VPA' | translate }}</label>
-              <input type="text" [(ngModel)]="bankForm.upiVpa" name="upiVpa" placeholder="e.g. yourname@upi" />
-            </div>
-          </ng-container>
-
-          <div class="form-actions">
-            <button class="btn btn-success btn-sm" (click)="saveBankDetails()" [disabled]="bankSaveLoading">
-              <mat-icon>save</mat-icon>{{ bankSaveLoading ? ('PROFILE.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
-            </button>
-            <button class="btn btn-cancel btn-sm" (click)="cancelEditBank()">
-              <mat-icon>close</mat-icon> {{ 'PROFILE.CANCEL' | translate }}
-            </button>
-          </div>
         </div>
       </div>
     </ng-container>
@@ -658,11 +488,6 @@
             <label>{{ 'PROFILE.BUSINESS_NAME' | translate }}</label>
             <input type="text" name="businessName" [(ngModel)]="pro.businessName" required placeholder="Business name" />
           </div>
-        </div>
-        <div class="form-group half-width">
-          <label>{{ 'PROFILE.SERVICE_RADIUS' | translate }} (km)</label>
-          <input type="number" name="serviceRadiusKm" [(ngModel)]="pro.serviceRadiusKm" min="1" max="500" placeholder="e.g. 25" />
-          <span class="field-hint">{{ 'PROFILE.SERVICE_RADIUS_HINT' | translate }}</span>
         </div>
 
         <h4 class="form-section-label">{{ 'PROFILE.CONTACT' | translate }}</h4>

@@ -26,20 +26,3 @@ export interface Pro {
     upiVpa?: string;
 }
 
-export interface ProBankDetails {
-    payoutMethod?: string;
-    bankAccountHolderName?: string;
-    bankAccountNumber?: string;
-    bankIfsc?: string;
-    upiVpa?: string;
-    hasBankDetails: boolean;
-}
-
-export interface UpdateBankDetailsRequest {
-    payoutMethod: string;
-    bankAccountHolderName?: string;
-    bankAccountNumber?: string;
-    bankIfsc?: string;
-    upiVpa?: string;
-}
-

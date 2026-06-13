@@ -1,5 +1,11 @@
 <div class="biz-page">
 
+  <!-- Back nav (page level) -->
+  <button class="btn-back" *ngIf="!selectedBiz" (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon>
+    {{ 'COMMON.BACK' | translate }}
+  </button>
+
   <!-- ── Page Header ───────────────────────────────────────────────────── -->
   <div class="biz-page-header">
     <div class="header-left">

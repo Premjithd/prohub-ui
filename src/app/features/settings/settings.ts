@@ -11,6 +11,7 @@ import { ProService } from '../../core/services/pro';
 import { VerificationService } from '../../core/services/verification.service';
 import { KycService, KycStatus } from '../../core/services/kyc.service';
 import { PaymentMethodService, PaymentMethod } from '../../core/services/payment-method.service';
+import { BusinessService, BusinessSummary } from '../../core/services/business.service';
 
 type VerifStep = 'idle' | 'sending' | 'code-sent' | 'verifying';
 
@@ -56,6 +57,17 @@ export class SettingsComponent implements OnInit {
   pmSaveError = '';
   pmDeleteId: number | null = null;
 
+  // Service area (Pro only)
+  proData: any = null;
+  proRadius: number | null = null;
+  savingProRadius = false;
+  proRadiusSaved = false;
+
+  // Businesses (Pro only) — editable service radius per owned business
+  myBusinesses: BusinessSummary[] = [];
+  businessesLoading = false;
+  savingBizRadiusId: number | null = null;
+
   // KYC (Pro only)
   kycStatus: KycStatus | null = null;
   kycLoading = false;
@@ -77,6 +89,7 @@ export class SettingsComponent implements OnInit {
     private verificationService: VerificationService,
     private kycService: KycService,
     private pmService: PaymentMethodService,
+    private businessService: BusinessService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -88,6 +101,18 @@ export class SettingsComponent implements OnInit {
 
   get isPro(): boolean { return this.userType === 'Pro'; }
 
+  get ownsBusiness(): boolean {
+    return this.myBusinesses.some(b => b.role === 'Owner');
+  }
+
+  get isBusinessMember(): boolean {
+    return this.myBusinesses.length > 0 && !this.ownsBusiness;
+  }
+
+  get ownedBusinesses(): BusinessSummary[] {
+    return this.myBusinesses.filter(b => b.role === 'Owner');
+  }
+
   private loadProfile(): void {
     const id = Number(this.auth.getUserId());
     if (this.isPro) {
@@ -98,9 +123,12 @@ export class SettingsComponent implements OnInit {
           this.userPhone = pro.phoneNumber;
           this.isEmailVerified = pro.isEmailVerified;
           this.isPhoneVerified = pro.isPhoneVerified;
+          this.proData = pro;
+          this.proRadius = pro.serviceRadiusKm ?? 25;
           this.isLoading = false;
           this.cdr.markForCheck();
           this.loadKycStatus();
+          this.loadBusinesses();
         },
         error: () => { this.isLoading = false; this.cdr.markForCheck(); }
       });
@@ -128,6 +156,43 @@ export class SettingsComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => { this.kycLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  // ── Service area (Pro) ─────────────────────────────────────────────────────
+
+  saveProRadius(): void {
+    if (!this.proData || !this.proRadius) return;
+    this.savingProRadius = true;
+    this.proRadiusSaved = false;
+    this.proService.updatePro({ ...this.proData, serviceRadiusKm: this.proRadius }).subscribe({
+      next: () => {
+        this.savingProRadius = false;
+        this.proRadiusSaved = true;
+        this.cdr.markForCheck();
+        setTimeout(() => { this.proRadiusSaved = false; this.cdr.markForCheck(); }, 3000);
+      },
+      error: () => { this.savingProRadius = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  loadBusinesses(): void {
+    this.businessesLoading = true;
+    this.businessService.getMyBusinesses().subscribe({
+      next: (list) => {
+        this.myBusinesses = (list ?? []).map(b => ({ ...b, serviceRadiusKm: b.serviceRadiusKm ?? 25 }));
+        this.businessesLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.businessesLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  saveBizRadius(biz: BusinessSummary): void {
+    this.savingBizRadiusId = biz.id;
+    this.businessService.updateBusiness(biz.id, { serviceRadiusKm: biz.serviceRadiusKm ?? undefined }).subscribe({
+      next: () => { this.savingBizRadiusId = null; this.cdr.markForCheck(); },
+      error: () => { this.savingBizRadiusId = null; this.cdr.markForCheck(); }
     });
   }
 

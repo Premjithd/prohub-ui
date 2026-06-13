@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
@@ -65,10 +65,15 @@ export class MyBusinessesComponent implements OnInit, OnDestroy {
     private bizService: BusinessService,
     private addressService: AddressService,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private location: Location,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('create')) {
+      this.showCreatePanel = true;
+    }
     this.loadBusinesses();
 
     this.addressSearch$.pipe(
@@ -114,6 +119,10 @@ export class MyBusinessesComponent implements OnInit, OnDestroy {
       next: detail => { this.bizDetail = detail; this.bizDetailLoading = false; this.cdr.markForCheck(); },
       error: () => { this.bizDetailLoading = false; this.cdr.markForCheck(); }
     });
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   clearSelection(): void {

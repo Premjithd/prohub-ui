@@ -249,6 +249,48 @@
     </div>
 
     <!-- ── KYC Documents (Pros only) ───────────────────────────────────────── -->
+    <!-- Service Area (Pros only) -->
+    <ng-container *ngIf="isPro">
+      <div class="settings-card">
+        <div class="card-section-header">
+          <mat-icon>my_location</mat-icon>
+          <div>
+            <h2>Service Area</h2>
+            <p class="card-hint-inline">How far you travel for jobs</p>
+          </div>
+        </div>
+        <div class="sa-row">
+          <label class="sa-label">Service radius (km)</label>
+          <input type="number" min="1" max="500" [(ngModel)]="proRadius" class="sa-input" />
+          <button class="btn-save-sa" (click)="saveProRadius()" [disabled]="savingProRadius || !proRadius">
+            {{ savingProRadius ? 'Saving…' : 'Save' }}
+          </button>
+          <span class="sa-saved" *ngIf="proRadiusSaved"><mat-icon>check_circle</mat-icon> Saved</span>
+        </div>
+        <p class="card-hint">Jobs posted within this distance of your address will reach you.</p>
+      </div>
+
+      <!-- Businesses service radius -->
+      <div class="settings-card" *ngIf="ownedBusinesses.length > 0">
+        <div class="card-section-header">
+          <mat-icon>storefront</mat-icon>
+          <div>
+            <h2>Business Service Areas</h2>
+            <p class="card-hint-inline">Service radius for each of your businesses</p>
+          </div>
+        </div>
+        <div class="biz-sa-row" *ngFor="let biz of ownedBusinesses">
+          <span class="biz-sa-name">{{ biz.businessName }}</span>
+          <input type="number" min="1" max="500" [(ngModel)]="biz.serviceRadiusKm" class="sa-input" />
+          <span class="sa-unit">km</span>
+          <button class="btn-save-sa" (click)="saveBizRadius(biz)" [disabled]="savingBizRadiusId === biz.id || !biz.serviceRadiusKm">
+            {{ savingBizRadiusId === biz.id ? 'Saving…' : 'Save' }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- KYC Documents (Pros only) -->
     <ng-container *ngIf="isPro">
       <div class="settings-card kyc-card">
         <div class="card-section-header">
@@ -370,11 +412,19 @@
             <p class="card-hint-inline">{{ 'SETTINGS.BUSINESS_SUBTITLE' | translate }}</p>
           </div>
         </div>
-        <p class="card-hint">{{ 'SETTINGS.BUSINESS_HINT' | translate }}</p>
-        <a routerLink="/my-businesses" class="btn-manage-biz">
-          <mat-icon>business</mat-icon>
-          {{ 'SETTINGS.MANAGE_BUSINESSES' | translate }}
-        </a>
+        <p class="card-hint">
+          {{ (isBusinessMember ? 'SETTINGS.BUSINESS_HINT_MEMBER' : 'SETTINGS.BUSINESS_HINT') | translate }}
+        </p>
+        <ng-container *ngIf="!businessesLoading">
+          <a *ngIf="ownsBusiness" routerLink="/my-businesses" class="btn-manage-biz">
+            <mat-icon>business</mat-icon>
+            {{ 'SETTINGS.MANAGE_BUSINESSES' | translate }}
+          </a>
+          <a *ngIf="!ownsBusiness" routerLink="/my-businesses" class="btn-manage-biz">
+            <mat-icon>business</mat-icon>
+            {{ 'SETTINGS.BUSINESS_BTN' | translate }}
+          </a>
+        </ng-container>
       </div>
     </ng-container>
 

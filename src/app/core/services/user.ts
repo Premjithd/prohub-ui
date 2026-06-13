@@ -24,8 +24,4 @@ export class UserService {
   updateUser(userData: any): Observable<ApiResponse<User>> {
     return this.api.put<User>(`users/${userData.id}`, userData);
   }
-
-  savePaymentDetails(userId: number, upiVpa: string): Observable<any> {
-    return this.api.put<any>(`users/${userId}/payment-details`, { upiVpa });
-  }
 }
