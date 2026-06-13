@@ -801,6 +801,7 @@
     "TITLE": "Settings",
     "SUBTITLE": "Manage your account verification and identity documents",
     "EMAIL_TITLE": "Email Verification",
+    "CHANGE": "Change",
     "PHONE_TITLE": "Phone Verification",
     "KYC_TITLE": "KYC Documents",
     "KYC_SUBTITLE": "Upload Aadhaar and PAN card for identity verification",

@@ -21,19 +21,41 @@
         <mat-icon>email</mat-icon>
         <div>
           <h2>{{ 'SETTINGS.EMAIL_TITLE' | translate }}</h2>
-          <p class="contact-display">{{ userEmail }}</p>
+          <p class="contact-display" *ngIf="!isEditingEmail">{{ userEmail }}</p>
         </div>
-        <span class="verif-badge" [class.verified]="isEmailVerified" [class.unverified]="!isEmailVerified">
+        <span class="verif-badge" *ngIf="!isEditingEmail" [class.verified]="isEmailVerified" [class.unverified]="!isEmailVerified">
           <mat-icon>{{ isEmailVerified ? 'verified' : 'warning' }}</mat-icon>
           {{ isEmailVerified ? ('SETTINGS.VERIFIED' | translate) : ('SETTINGS.UNVERIFIED' | translate) }}
         </span>
+        <button class="btn-change" *ngIf="!isEditingEmail" (click)="startEditEmail()">
+          <mat-icon>edit</mat-icon> {{ 'SETTINGS.CHANGE' | translate }}
+        </button>
       </div>
 
       <div *ngIf="emailSuccess" class="alert alert-success">
         <mat-icon>check_circle</mat-icon> {{ emailSuccess }}
       </div>
 
-      <ng-container *ngIf="!isEmailVerified">
+      <!-- Edit email -->
+      <ng-container *ngIf="isEditingEmail">
+        <div class="contact-edit-row">
+          <input
+            type="email"
+            [(ngModel)]="emailDraft"
+            placeholder="you@example.com"
+            class="contact-input"
+            (keyup.enter)="saveEmail()" />
+          <button class="btn-verify" (click)="saveEmail()" [disabled]="savingEmail">
+            <mat-spinner *ngIf="savingEmail" diameter="16"></mat-spinner>
+            <mat-icon *ngIf="!savingEmail">save</mat-icon>
+            {{ savingEmail ? ('SETTINGS.SENDING' | translate) : ('COMMON.SAVE' | translate) }}
+          </button>
+          <button class="btn-resend" (click)="cancelEditEmail()" [disabled]="savingEmail">{{ 'COMMON.CANCEL' | translate }}</button>
+        </div>
+        <p *ngIf="emailEditError" class="verif-error"><mat-icon>error_outline</mat-icon> {{ emailEditError }}</p>
+      </ng-container>
+
+      <ng-container *ngIf="!isEmailVerified && !isEditingEmail">
         <p class="card-hint">{{ 'SETTINGS.EMAIL_HINT' | translate }}</p>
 
         <div *ngIf="emailStep === 'idle' || emailStep === 'sending'" class="verif-action">
@@ -63,7 +85,7 @@
         <p *ngIf="emailError" class="verif-error"><mat-icon>error_outline</mat-icon> {{ emailError }}</p>
       </ng-container>
 
-      <div *ngIf="isEmailVerified" class="verif-done">
+      <div *ngIf="isEmailVerified && !isEditingEmail" class="verif-done">
         <mat-icon>check_circle</mat-icon>
         {{ 'SETTINGS.EMAIL_VERIFIED_MSG' | translate }}
       </div>
@@ -75,19 +97,41 @@
         <mat-icon>phone_iphone</mat-icon>
         <div>
           <h2>{{ 'SETTINGS.PHONE_TITLE' | translate }}</h2>
-          <p class="contact-display">{{ userPhone }}</p>
+          <p class="contact-display" *ngIf="!isEditingPhone">{{ userPhone }}</p>
         </div>
-        <span class="verif-badge" [class.verified]="isPhoneVerified" [class.unverified]="!isPhoneVerified">
+        <span class="verif-badge" *ngIf="!isEditingPhone" [class.verified]="isPhoneVerified" [class.unverified]="!isPhoneVerified">
           <mat-icon>{{ isPhoneVerified ? 'verified' : 'warning' }}</mat-icon>
           {{ isPhoneVerified ? ('SETTINGS.VERIFIED' | translate) : ('SETTINGS.UNVERIFIED' | translate) }}
         </span>
+        <button class="btn-change" *ngIf="!isEditingPhone" (click)="startEditPhone()">
+          <mat-icon>edit</mat-icon> {{ 'SETTINGS.CHANGE' | translate }}
+        </button>
       </div>
 
       <div *ngIf="phoneSuccess" class="alert alert-success">
         <mat-icon>check_circle</mat-icon> {{ phoneSuccess }}
       </div>
 
-      <ng-container *ngIf="!isPhoneVerified">
+      <!-- Edit phone -->
+      <ng-container *ngIf="isEditingPhone">
+        <div class="contact-edit-row">
+          <input
+            type="tel"
+            [(ngModel)]="phoneDraft"
+            placeholder="+91 90000 00000"
+            class="contact-input"
+            (keyup.enter)="savePhone()" />
+          <button class="btn-verify" (click)="savePhone()" [disabled]="savingPhone">
+            <mat-spinner *ngIf="savingPhone" diameter="16"></mat-spinner>
+            <mat-icon *ngIf="!savingPhone">save</mat-icon>
+            {{ savingPhone ? ('SETTINGS.SENDING' | translate) : ('COMMON.SAVE' | translate) }}
+          </button>
+          <button class="btn-resend" (click)="cancelEditPhone()" [disabled]="savingPhone">{{ 'COMMON.CANCEL' | translate }}</button>
+        </div>
+        <p *ngIf="phoneEditError" class="verif-error"><mat-icon>error_outline</mat-icon> {{ phoneEditError }}</p>
+      </ng-container>
+
+      <ng-container *ngIf="!isPhoneVerified && !isEditingPhone">
         <p class="card-hint">{{ 'SETTINGS.PHONE_HINT' | translate }}</p>
 
         <div *ngIf="phoneStep === 'idle' || phoneStep === 'sending'" class="verif-action">
@@ -117,7 +161,7 @@
         <p *ngIf="phoneError" class="verif-error"><mat-icon>error_outline</mat-icon> {{ phoneError }}</p>
       </ng-container>
 
-      <div *ngIf="isPhoneVerified" class="verif-done">
+      <div *ngIf="isPhoneVerified && !isEditingPhone" class="verif-done">
         <mat-icon>check_circle</mat-icon>
         {{ 'SETTINGS.PHONE_VERIFIED_MSG' | translate }}
       </div>
@@ -258,15 +302,30 @@
             <h2>Service Area</h2>
             <p class="card-hint-inline">How far you travel for jobs</p>
           </div>
+          <button class="btn-edit-sa" *ngIf="!isEditingProRadius" (click)="startEditProRadius()">
+            <mat-icon>edit</mat-icon> {{ 'SETTINGS.CHANGE' | translate }}
+          </button>
         </div>
-        <div class="sa-row">
+
+        <!-- View mode -->
+        <div class="sa-display" *ngIf="!isEditingProRadius">
+          <div class="sa-value-block">
+            <span class="sa-value">{{ proRadius }}</span>
+            <span class="sa-unit">km radius</span>
+          </div>
+          <span class="sa-saved" *ngIf="proRadiusSaved"><mat-icon>check_circle</mat-icon> Saved</span>
+        </div>
+
+        <!-- Edit mode -->
+        <div class="sa-row" *ngIf="isEditingProRadius">
           <label class="sa-label">Service radius (km)</label>
           <input type="number" min="1" max="500" [(ngModel)]="proRadius" class="sa-input" />
           <button class="btn-save-sa" (click)="saveProRadius()" [disabled]="savingProRadius || !proRadius">
             {{ savingProRadius ? 'Saving…' : 'Save' }}
           </button>
-          <span class="sa-saved" *ngIf="proRadiusSaved"><mat-icon>check_circle</mat-icon> Saved</span>
+          <button class="btn-cancel-sa" (click)="cancelEditProRadius()" [disabled]="savingProRadius">Cancel</button>
         </div>
+
         <p class="card-hint">Jobs posted within this distance of your address will reach you.</p>
       </div>
 
@@ -281,11 +340,25 @@
         </div>
         <div class="biz-sa-row" *ngFor="let biz of ownedBusinesses">
           <span class="biz-sa-name">{{ biz.businessName }}</span>
-          <input type="number" min="1" max="500" [(ngModel)]="biz.serviceRadiusKm" class="sa-input" />
-          <span class="sa-unit">km</span>
-          <button class="btn-save-sa" (click)="saveBizRadius(biz)" [disabled]="savingBizRadiusId === biz.id || !biz.serviceRadiusKm">
-            {{ savingBizRadiusId === biz.id ? 'Saving…' : 'Save' }}
-          </button>
+
+          <!-- View mode -->
+          <ng-container *ngIf="editingBizRadiusId !== biz.id">
+            <span class="sa-value sa-value--sm">{{ biz.serviceRadiusKm }}</span>
+            <span class="sa-unit">km</span>
+            <button class="btn-edit-sa" (click)="startEditBizRadius(biz)">
+              <mat-icon>edit</mat-icon> {{ 'SETTINGS.CHANGE' | translate }}
+            </button>
+          </ng-container>
+
+          <!-- Edit mode -->
+          <ng-container *ngIf="editingBizRadiusId === biz.id">
+            <input type="number" min="1" max="500" [(ngModel)]="biz.serviceRadiusKm" class="sa-input" />
+            <span class="sa-unit">km</span>
+            <button class="btn-save-sa" (click)="saveBizRadius(biz)" [disabled]="savingBizRadiusId === biz.id || !biz.serviceRadiusKm">
+              {{ savingBizRadiusId === biz.id ? 'Saving…' : 'Save' }}
+            </button>
+            <button class="btn-cancel-sa" (click)="cancelEditBizRadius(biz)" [disabled]="savingBizRadiusId === biz.id">Cancel</button>
+          </ng-container>
         </div>
       </div>
     </ng-container>

@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule } from '@ngx-translate/core';
+import { Observable } from 'rxjs';
 import { Auth } from '../../core/services/auth';
 import { UserService } from '../../core/services/user';
 import { ProService } from '../../core/services/pro';
@@ -42,6 +43,17 @@ export class SettingsComponent implements OnInit {
   phoneError = '';
   phoneSuccess = '';
 
+  // Editable contact details (all user types)
+  userData: any = null; // full user object for non-pros (pros use proData)
+  isEditingEmail = false;
+  emailDraft = '';
+  savingEmail = false;
+  emailEditError = '';
+  isEditingPhone = false;
+  phoneDraft = '';
+  savingPhone = false;
+  phoneEditError = '';
+
   // Payment methods (all users)
   paymentMethods: PaymentMethod[] = [];
   pmLoading = false;
@@ -62,11 +74,15 @@ export class SettingsComponent implements OnInit {
   proRadius: number | null = null;
   savingProRadius = false;
   proRadiusSaved = false;
+  isEditingProRadius = false;
+  private proRadiusBackup: number | null = null;
 
   // Businesses (Pro only) — editable service radius per owned business
   myBusinesses: BusinessSummary[] = [];
   businessesLoading = false;
   savingBizRadiusId: number | null = null;
+  editingBizRadiusId: number | null = null;
+  private bizRadiusBackup: number | null = null;
 
   // KYC (Pro only)
   kycStatus: KycStatus | null = null;
@@ -135,6 +151,7 @@ export class SettingsComponent implements OnInit {
     } else {
       this.userService.getUser(id).subscribe({
         next: (user) => {
+          this.userData = user;
           this.userEmail = user.email;
           this.userPhone = user.phoneNumber;
           this.isEmailVerified = user.isEmailVerified;
@@ -161,6 +178,17 @@ export class SettingsComponent implements OnInit {
 
   // ── Service area (Pro) ─────────────────────────────────────────────────────
 
+  startEditProRadius(): void {
+    this.proRadiusBackup = this.proRadius;
+    this.isEditingProRadius = true;
+    this.proRadiusSaved = false;
+  }
+
+  cancelEditProRadius(): void {
+    this.proRadius = this.proRadiusBackup;
+    this.isEditingProRadius = false;
+  }
+
   saveProRadius(): void {
     if (!this.proData || !this.proRadius) return;
     this.savingProRadius = true;
@@ -168,6 +196,7 @@ export class SettingsComponent implements OnInit {
     this.proService.updatePro({ ...this.proData, serviceRadiusKm: this.proRadius }).subscribe({
       next: () => {
         this.savingProRadius = false;
+        this.isEditingProRadius = false;
         this.proRadiusSaved = true;
         this.cdr.markForCheck();
         setTimeout(() => { this.proRadiusSaved = false; this.cdr.markForCheck(); }, 3000);
@@ -188,11 +217,130 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  startEditBizRadius(biz: BusinessSummary): void {
+    this.bizRadiusBackup = biz.serviceRadiusKm ?? null;
+    this.editingBizRadiusId = biz.id;
+  }
+
+  cancelEditBizRadius(biz: BusinessSummary): void {
+    biz.serviceRadiusKm = this.bizRadiusBackup;
+    this.editingBizRadiusId = null;
+  }
+
   saveBizRadius(biz: BusinessSummary): void {
     this.savingBizRadiusId = biz.id;
     this.businessService.updateBusiness(biz.id, { serviceRadiusKm: biz.serviceRadiusKm ?? undefined }).subscribe({
-      next: () => { this.savingBizRadiusId = null; this.cdr.markForCheck(); },
+      next: () => { this.savingBizRadiusId = null; this.editingBizRadiusId = null; this.cdr.markForCheck(); },
       error: () => { this.savingBizRadiusId = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  // ── Edit contact details (email / phone) ───────────────────────────────────
+
+  private get contactEntity(): any { return this.isPro ? this.proData : this.userData; }
+
+  private saveContact(payload: any): Observable<any> {
+    return this.isPro ? this.proService.updatePro(payload) : this.userService.updateUser(payload);
+  }
+
+  startEditEmail(): void {
+    this.emailDraft = this.userEmail;
+    this.isEditingEmail = true;
+    this.emailEditError = '';
+    this.emailSuccess = '';
+    // collapse any in-progress verification flow for the old address
+    this.emailStep = 'idle';
+    this.emailCode = '';
+    this.emailError = '';
+  }
+
+  cancelEditEmail(): void {
+    this.isEditingEmail = false;
+    this.emailEditError = '';
+  }
+
+  saveEmail(): void {
+    const next = (this.emailDraft || '').trim();
+    if (!next || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next)) {
+      this.emailEditError = 'Enter a valid email address.';
+      return;
+    }
+    if (next.toLowerCase() === this.userEmail.toLowerCase()) {
+      this.isEditingEmail = false;
+      return;
+    }
+    this.savingEmail = true;
+    this.emailEditError = '';
+    this.saveContact({ ...this.contactEntity, email: next }).subscribe({
+      next: (resp: any) => {
+        const updated = resp?.data ?? resp ?? {};
+        if (this.isPro) this.proData = { ...this.proData, email: next, isEmailVerified: false };
+        else this.userData = { ...this.userData, email: next, isEmailVerified: false };
+        this.userEmail = updated.email ?? next;
+        this.isEmailVerified = false; // changing the email always resets verification
+        this.savingEmail = false;
+        this.isEditingEmail = false;
+        this.emailStep = 'idle';
+        this.emailCode = '';
+        this.emailSuccess = 'Email updated — please verify your new address.';
+        this.cdr.markForCheck();
+        setTimeout(() => { this.emailSuccess = ''; this.cdr.markForCheck(); }, 5000);
+      },
+      error: (err: any) => {
+        this.savingEmail = false;
+        this.emailEditError = err?.error?.message || 'Failed to update email.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  startEditPhone(): void {
+    this.phoneDraft = this.userPhone;
+    this.isEditingPhone = true;
+    this.phoneEditError = '';
+    this.phoneSuccess = '';
+    this.phoneStep = 'idle';
+    this.phoneCode = '';
+    this.phoneError = '';
+  }
+
+  cancelEditPhone(): void {
+    this.isEditingPhone = false;
+    this.phoneEditError = '';
+  }
+
+  savePhone(): void {
+    const next = (this.phoneDraft || '').trim();
+    if (!next || next.replace(/\D/g, '').length < 7) {
+      this.phoneEditError = 'Enter a valid phone number.';
+      return;
+    }
+    if (next === (this.userPhone || '')) {
+      this.isEditingPhone = false;
+      return;
+    }
+    this.savingPhone = true;
+    this.phoneEditError = '';
+    this.saveContact({ ...this.contactEntity, phoneNumber: next }).subscribe({
+      next: (resp: any) => {
+        const updated = resp?.data ?? resp ?? {};
+        if (this.isPro) this.proData = { ...this.proData, phoneNumber: next, isPhoneVerified: false };
+        else this.userData = { ...this.userData, phoneNumber: next, isPhoneVerified: false };
+        this.userPhone = updated.phoneNumber ?? next;
+        this.isPhoneVerified = false; // changing the phone always resets verification
+        this.savingPhone = false;
+        this.isEditingPhone = false;
+        this.phoneStep = 'idle';
+        this.phoneCode = '';
+        this.phoneSuccess = 'Phone number updated — please verify your new number.';
+        this.cdr.markForCheck();
+        setTimeout(() => { this.phoneSuccess = ''; this.cdr.markForCheck(); }, 5000);
+      },
+      error: (err: any) => {
+        this.savingPhone = false;
+        this.phoneEditError = err?.error?.message || 'Failed to update phone number.';
+        this.cdr.markForCheck();
+      }
     });
   }
 

@@ -14,21 +14,54 @@
     font-size: 2rem;
     width: 2rem;
     height: 2rem;
-    color: #667eea;
+    color: var(--color-primary);
   }
 
   h1 {
     margin: 0 0 0.15rem;
-    font-size: 1.5rem;
+    font-size: var(--text-h1);
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--color-text);
   }
 
   p {
     margin: 0;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--color-text-muted);
   }
+}
+
+// ── Shared button styles (app standard) ───────────────────────────────────────
+%btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s, background 0.15s, border-color 0.15s, color 0.15s;
+
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+%btn-primary {
+  @extend %btn-base;
+  background: var(--color-primary-gradient);
+  color: #fff;
+  &:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+}
+
+%btn-secondary {
+  @extend %btn-base;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1.5px solid var(--color-border);
+  &:hover:not(:disabled) { background: #e5e7eb; }
 }
 
 .settings-loading {
@@ -36,7 +69,7 @@
   align-items: center;
   gap: 1rem;
   padding: 2rem;
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 
@@ -61,7 +94,7 @@
     font-size: 1.5rem;
     width: 1.5rem;
     height: 1.5rem;
-    color: #667eea;
+    color: var(--color-primary);
     margin-top: 0.1rem;
     flex-shrink: 0;
   }
@@ -74,19 +107,48 @@
     margin: 0 0 0.1rem;
     font-size: 1rem;
     font-weight: 700;
-    color: #222;
+    color: var(--color-text);
   }
 }
 
 .contact-display {
   margin: 0;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--color-text-muted);
+}
+
+.btn-change {
+  @extend %btn-secondary;
+  flex-shrink: 0;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  mat-icon { font-size: 0.95rem; width: 0.95rem; height: 0.95rem; }
+}
+
+.contact-edit-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.contact-input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid #dde0f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: var(--color-primary); }
 }
 
 .card-hint {
   font-size: 0.87rem;
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0 0 1rem;
   line-height: 1.5;
 }
@@ -94,7 +156,7 @@
 .card-hint-inline {
   margin: 0;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 // ── Verification badge ────────────────────────────────────────────────────────
@@ -153,39 +215,15 @@
   outline: none;
   transition: border-color 0.15s;
 
-  &:focus { border-color: #667eea; }
+  &:focus { border-color: var(--color-primary); }
 }
 
 .btn-verify {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.6rem 1.1rem;
-  background: #1976d2;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
-  &:hover:not(:disabled) { background: #1565c0; }
-  &:disabled { opacity: 0.55; cursor: not-allowed; }
+  @extend %btn-primary;
 }
 
 .btn-resend {
-  background: none;
-  border: 1px solid #bbb;
-  border-radius: 8px;
-  padding: 0.6rem 0.9rem;
-  font-size: 0.85rem;
-  color: #555;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-
-  &:hover { border-color: #667eea; color: #667eea; }
+  @extend %btn-secondary;
 }
 
 .verif-done {
@@ -239,7 +277,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.88rem;
 }
 
@@ -293,9 +331,9 @@
   margin-bottom: 0.9rem;
   font-weight: 600;
   font-size: 0.9rem;
-  color: #333;
+  color: var(--color-text);
 
-  mat-icon { font-size: 1.2rem; width: 1.2rem; height: 1.2rem; color: #667eea; }
+  mat-icon { font-size: 1.2rem; width: 1.2rem; height: 1.2rem; color: var(--color-primary); }
 
   .doc-status-icon {
     margin-left: auto;
@@ -336,7 +374,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  color: #1976d2;
+  color: var(--color-primary);
   font-size: 0.85rem;
   text-decoration: none;
 
@@ -352,8 +390,8 @@
   gap: 0.4rem;
   padding: 0.6rem 1rem;
   background: white;
-  color: #1976d2;
-  border: 1.5px solid #1976d2;
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -361,7 +399,7 @@
   transition: background 0.15s, color 0.15s;
 
   mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
-  &:hover:not(:disabled) { background: #1976d2; color: white; }
+  &:hover:not(:disabled) { background: var(--color-primary); color: white; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
@@ -380,47 +418,19 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.84rem;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
 
   mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
 }
 
 .btn-submit-kyc {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.65rem 1.4rem;
-  background: #2e7d32;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
-  &:hover:not(:disabled) { background: #1b5e20; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  @extend %btn-primary;
 }
 
 .btn-manage-biz {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.65rem 1.4rem;
-  background: var(--color-primary, #764ba2);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
+  @extend %btn-primary;
   text-decoration: none;
-  transition: opacity 0.15s;
-  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
-  &:hover { opacity: 0.9; }
 }
 
 // ── Payment Methods ───────────────────────────────────────────────────────────
@@ -429,7 +439,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 0.88rem;
   margin: 0.25rem 0 1rem;
 
@@ -484,12 +494,12 @@
 .pm-type-label {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #222;
+  color: var(--color-text);
 }
 
 .pm-custom-label {
   font-size: 0.82rem;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .pm-default-badge {
@@ -508,7 +518,7 @@
 
 .pm-item-meta {
   font-size: 0.84rem;
-  color: #666;
+  color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -517,7 +527,7 @@
 .pm-ifsc {
   margin-left: 0.45rem;
   font-size: 0.78rem;
-  color: #999;
+  color: var(--color-text-muted);
   background: #f0f0f5;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
@@ -574,7 +584,7 @@
   gap: 0.4rem;
   padding: 0.6rem 1.1rem;
   background: white;
-  color: #667eea;
+  color: var(--color-primary);
   border: 1.5px dashed #aab4f5;
   border-radius: 8px;
   font-size: 0.88rem;
@@ -583,7 +593,7 @@
   transition: background 0.15s, border-color 0.15s;
 
   mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
-  &:hover { background: #f0f2ff; border-color: #667eea; }
+  &:hover { background: #f0f2ff; border-color: var(--color-primary); }
 }
 
 .pm-add-panel {
@@ -597,7 +607,7 @@
     margin: 0 0 0.9rem;
     font-size: 0.93rem;
     font-weight: 700;
-    color: #222;
+    color: var(--color-text);
   }
 }
 
@@ -614,7 +624,7 @@
     border: 1.5px solid #ddd;
     border-radius: 8px;
     background: white;
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 0.86rem;
     font-weight: 500;
     cursor: pointer;
@@ -623,7 +633,7 @@
     mat-icon { font-size: 0.95rem; width: 0.95rem; height: 0.95rem; }
 
     &.active {
-      border-color: #667eea;
+      border-color: var(--color-primary);
       background: #f0f2ff;
       color: #4a5fc1;
       font-weight: 700;
@@ -646,7 +656,7 @@
   label {
     font-size: 0.82rem;
     font-weight: 600;
-    color: #444;
+    color: var(--color-text);
   }
 }
 
@@ -659,7 +669,7 @@
   background: white;
   transition: border-color 0.15s;
 
-  &:focus { border-color: #667eea; }
+  &:focus { border-color: var(--color-primary); }
 }
 
 .pm-default-check {
@@ -667,10 +677,10 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.88rem;
-  color: #444;
+  color: var(--color-text);
   cursor: pointer;
 
-  input[type="checkbox"] { cursor: pointer; accent-color: #667eea; }
+  input[type="checkbox"] { cursor: pointer; accent-color: var(--color-primary); }
   label { cursor: pointer; margin: 0; }
 }
 
@@ -685,5 +695,71 @@
 
 .optional-hint {
   font-weight: 400;
-  color: #aaa;
+  color: var(--color-text-muted);
 }
+
+/* ── Service Area cards ─────────────────────────────────────────────────── */
+.sa-row, .biz-sa-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+.sa-label { font-size: 0.9rem; color: var(--color-text); font-weight: 600; }
+.biz-sa-name { flex: 1 1 10rem; font-weight: 600; color: var(--color-text); }
+.sa-input {
+  width: 6rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+.sa-unit { color: var(--color-text-muted); font-size: 0.85rem; }
+.btn-save-sa {
+  @extend %btn-primary;
+  padding: 0.5rem 1.1rem;
+}
+.btn-cancel-sa {
+  @extend %btn-secondary;
+  padding: 0.5rem 1.1rem;
+}
+.sa-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #2e7d32; // accessible success text; --color-success is tuned for fills, fails contrast as text
+  font-size: 0.85rem;
+  font-weight: 600;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+/* Edit button in card header (right-aligned) */
+.btn-edit-sa {
+  @extend %btn-secondary;
+  margin-left: auto;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+/* View-mode value display */
+.sa-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+}
+.sa-value-block {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+.sa-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+.sa-value--sm { font-size: 1.05rem; }
