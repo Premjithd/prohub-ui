@@ -16,7 +16,9 @@ import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angu
 import { FormsModule } from '@angular/forms';
 import { JobService, Job, JobBid, JobPhase, Message } from '../../services/job.service.js';
 import { PaymentService } from '../../services/payment.service';
+import { PaymentSummary } from '../../models/payment.model';
 import { RazorpayCheckoutComponent } from '../payments/razorpay-checkout.component';
+import { PayAmountDialogComponent } from '../payments/pay-amount-dialog.component';
 import { Auth } from '../../core/services/auth';
 import { ReviewService } from '../../services/review.service';
 import { Review } from '../../models/review.model';
@@ -58,6 +60,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   loadingBids = false;
   loadingMessages = false;
   paymentStatus: { status: string; completed: boolean } | null = null;
+  paymentSummary: PaymentSummary | null = null;
   loadingPayment = false;
   messageText: string = '';
   messageSending = false;
@@ -118,6 +121,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         this.loadBidsForJob(jobId);
         // Always attempt to load payment and completion — both handle 404 gracefully
         this.loadPaymentStatus(jobId);
+        this.loadPaymentSummary(jobId);
         this.loadCompletionStatus(jobId);
         // Load review status if job is completed
         if (job.status === 'Completed') {
@@ -267,6 +271,69 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadPaymentSummary(jobId: number): void {
+    this.paymentService.getPaymentSummary(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (summary) => {
+        this.paymentSummary = summary;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.paymentSummary = null;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  /**
+   * Show the payment tile for every job status once a bid has been accepted.
+   * The summary's bidAmount is only non-zero when there is an accepted bid, so
+   * this is effectively "a bid has been accepted" — covering Bid Accepted,
+   * Payment Made, In Progress, Completed, etc.
+   */
+  get hasPaymentInfo(): boolean {
+    const s = this.paymentSummary;
+    return !!s && s.bidAmount > 0;
+  }
+
+  /** Consumer can pay when there's a pending, non-None request and a remaining balance. */
+  get canPayNow(): boolean {
+    const s = this.paymentSummary;
+    const req = s?.activeRequest;
+    return !!s && !!req && req.status === 'Pending' && req.requestType !== 'None' && s.remaining > 0;
+  }
+
+  paymentProgress(): number {
+    const s = this.paymentSummary;
+    if (!s || s.bidAmount <= 0) return 0;
+    return Math.round((s.totalPaidPrincipal / s.bidAmount) * 100);
+  }
+
+  payNow(): void {
+    const s = this.paymentSummary;
+    if (!this.job || !s) return;
+
+    const acceptedBid = this.getAssignedBid();
+    if (!acceptedBid) {
+      this.errorMessage = 'Bid information not available for payment.';
+      return;
+    }
+
+    const payDialog = this.dialog.open(PayAmountDialogComponent, {
+      width: '440px',
+      data: {
+        jobTitle: this.job.title,
+        bidAmount: s.bidAmount,
+        remaining: s.remaining,
+        activeRequest: s.activeRequest
+      }
+    });
+
+    payDialog.afterClosed().subscribe((principalAmount: number | undefined) => {
+      if (!principalAmount || principalAmount <= 0) return;
+      this.openRazorpayCheckout(acceptedBid, principalAmount);
+    });
+  }
+
   loadCompletionStatus(jobId: number): void {
     this.jobService.getJobCompletion(jobId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (completion) => {
@@ -294,7 +361,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     this.openRazorpayCheckout(acceptedBid);
   }
 
-  private openRazorpayCheckout(acceptedBid: JobBid): void {
+  private openRazorpayCheckout(acceptedBid: JobBid, principalAmount?: number): void {
     const paymentDialogRef = this.dialog.open(RazorpayCheckoutComponent, {
       width: '540px',
       maxHeight: '90vh',
@@ -303,6 +370,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         jobId: this.job!.id,
         bidId: acceptedBid.id,
         bidAmount: acceptedBid.bidAmount,
+        principalAmount,
         jobTitle: this.job!.title,
         consumerName: this.auth.getName() || 'User',
         consumerEmail: this.job!.user?.email || '',
@@ -313,8 +381,11 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     paymentDialogRef.afterClosed().subscribe(result => {
       if (result?.success) {
         this.successMessage = 'Payment completed successfully!';
-        this.paymentStatus = { status: 'Completed', completed: true };
         this.cdr.markForCheck();
+        // Refresh payment summary and job status to reflect the new payment / remaining balance.
+        this.loadPaymentSummary(this.job!.id);
+        this.loadPaymentStatus(this.job!.id);
+        this.loadJobDetails(this.job!.id);
         setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 3000);
       } else if (result?.error) {
         this.errorMessage = result.error;

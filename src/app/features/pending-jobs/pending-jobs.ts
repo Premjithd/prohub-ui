@@ -14,7 +14,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { TranslateModule } from '@ngx-translate/core';
 import { JobService, Job, JobBid, JobPhase } from '../../services/job.service';
 import { PaymentService } from '../../services/payment.service';
+import { PaymentSummary } from '../../models/payment.model';
 import { RazorpayCheckoutComponent } from '../payments/razorpay-checkout.component';
+import { PayAmountDialogComponent } from '../payments/pay-amount-dialog.component';
 import { Auth } from '../../core/services/auth';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -48,6 +50,7 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
   loadingBidsMap: Map<number, boolean> = new Map();
   acceptedBidMap: Map<number, JobBid> = new Map();
   paymentStatusMap: Map<number, { status: string; completed: boolean }> = new Map();
+  paymentSummaryMap: Map<number, PaymentSummary> = new Map();
   loadingPaymentMap: Map<number, boolean> = new Map();
   openBidsJobId: number | null = null;
   loading = true;
@@ -105,6 +108,7 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
             });
             this.loadBidsForJob(job.id);
             this.loadPaymentStatusForJob(job.id);
+            this.loadPaymentSummaryForJob(job.id);
           }
         });
         this.loading = false;
@@ -273,6 +277,50 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadPaymentSummaryForJob(jobId: number): void {
+    if (this.paymentSummaryMap.has(jobId)) return;
+    this.paymentService.getPaymentSummary(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (summary) => { this.paymentSummaryMap.set(jobId, summary); this.cdr.markForCheck(); },
+      error: () => { this.cdr.markForCheck(); }
+    });
+  }
+
+  /** "Pay Now" shows only when the Pro has an active, non-None request and a balance remains. */
+  canPayJob(jobId: number): boolean {
+    const s = this.paymentSummaryMap.get(jobId);
+    const req = s?.activeRequest;
+    return !!s && !!req && req.status === 'Pending' && req.requestType !== 'None' && s.remaining > 0;
+  }
+
+  /** Open the amount picker then Razorpay checkout for the given job. */
+  payJobNow(jobId: number): void {
+    const job = this.pendingJobs.find(j => j.id === jobId);
+    const summary = this.paymentSummaryMap.get(jobId);
+    if (!job || !summary) return;
+
+    const bids = this.jobBidsMap.get(jobId) || [];
+    const acceptedBid = bids.find(bid => bid.status === 'Accepted');
+    if (!acceptedBid) {
+      this.errorMessage = 'Bid information not available for payment.';
+      return;
+    }
+
+    const payDialog = this.dialog.open(PayAmountDialogComponent, {
+      width: '440px',
+      data: {
+        jobTitle: job.title,
+        bidAmount: summary.bidAmount,
+        remaining: summary.remaining,
+        activeRequest: summary.activeRequest
+      }
+    });
+
+    payDialog.afterClosed().subscribe((principalAmount: number | undefined) => {
+      if (!principalAmount || principalAmount <= 0) return;
+      this.openPaymentDialog(jobId, acceptedBid, principalAmount);
+    });
+  }
+
   onBidsExpandedChange(jobId: number, isExpanded: boolean): void {
     if (isExpanded) {
       // Close all other panels
@@ -349,11 +397,11 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
               this.successMessage = '';
               this.cdr.markForCheck();
             }, 3000);
-            
-            // Open payment dialog after successful bid acceptance
-            setTimeout(() => {
-              this.openPaymentDialog(jobId, bid);
-            }, 500);
+
+            // The professional will raise a payment request next — refresh the summary so the
+            // "Pay Now" button appears once they do (no auto-charge of the full amount).
+            this.paymentSummaryMap.delete(jobId);
+            this.loadPaymentSummaryForJob(jobId);
           },
           error: (error) => {
             console.error('Error accepting bid:', error);
@@ -365,8 +413,8 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Open payment dialog for bid acceptance
-  openPaymentDialog(jobId: number, bid: JobBid): void {
+  // Open the Razorpay checkout for a chosen principal amount
+  openPaymentDialog(jobId: number, bid: JobBid, principalAmount?: number): void {
     if (!bid.bidAmount) {
       this.errorMessage = 'Bid amount not available for payment.';
       return;
@@ -383,6 +431,7 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
         jobId: jobId,
         bidId: bid.id,
         bidAmount: bid.bidAmount,
+        principalAmount,
         jobTitle: job.title,
         consumerName: this.auth.getName() || 'User',
         consumerEmail: job.user?.email || '',
@@ -393,11 +442,9 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
     paymentDialogRef.afterClosed().subscribe(result => {
       if (result && result.success) {
         this.successMessage = 'Payment completed successfully!';
-        // Update payment status map immediately to hide button
-        this.paymentStatusMap.set(jobId, {
-          status: 'Completed',
-          completed: true
-        });
+        // Refresh the payment summary so the remaining balance / Pay Now button update.
+        this.paymentSummaryMap.delete(jobId);
+        this.loadPaymentSummaryForJob(jobId);
         this.cdr.markForCheck();
         setTimeout(() => {
           this.successMessage = '';
@@ -411,26 +458,6 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
         }, 3000);
       }
     });
-  }
-
-  // Initiate payment for an already assigned job
-  initiatePaymentForAssignedJob(jobId: number): void {
-    const job = this.pendingJobs.find(j => j.id === jobId);
-    if (!job || !job.assignedProId) {
-      this.errorMessage = 'Job not assigned to a professional.';
-      return;
-    }
-
-    // Get accepted bid for this job
-    const bids = this.jobBidsMap.get(jobId) || [];
-    const acceptedBid = bids.find(bid => bid.status === 'Accepted');
-
-    if (!acceptedBid || !acceptedBid.bidAmount) {
-      this.errorMessage = 'Bid information not available for payment.';
-      return;
-    }
-
-    this.openPaymentDialog(jobId, acceptedBid);
   }
 
   rejectBid(jobId: number, bid: JobBid): void {

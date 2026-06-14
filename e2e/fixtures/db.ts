@@ -83,6 +83,23 @@ export function setJobStatus(jobId: number, status: string): void {
 }
 
 /**
+ * Stages a Pending payment row for a job (as POST /payments/create-order would,
+ * but without calling Razorpay). A subsequent payment.captured webhook then
+ * completes it — letting e2e tests exercise the real "payment received" path.
+ */
+export function stagePendingPayment(opts: {
+  jobId: number; bidId: number; userId: number; principal: number; orderId: string;
+}): void {
+  const { jobId, bidId, userId, principal, orderId } = opts;
+  // SET QUOTED_IDENTIFIER ON: required for DML on tables with filtered indexes.
+  runSql(
+    `SET QUOTED_IDENTIFIER ON; INSERT INTO Payments ` +
+    `(JobId, BidId, UserId, PrincipalAmount, Amount, PlatformFee, ProPayout, RazorpayOrderId, ProviderId, Status, CreatedAt) ` +
+    `VALUES (${jobId}, ${bidId}, ${userId}, ${principal}, ${principal}, 0, ${principal}, '${orderId}', 'razorpay', 'Pending', GETUTCDATE())`
+  );
+}
+
+/**
  * Promotes the e2e admin account to the Admin role. Admin accounts are
  * normally created via the invite flow (email link) — for e2e the account is
  * registered as a regular user and the role is flipped directly.

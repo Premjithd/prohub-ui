@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { JobDetailsPage } from '../../pages/job-details.page';
 import { PendingJobDetailsPage } from '../../pages/pending-job-details.page';
-import { apiCreateJob, apiLogin } from '../../fixtures/api';
+import { apiCreateJob, apiCreatePaymentRequest, apiLogin } from '../../fixtures/api';
 import { E2E_PRO, PRO_STORAGE_STATE, USER_STORAGE_STATE } from '../../fixtures/test-users';
 
 /**
@@ -97,11 +97,17 @@ test.describe('Bid journeys — pro and user through the UI', () => {
       await userView.goto(job.id);
       await userView.acceptBid(E2E_PRO.businessName);
 
-      // User side: pro assigned, payment offered, bids list gone
+      // User side: pro assigned, bids list gone. No "Pay Now" yet — the pro
+      // must first raise a payment request.
       await expect(page.locator('.assigned-pro-section')).toBeVisible({ timeout: 15_000 });
       await expect(page.locator('.assigned-pro-section')).toContainText(E2E_PRO.businessName);
-      await expect(userView.makePaymentButton).toBeVisible();
+      await expect(userView.payNowButton).toHaveCount(0);
       await expect(userView.bidsSection).toHaveCount(0);
+
+      // Once the pro requests full payment, the user's "Pay Now" appears.
+      await apiCreatePaymentRequest(request, await apiLogin(request, 'pro'), job.id, { requestType: 'Full' });
+      await page.reload();
+      await expect(userView.payNowButton).toBeVisible({ timeout: 15_000 });
 
       // Pro side: job now shows the accepted state
       await pro.page.reload();

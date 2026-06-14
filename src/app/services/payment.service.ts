@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Payment, PaymentOrder, CreatePaymentRequest, VerifyPaymentRequest, RateSplit } from '../models/payment.model';
+import { Payment, PaymentOrder, CreatePaymentRequest, VerifyPaymentRequest, RateSplit,
+         PaymentSummary, CreatePaymentRequestRequest } from '../models/payment.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -37,6 +38,28 @@ export class PaymentService {
    */
   getPaymentByJob(jobId: number): Observable<Payment> {
     return this.http.get<Payment>(`${this.apiUrl}/job/${jobId}`);
+  }
+
+  /**
+   * Get the full payment summary for a job (agreed total, paid, remaining, history, active request).
+   * Accessible to the job owner (consumer) and the assigned pro.
+   */
+  getPaymentSummary(jobId: number): Observable<PaymentSummary> {
+    return this.http.get<PaymentSummary>(`${this.apiUrl}/job/${jobId}/summary`);
+  }
+
+  /**
+   * Assigned Pro raises a payment request (None/Partial/Full). Returns the refreshed summary.
+   */
+  createPaymentRequest(body: CreatePaymentRequestRequest): Observable<PaymentSummary> {
+    return this.http.post<PaymentSummary>(`${this.apiUrl}/request`, body);
+  }
+
+  /**
+   * Pro cancels their pending payment request. Returns the refreshed summary.
+   */
+  cancelPaymentRequest(requestId: number): Observable<PaymentSummary> {
+    return this.http.post<PaymentSummary>(`${this.apiUrl}/request/${requestId}/cancel`, {});
   }
 
   /**

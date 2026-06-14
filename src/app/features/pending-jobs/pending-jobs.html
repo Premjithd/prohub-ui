@@ -125,12 +125,12 @@
                   {{ openBidsJobId === job.id ? ('PENDING_JOBS.HIDE_BIDS' | translate) : ('PENDING_JOBS.SHOW_BIDS' | translate) }} {{ 'PENDING_JOBS.BIDS_RECEIVED' | translate }} ({{ (jobBidsMap.get(job.id) || []).length }})
                 </button>
                 <button
-                  *ngIf="job.assignedProId && !(paymentStatusMap.get(job.id)?.completed)"
+                  *ngIf="canPayJob(job.id)"
                   mat-button
                   color="accent"
                   class="payment-button"
                   matTooltip="Make Payment"
-                  (click)="initiatePaymentForAssignedJob(job.id)">
+                  (click)="payJobNow(job.id)">
                   <mat-icon>payment</mat-icon>
                   {{ 'PENDING_JOBS.PAY_NOW' | translate }}
                 </button>

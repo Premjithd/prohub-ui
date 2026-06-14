@@ -162,6 +162,62 @@
           </button>
         </div>
 
+        <!-- Payment Tracking Tile (Pro view) — request payment + track balance -->
+        <div *ngIf="hasPaymentInfo || canRequestPayment" class="payment-tile">
+          <h3><mat-icon>account_balance_wallet</mat-icon> Payment</h3>
+
+          <div class="payment-figures" *ngIf="paymentSummary">
+            <div class="pay-fig">
+              <span class="label">Agreed total</span>
+              <span class="value">₹{{ paymentSummary.bidAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="pay-fig">
+              <span class="label">Received</span>
+              <span class="value paid">₹{{ paymentSummary.totalPaidPrincipal | number:'1.2-2' }}</span>
+            </div>
+            <div class="pay-fig">
+              <span class="label">Remaining</span>
+              <span class="value remaining">₹{{ paymentSummary.remaining | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="payment-progress" *ngIf="paymentSummary">
+            <mat-progress-bar mode="determinate" [value]="paymentProgress()" color="accent"></mat-progress-bar>
+            <span class="progress-pct">{{ paymentProgress() }}%</span>
+          </div>
+
+          <!-- Active request status -->
+          <div *ngIf="paymentSummary?.activeRequest as req" class="payment-request-banner">
+            <mat-icon>schedule</mat-icon>
+            <span *ngIf="req.requestType !== 'None'; else proNoneReq">
+              Awaiting payment of <strong>₹{{ req.requestedAmount | number:'1.2-2' }}</strong>
+              <span *ngIf="req.minPercent > 0"> (minimum ₹{{ req.minAmount | number:'1.2-2' }})</span>.
+            </span>
+            <ng-template #proNoneReq><span>Upfront payment waived.</span></ng-template>
+          </div>
+
+          <div class="payment-tile-actions">
+            <button *ngIf="canRequestPayment" mat-raised-button color="primary"
+                    (click)="requestPayment()" [disabled]="requestingPayment">
+              <mat-icon>request_quote</mat-icon>
+              {{ requestingPayment ? 'Sending...' : 'Request Payment' }}
+            </button>
+            <button *ngIf="paymentSummary?.activeRequest?.status === 'Pending' && paymentSummary?.activeRequest?.requestType !== 'None'"
+                    mat-stroked-button color="warn" (click)="cancelPaymentRequest()">
+              <mat-icon>close</mat-icon> Cancel Request
+            </button>
+          </div>
+
+          <!-- Payment history -->
+          <div *ngIf="paymentSummary && paymentSummary.payments.length > 0" class="payment-history">
+            <div class="history-row" *ngFor="let p of paymentSummary.payments">
+              <span class="hist-date">{{ p.createdAt | date:'MMM dd, yyyy' }}</span>
+              <span class="hist-amount">₹{{ p.principalAmount | number:'1.2-2' }}</span>
+              <span class="hist-status" [class.completed]="p.status === 'Completed'">{{ p.status }}</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Your Bid (Open jobs — bid awaiting a decision; withdrawal possible) -->
         <div *ngIf="job.status === 'Open' && getProBid() as proBid" class="customer-communication-section your-bid-section">
           <h3>

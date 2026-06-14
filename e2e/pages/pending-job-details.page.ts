@@ -6,7 +6,9 @@ export class PendingJobDetailsPage {
   readonly bidsSection: Locator;
   readonly bidItems: Locator;
   readonly statusChip: Locator;
-  readonly makePaymentButton: Locator;
+  readonly paymentTile: Locator;
+  readonly payNowButton: Locator;
+  readonly paymentRemaining: Locator;
   readonly progressSection: Locator;
   readonly phaseMilestones: Locator;
   readonly progressPercentage: Locator;
@@ -16,7 +18,9 @@ export class PendingJobDetailsPage {
     this.bidsSection = page.locator('.bids-section');
     this.bidItems = page.locator('.bid-item');
     this.statusChip = page.locator('mat-chip, .mat-mdc-chip').first();
-    this.makePaymentButton = page.getByRole('button', { name: /make payment/i });
+    this.paymentTile = page.locator('.payment-tile');
+    this.payNowButton = this.paymentTile.getByRole('button', { name: /pay now/i });
+    this.paymentRemaining = this.paymentTile.locator('.pay-fig .value.remaining');
     this.progressSection = page.locator('.phases-progress-section');
     this.phaseMilestones = page.locator('.phase-milestone');
     this.progressPercentage = page.locator('.progress-percentage');

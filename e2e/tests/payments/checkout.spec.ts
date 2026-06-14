@@ -1,10 +1,12 @@
 import { test, expect, Page } from '@playwright/test';
 import { PendingJobDetailsPage } from '../../pages/pending-job-details.page';
 import { CheckoutDialog } from '../../pages/checkout-dialog.page';
+import { PayAmountDialog } from '../../pages/pay-amount-dialog.page';
 import {
   API_URL,
   apiAcceptBid,
   apiCreateJob,
+  apiCreatePaymentRequest,
   apiLogin,
   apiSubmitBid,
 } from '../../fixtures/api';
@@ -30,11 +32,16 @@ const ORDER_MOCK = {
   amount: 2012.4,
   currency: 'INR',
   key: 'rzp_test_e2e',
+  principalAmount: 1800, // paying the full agreed bid
+  bidAmount: 1800,
+  remainingBefore: 1800,
   platformFee: 180,
   gstOnPlatformFee: 32.4,
+  proDeduction: 180,
   totalAmount: 2012.4, // bid 1800 + 10% fee + 18% GST on fee
   proPayout: 1620,
   effectivePlatformFeePercent: 10,
+  effectiveProPayoutPercent: 90,
 };
 
 const CONTEXT_MOCK = {
@@ -75,17 +82,27 @@ async function mockCheckoutRoutes(page: Page, context: object = CONTEXT_MOCK): P
     route.fulfill({ contentType: 'application/javascript', body: RAZORPAY_STUB }));
 }
 
-/** Stages an accepted job and opens its checkout dialog from Make Payment. */
+/**
+ * Stages an accepted job where the Pro has requested full payment, then opens
+ * the checkout dialog via the tile's "Pay Now" → amount picker → Continue.
+ */
 async function openCheckout(page: Page, request: any, slug: string): Promise<CheckoutDialog> {
   const userToken = await apiLogin(request, 'user');
   const proToken = await apiLogin(request, 'pro');
   const job = await apiCreateJob(request, userToken, uniqueTitle(slug));
   const bid = await apiSubmitBid(request, proToken, job.id); // default amount 1800
   await apiAcceptBid(request, userToken, job.id, bid.id);
+  // Pro requests the full amount so the consumer's "Pay Now" button appears.
+  await apiCreatePaymentRequest(request, proToken, job.id, { requestType: 'Full' });
 
   const details = new PendingJobDetailsPage(page);
   await details.goto(job.id);
-  await details.makePaymentButton.click();
+  await details.payNowButton.click();
+
+  // Amount picker defaults to the requested/full amount — continue to checkout.
+  const payAmount = new PayAmountDialog(page);
+  await payAmount.waitForOpen();
+  await payAmount.continue();
 
   const checkout = new CheckoutDialog(page);
   await checkout.waitForOpen();
@@ -152,14 +169,20 @@ test.describe('Payment checkout — method selection', () => {
     expect(options.prefill.vpa).toBeUndefined();
   });
 
-  test('with no saved methods the dialog links to settings to add one', async ({ page, request }) => {
+  test('with no saved methods the user can still enter payment manually', async ({ page, request }) => {
     await mockCheckoutRoutes(page, { paymentMethods: [], billingAddress: null });
     const checkout = await openCheckout(page, request, 'checkout no methods');
 
-    await expect(checkout.methodRows).toHaveCount(0);
+    // A single "enter payment details" option is shown, pre-selected, and the Pay
+    // button is enabled — the user can pay on the fly without saving a method first.
+    await expect(checkout.methodRows).toHaveCount(1);
+    await expect(checkout.methodRows.first()).toContainText(/enter payment details/i);
+    await expect(checkout.methodRows.first()).toHaveClass(/active/);
+    await expect(checkout.payButton).toBeEnabled();
+
+    // The notice still offers an optional shortcut to save a method for next time.
     await expect(checkout.noMethodsNotice).toBeVisible();
     await expect(checkout.noMethodsNotice).toContainText(/no saved methods/i);
-
     await checkout.addMethodLink.click();
     await expect(checkout.dialog).toBeHidden();
     await expect(page).toHaveURL(/\/settings/);

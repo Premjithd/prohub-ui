@@ -120,3 +120,48 @@ body {
   max-width: 480px !important;
   min-width: 300px !important;
 }
+
+/* ── Shared Payment Tracking Tile (consumer + pro job-detail views) ───── */
+.payment-tile {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid #eaecf5;
+  border-radius: 12px;
+  background: #fafbff;
+}
+.payment-tile > h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  color: #1a1a2e;
+}
+.payment-tile > h3 mat-icon { color: #667eea; }
+.payment-tile .payment-figures { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 0.75rem; }
+.payment-tile .pay-fig { display: flex; flex-direction: column; }
+.payment-tile .pay-fig .label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.04em; }
+.payment-tile .pay-fig .value { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; }
+.payment-tile .pay-fig .value.paid { color: #2e7d32; }
+.payment-tile .pay-fig .value.remaining { color: #e65100; }
+.payment-tile .payment-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+.payment-tile .payment-progress mat-progress-bar { flex: 1; border-radius: 6px; }
+.payment-tile .payment-progress .progress-pct { font-size: 0.8rem; font-weight: 600; color: #666; min-width: 36px; text-align: right; }
+.payment-tile .payment-request-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0.7rem 0.9rem; background: #f5f3ff; border: 1px solid #e4ddff;
+  border-radius: 8px; font-size: 0.88rem; color: #444; margin-bottom: 0.5rem;
+}
+.payment-tile .payment-request-banner mat-icon { color: #667eea; font-size: 1.2rem; width: 1.2rem; height: 1.2rem; }
+.payment-tile .payment-request-note { margin: 0 0 0.75rem; font-style: italic; color: #777; font-size: 0.85rem; }
+.payment-tile .payment-tile-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.payment-tile .payment-history { margin-top: 1rem; border-top: 1px solid #eee; padding-top: 0.5rem; }
+.payment-tile .payment-history .history-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.4rem 0; font-size: 0.85rem; border-bottom: 1px solid #f3f3f8;
+}
+.payment-tile .payment-history .history-row:last-child { border-bottom: none; }
+.payment-tile .payment-history .hist-date { color: #888; }
+.payment-tile .payment-history .hist-amount { font-weight: 600; color: #1a1a2e; }
+.payment-tile .payment-history .hist-status { color: #999; font-size: 0.78rem; }
+.payment-tile .payment-history .hist-status.completed { color: #2e7d32; }

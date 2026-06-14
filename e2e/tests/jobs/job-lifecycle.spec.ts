@@ -4,6 +4,7 @@ import { JobDetailsPage } from '../../pages/job-details.page';
 import {
   apiAcceptBid,
   apiCreateJob,
+  apiCreatePaymentRequest,
   apiLogin,
   apiSetJobPhases,
   apiSubmitBid,
@@ -75,7 +76,7 @@ test.describe('Job lifecycle — consumer', () => {
     const userToken = await apiLogin(request, 'user');
     const proToken = await apiLogin(request, 'pro');
     const job = await apiCreateJob(request, userToken, uniqueTitle('accept bid'));
-    await apiSubmitBid(request, proToken, job.id);
+    const bid = await apiSubmitBid(request, proToken, job.id);
 
     const details = new PendingJobDetailsPage(page);
     await details.goto(job.id);
@@ -84,8 +85,13 @@ test.describe('Job lifecycle — consumer', () => {
     // Job is now 'Bid Accepted': assigned-pro section replaces the bids list
     await expect(page.locator('.assigned-pro-section')).toBeVisible({ timeout: 15_000 });
     await expect(page.locator('.assigned-pro-section')).toContainText(E2E_PRO.businessName);
-    await expect(details.makePaymentButton).toBeVisible();
     await expect(details.bidsSection).toHaveCount(0); // only shown for Open jobs
+
+    // Payment is offered once the pro raises a request — then "Pay Now" appears.
+    await expect(details.payNowButton).toHaveCount(0);
+    await apiCreatePaymentRequest(request, proToken, job.id, { requestType: 'Full' });
+    await page.reload();
+    await expect(details.payNowButton).toBeVisible({ timeout: 15_000 });
   });
 
   test('work updates: phase progress is shown once the job is in progress', async ({ page, request }) => {

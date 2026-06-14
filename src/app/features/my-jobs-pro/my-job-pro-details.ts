@@ -19,6 +19,9 @@ import { JobService, Job, JobPhase, Message, JobBid } from '../../services/job.s
 import { Auth } from '../../core/services/auth';
 import { ReviewService } from '../../services/review.service';
 import { UserReview } from '../../models/review.model';
+import { PaymentService } from '../../services/payment.service';
+import { PaymentSummary } from '../../models/payment.model';
+import { PaymentRequestDialogComponent } from '../payments/payment-request-dialog.component';
 import { Subject, interval } from 'rxjs';
 import { takeUntil, switchMap, filter } from 'rxjs/operators';
 
@@ -73,6 +76,8 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
   reviewHoveredStar = 0;
   submittingReview = false;
   readonly starsArray = [1, 2, 3, 4, 5];
+  paymentSummary: PaymentSummary | null = null;
+  requestingPayment = false;
   private destroy$ = new Subject<void>();
   private pollMessages$ = new Subject<void>(); // Subject to control polling
   private currentJobId: number | null = null;
@@ -102,7 +107,8 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
     public auth: Auth,
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    private paymentService: PaymentService
   ) {}
 
   ngOnInit(): void {
@@ -134,6 +140,7 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.markForCheck();
         this.loadBidsForJob(jobId);
+        this.loadPaymentSummary(jobId);
         if (job.status === 'Completion Submitted') {
           this.loadCompletionStatus(jobId);
         }
@@ -471,6 +478,90 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
     return index + 1 <= Math.round(rating);
   }
 
+  loadPaymentSummary(jobId: number): void {
+    this.paymentService.getPaymentSummary(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (summary) => { this.paymentSummary = summary; this.cdr.markForCheck(); },
+      error: () => { this.paymentSummary = null; this.cdr.markForCheck(); }
+    });
+  }
+
+  /** Show the payment tile for every status once a bid is accepted (bidAmount > 0). */
+  get hasPaymentInfo(): boolean {
+    const s = this.paymentSummary;
+    return !!s && s.bidAmount > 0;
+  }
+
+  /** Pro can raise a request when the job is assigned, not terminal, has a balance, and no pending request. */
+  get canRequestPayment(): boolean {
+    const s = this.paymentSummary;
+    const terminal = this.job?.status === 'Completed' || this.job?.status === 'Cancelled';
+    return !!s && !terminal && s.bidAmount > 0 && s.remaining > 0 &&
+      !(s.activeRequest && s.activeRequest.status === 'Pending');
+  }
+
+  paymentProgress(): number {
+    const s = this.paymentSummary;
+    if (!s || s.bidAmount <= 0) return 0;
+    return Math.round((s.totalPaidPrincipal / s.bidAmount) * 100);
+  }
+
+  requestPayment(): void {
+    const s = this.paymentSummary;
+    if (!this.job || !s) return;
+
+    const dialogRef = this.dialog.open(PaymentRequestDialogComponent, {
+      width: '460px',
+      data: { jobTitle: this.job.title, bidAmount: s.bidAmount, remaining: s.remaining }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result) return;
+      this.requestingPayment = true;
+      this.cdr.markForCheck();
+      this.paymentService.createPaymentRequest({ ...result, jobId: this.job!.id })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (summary) => {
+            this.paymentSummary = summary;
+            this.requestingPayment = false;
+            this.successMessage = 'Payment request sent to the customer.';
+            // A "No payment" request advances the job — reflect the new status.
+            if (result.requestType === 'None' && this.job && this.job.status === 'Bid Accepted') {
+              this.job.status = 'Payment Made';
+            }
+            this.cdr.markForCheck();
+            setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 4000);
+          },
+          error: (err) => {
+            this.requestingPayment = false;
+            this.errorMessage = err?.error?.message || 'Failed to send payment request.';
+            this.cdr.markForCheck();
+            setTimeout(() => { this.errorMessage = ''; this.cdr.markForCheck(); }, 4000);
+          }
+        });
+    });
+  }
+
+  cancelPaymentRequest(): void {
+    const req = this.paymentSummary?.activeRequest;
+    if (!req || !this.job) return;
+    this.paymentService.cancelPaymentRequest(req.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (summary) => {
+          this.paymentSummary = summary;
+          this.successMessage = 'Payment request cancelled.';
+          this.cdr.markForCheck();
+          setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 3000);
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || 'Failed to cancel request.';
+          this.cdr.markForCheck();
+          setTimeout(() => { this.errorMessage = ''; this.cdr.markForCheck(); }, 3000);
+        }
+      });
+  }
+
   confirmJob(): void {
     if (!this.job) return;
     this.confirmingJob = true;
@@ -481,6 +572,8 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
           this.job!.status = 'In Progress';
           this.confirmingJob = false;
           this.successMessage = 'Job confirmed! Work is now in progress.';
+          // Refresh the payment figures — the consumer's payment landed before this.
+          this.loadPaymentSummary(this.job!.id);
           this.cdr.markForCheck();
           setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 3000);
         },

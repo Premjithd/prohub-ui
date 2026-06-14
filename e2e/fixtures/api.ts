@@ -198,6 +198,51 @@ export interface E2ePhase {
   completedAt?: string | null;
 }
 
+export interface E2ePaymentSummary {
+  jobId: number;
+  bidAmount: number;
+  totalPaidPrincipal: number;
+  remaining: number;
+  isFullyPaid: boolean;
+  payments: Array<{ id: number; principalAmount: number; amount: number; status: string }>;
+  activeRequest: null | {
+    id: number;
+    requestType: 'None' | 'Partial' | 'Full';
+    requestedAmount: number;
+    minPercent: number;
+    minAmount: number;
+    status: string;
+  };
+}
+
+/** Assigned Pro raises a payment request (None/Partial/Full). Returns the refreshed summary. */
+export async function apiCreatePaymentRequest(
+  request: APIRequestContext,
+  proToken: string,
+  jobId: number,
+  body: { requestType: 'None' | 'Partial' | 'Full'; requestedAmount?: number; minPercent?: number; note?: string }
+): Promise<E2ePaymentSummary> {
+  const res = await request.post(`${API_URL}/payments/request`, {
+    headers: auth(proToken),
+    data: { jobId, requestedAmount: 0, minPercent: 0, ...body },
+  });
+  expect(res.ok(), `payment request failed: ${await res.text()}`).toBe(true);
+  return res.json();
+}
+
+/** Reads the payment summary for a job (consumer or assigned pro). */
+export async function apiGetPaymentSummary(
+  request: APIRequestContext,
+  token: string,
+  jobId: number
+): Promise<E2ePaymentSummary> {
+  const res = await request.get(`${API_URL}/payments/job/${jobId}/summary`, {
+    headers: auth(token),
+  });
+  expect(res.ok(), `payment summary failed: ${await res.text()}`).toBe(true);
+  return res.json();
+}
+
 /** Sets the work phases on a job (owner or assigned pro). */
 export async function apiSetJobPhases(
   request: APIRequestContext,

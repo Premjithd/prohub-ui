@@ -161,18 +161,67 @@
               <mat-icon>message</mat-icon>
               Message
             </button>
-            <button
-              *ngIf="job.status === 'Bid Accepted'"
-              mat-raised-button
-              color="accent"
-              (click)="initiatePaymentForAssignedJob()"
-              class="payment-btn">
-              <mat-icon>payment</mat-icon>
-              Make Payment
-            </button>
-            <div *ngIf="job.status === 'Payment Made'" class="payment-made-notice">
-              <mat-icon>check_circle</mat-icon>
-              Payment received — waiting for professional to confirm
+          </div>
+        </div>
+
+        <!-- Payment Tracking Tile — only shown when there is something to show -->
+        <div *ngIf="hasPaymentInfo" class="payment-tile">
+          <h3><mat-icon>account_balance_wallet</mat-icon> Payment</h3>
+
+          <div class="payment-figures">
+            <div class="pay-fig">
+              <span class="label">Agreed total</span>
+              <span class="value">₹{{ paymentSummary!.bidAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="pay-fig">
+              <span class="label">Paid</span>
+              <span class="value paid">₹{{ paymentSummary!.totalPaidPrincipal | number:'1.2-2' }}</span>
+            </div>
+            <div class="pay-fig">
+              <span class="label">Remaining</span>
+              <span class="value remaining">₹{{ paymentSummary!.remaining | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="payment-progress">
+            <mat-progress-bar mode="determinate" [value]="paymentProgress()" color="accent"></mat-progress-bar>
+            <span class="progress-pct">{{ paymentProgress() }}%</span>
+          </div>
+
+          <!-- Active request from the professional -->
+          <div *ngIf="paymentSummary!.activeRequest as req" class="payment-request-banner">
+            <ng-container *ngIf="req.requestType !== 'None'; else noPaymentReq">
+              <mat-icon>request_quote</mat-icon>
+              <span>
+                The professional requested <strong>₹{{ req.requestedAmount | number:'1.2-2' }}</strong>
+                <span *ngIf="req.minPercent > 0"> (minimum ₹{{ req.minAmount | number:'1.2-2' }})</span>.
+              </span>
+            </ng-container>
+            <ng-template #noPaymentReq>
+              <mat-icon>info</mat-icon>
+              <span>The professional waived upfront payment for this job.</span>
+            </ng-template>
+          </div>
+          <p *ngIf="paymentSummary!.activeRequest?.note" class="payment-request-note">
+            "{{ paymentSummary!.activeRequest!.note }}"
+          </p>
+
+          <!-- Pay button -->
+          <button *ngIf="canPayNow" mat-raised-button color="accent" (click)="payNow()" class="payment-btn">
+            <mat-icon>payment</mat-icon>
+            Pay Now
+          </button>
+          <div *ngIf="paymentSummary!.isFullyPaid" class="payment-made-notice">
+            <mat-icon>check_circle</mat-icon>
+            Fully paid
+          </div>
+
+          <!-- Payment history -->
+          <div *ngIf="paymentSummary!.payments.length > 0" class="payment-history">
+            <div class="history-row" *ngFor="let p of paymentSummary!.payments">
+              <span class="hist-date">{{ p.createdAt | date:'MMM dd, yyyy' }}</span>
+              <span class="hist-amount">₹{{ p.principalAmount | number:'1.2-2' }}</span>
+              <span class="hist-status" [class.completed]="p.status === 'Completed'">{{ p.status }}</span>
             </div>
           </div>
         </div>

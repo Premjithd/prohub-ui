@@ -17,7 +17,8 @@ declare var window: any;
 export interface RazorpayCheckoutData {
   jobId: number;
   bidId: number;
-  bidAmount: number;
+  bidAmount: number;            // full agreed bid amount (context)
+  principalAmount?: number;     // portion to pay now; omitted = full remaining
   jobTitle: string;
   consumerName: string;
   consumerEmail: string;
@@ -75,8 +76,8 @@ export interface RazorpayCheckoutData {
             </div>
 
             <ng-container *ngIf="!loadingContext">
-              <!-- Saved methods list -->
-              <div class="rzp-method-list" *ngIf="checkoutMethods.length > 0">
+              <!-- Saved methods + an always-available "enter a new method" option -->
+              <div class="rzp-method-list">
                 <div
                   class="rzp-method-row"
                   *ngFor="let m of checkoutMethods"
@@ -107,17 +108,17 @@ export interface RazorpayCheckoutData {
                     <mat-icon>add_card</mat-icon>
                   </div>
                   <div class="rzp-method-text">
-                    <div class="rzp-method-name">Other method</div>
-                    <div class="rzp-method-detail">Card, net banking, wallet &amp; more</div>
+                    <div class="rzp-method-name">{{ checkoutMethods.length > 0 ? 'Other method' : 'Enter payment details' }}</div>
+                    <div class="rzp-method-detail">Card, UPI, net banking, wallet &amp; more</div>
                   </div>
                 </div>
               </div>
 
-              <!-- No saved methods -->
+              <!-- Hint when nothing is saved — paying still works via the option above -->
               <div class="rzp-no-methods" *ngIf="checkoutMethods.length === 0">
-                <mat-icon>credit_card_off</mat-icon>
-                <span>No saved methods. You can pay using Razorpay's checkout.</span>
-                <a class="rzp-add-link" (click)="goToSettings()">Add method</a>
+                <mat-icon>info_outline</mat-icon>
+                <span>No saved methods — continue to enter your card / UPI details on the next step.</span>
+                <a class="rzp-add-link" (click)="goToSettings()">Save a method</a>
               </div>
             </ng-container>
           </div>
@@ -130,8 +131,12 @@ export interface RazorpayCheckoutData {
             </div>
             <div class="rzp-breakdown">
               <div class="rzp-bd-row">
-                <span>Service charge</span>
+                <span>{{ isPartial ? 'This payment' : 'Service charge' }}</span>
                 <span>₹{{ rateSplit.bidAmount.toFixed(2) }}</span>
+              </div>
+              <div class="rzp-bd-row" *ngIf="isPartial">
+                <span>Agreed total</span>
+                <span>₹{{ fullBidAmount.toFixed(2) }}</span>
               </div>
               <div class="rzp-bd-row">
                 <span>Platform fee ({{ rateSplit.platformFeePercent }}%)</span>
@@ -440,6 +445,8 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
   processing = false;
   errorMessage = '';
   rateSplit: any;
+  isPartial = false;
+  fullBidAmount = 0;
   scriptLoaded = false;
   private orderData: any = null;
   private destroy$ = new Subject<void>();
@@ -499,22 +506,24 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
     const request: CreatePaymentRequest = {
       jobId: this.data.jobId,
       bidId: this.data.bidId,
-      amount: this.data.bidAmount
+      amount: this.data.bidAmount,
+      principalAmount: this.data.principalAmount
     };
     this.paymentService.createPaymentOrder(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (order) => {
           this.orderData = order;
-          const bidAmount = order.totalAmount - order.platformFee - order.gstOnPlatformFee;
           this.rateSplit = {
-            bidAmount,
+            bidAmount: order.principalAmount,
             platformFeePercent: 10,
             platformFee: order.platformFee,
             gstPercent: 18,
             gstOnPlatformFee: order.gstOnPlatformFee,
             proPayOut: order.proPayout
           };
+          this.isPartial = order.principalAmount + 0.01 < order.bidAmount;
+          this.fullBidAmount = order.bidAmount;
           this.processing = false;
           this.cdr.markForCheck();
         },
@@ -551,13 +560,27 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
   }
 
   initiatePayment(): void {
-    if (!this.scriptLoaded || !window.Razorpay) {
-      this.errorMessage = 'Payment gateway not loaded. Please refresh and try again.';
+    if (!this.orderData) {
+      this.errorMessage = 'Payment order data not available. Please try again.';
       this.cdr.markForCheck();
       return;
     }
-    if (!this.orderData) {
-      this.errorMessage = 'Payment order data not available. Please try again.';
+
+    // Development mock gateway — skip the real Razorpay widget and complete directly.
+    if (this.orderData.key === 'rzp_test_mock') {
+      this.processing = true;
+      this.errorMessage = '';
+      this.cdr.markForCheck();
+      this.verifyPayment({
+        razorpay_order_id: this.orderData.orderId,
+        razorpay_payment_id: 'pay_mock_' + Date.now(),
+        razorpay_signature: 'mock_signature'
+      });
+      return;
+    }
+
+    if (!this.scriptLoaded || !window.Razorpay) {
+      this.errorMessage = 'Payment gateway not loaded. Please refresh and try again.';
       this.cdr.markForCheck();
       return;
     }
