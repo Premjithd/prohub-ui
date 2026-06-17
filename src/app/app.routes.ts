@@ -6,6 +6,11 @@ import { ProGuard } from './core/guards/pro.guard';
 
 export const routes: Routes = [
   {
+    path: 'maintenance',
+    loadComponent: () => import('./features/maintenance/maintenance.component')
+      .then(m => m.MaintenanceComponent)
+  },
+  {
     path: 'accept-admin-invite',
     loadComponent: () => import('./features/accept-admin-invite/accept-admin-invite')
       .then(m => m.AcceptAdminInviteComponent)

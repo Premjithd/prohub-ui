@@ -3,11 +3,12 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Auth } from '../../../core/services/auth';
+import { AnnouncementBannerComponent } from '../announcement-banner.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, AnnouncementBannerComponent],
   templateUrl: './home.html',
   styleUrl: './home.scss'
 })

@@ -50,6 +50,13 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
+        // API entered maintenance mid-session — show the maintenance page.
+        if (error.status === 503 && (error.error?.maintenance === true)) {
+          if (!this.router.url.startsWith('/maintenance')) {
+            this.router.navigate(['/maintenance']);
+          }
+          return throwError(() => error);
+        }
         if (error.status === 401 && !this.isAuthUrl(request.url)) {
           return this.handle401(request, next);
         }

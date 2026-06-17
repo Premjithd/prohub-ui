@@ -65,26 +65,14 @@ mat-icon {
   margin-right: 2px;
 }
 
-// Primary gradient CTA — used only for Register
-.custom-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+// Login / Sign Up shown as matching plain text links in the header
+.auth-link {
   color: white !important;
-  font-weight: 600 !important;
-  border-radius: 20px !important;
-  padding: 6px 20px !important;
-  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
-  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
-  position: relative;
-  overflow: hidden;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em;
 
   &:hover {
-    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.55);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    color: rgba(255, 255, 255, 0.85) !important;
   }
 }
 

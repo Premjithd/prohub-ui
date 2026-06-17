@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -25,12 +25,13 @@ export class AboutComponent implements OnInit {
     private auth: Auth,
     private reviewService: ReviewService,
     private teamService: TeamService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.reviewService.getPlatformStats().subscribe({
-      next: (stats) => { this.platformStats = stats; }
+      next: (stats) => { this.platformStats = stats; this.cdr.markForCheck(); }
     });
 
     // "Our Team" is hidden unless an admin has explicitly enabled it.
@@ -39,11 +40,12 @@ export class AboutComponent implements OnInit {
         this.showTeam = value === 'true';
         if (this.showTeam) {
           this.teamService.getPublic().subscribe({
-            next: (members) => { this.teamMembers = members ?? []; }
+            next: (members) => { this.teamMembers = members ?? []; this.cdr.markForCheck(); }
           });
         }
+        this.cdr.markForCheck();
       },
-      error: () => { this.showTeam = false; }
+      error: () => { this.showTeam = false; this.cdr.markForCheck(); }
     });
   }
 
