@@ -14,10 +14,7 @@ import { BannerService } from '../../core/services/banner.service';
   imports: [CommonModule],
   template: `
     <div class="ann-banner" *ngIf="enabled && message" role="status" aria-live="polite">
-      <div class="ann-track">
-        <span class="ann-item">{{ message }}</span>
-        <span class="ann-item" aria-hidden="true">{{ message }}</span>
-      </div>
+      <span class="ann-text">{{ message }}</span>
     </div>
   `,
   styles: [`
@@ -32,25 +29,29 @@ import { BannerService } from '../../core/services/banner.service';
       letter-spacing: 0.02em;
     }
 
-    .ann-track {
-      display: inline-flex;
+    /* Classic marquee: text starts just past the right edge and scrolls left. */
+    .ann-text {
+      display: inline-block;
+      padding-left: 100%;
       will-change: transform;
-      animation: ann-marquee 22s linear infinite;
+      animation: ann-marquee 20s linear infinite;
     }
 
-    .ann-item { padding: 0 3rem; }
-
-    .ann-banner:hover .ann-track { animation-play-state: paused; }
+    .ann-banner:hover .ann-text { animation-play-state: paused; }
 
     @keyframes ann-marquee {
       from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
+      to   { transform: translateX(-100%); }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .ann-track { animation: none; }
-      .ann-banner { text-align: center; white-space: normal; }
-      .ann-item:nth-child(2) { display: none; }
+      .ann-text {
+        animation: none;
+        padding-left: 0;
+        display: block;
+        text-align: center;
+        white-space: normal;
+      }
     }
   `]
 })
