@@ -9,6 +9,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { PaymentService } from '../../services/payment.service';
 import { PaymentMethodService, PaymentMethod, CheckoutContext } from '../../core/services/payment-method.service';
 import { CreatePaymentRequest } from '../../models/payment.model';
+import { getHttpErrorMessage } from '../../core/utils/http-error';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -528,7 +529,7 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error) => {
-          this.errorMessage = error?.error?.message || 'Failed to initialize payment. Please try again.';
+          this.errorMessage = getHttpErrorMessage(error, 'Failed to initialize payment. Please try again.');
           this.processing = false;
           this.cdr.markForCheck();
         }

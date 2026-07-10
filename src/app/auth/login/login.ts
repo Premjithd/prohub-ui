@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Auth } from '../../core/services/auth';
+import { getHttpErrorMessage } from '../../core/utils/http-error';
 
 @Component({
   selector: 'app-login',
@@ -43,7 +44,10 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = error?.error?.message ?? 'Login failed. Please try again.';
+        this.errorMessage = getHttpErrorMessage(
+          error,
+          error?.status === 401 ? 'Invalid email or password.' : 'Login failed. Please try again.'
+        );
         this.cdr.markForCheck();
       }
     });

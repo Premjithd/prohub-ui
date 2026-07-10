@@ -6,6 +6,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { JobService } from '../../services/job.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { Auth } from '../../core/services/auth';
+import { getHttpErrorMessage } from '../../core/utils/http-error';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
@@ -216,7 +217,7 @@ export class EditJobComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error updating job:', error);
-          this.errorMessage = error?.error?.message || 'Error updating job. Please try again.';
+          this.errorMessage = getHttpErrorMessage(error, 'Error updating job. Please try again.');
           this.submitted = false;
           this.cdr.markForCheck();
         }

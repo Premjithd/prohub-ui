@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MyServicesService } from '../../services/my-services.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { Auth } from '../../core/services/auth';
+import { getHttpErrorMessage } from '../../core/utils/http-error';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -150,7 +151,7 @@ export class AddServiceComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error adding service:', error);
-          this.errorMessage = error?.error?.message || 'Error adding service. Please try again.';
+          this.errorMessage = getHttpErrorMessage(error, 'Error adding service. Please try again.');
           this.submitted = false;
           this.cdr.markForCheck();
         }

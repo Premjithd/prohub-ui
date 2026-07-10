@@ -10,6 +10,7 @@ import { PayoutService } from '../../../services/payout.service';
 import { Review, ProRatingSummary, UserReview, UserRatingSummary } from '../../../models/review.model';
 import { Payout } from '../../../models/payout.model';
 import { ServiceAreaService, ServiceArea } from '../../../core/services/service-area.service';
+import { getHttpErrorMessage } from '../../../core/utils/http-error';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -230,13 +231,9 @@ export class ProfileComponent implements OnInit {
         console.error('Error updating profile:', error);
         this.isLoading = false;
         
-        let errorMsg = 'Failed to update profile. Please try again.';
+        let errorMsg = getHttpErrorMessage(error, 'Failed to update profile. Please try again.');
         if (error?.status === 401 || error?.status === 403) {
           errorMsg = 'Authorization failed. Please login again.';
-        } else if (error?.error?.message) {
-          errorMsg = error.error.message;
-        } else if (error?.statusText) {
-          errorMsg = error.statusText;
         }
         
         this.errorMessage = errorMsg;
@@ -426,13 +423,9 @@ export class ProfileComponent implements OnInit {
         console.error('Error updating pro profile:', error);
         this.isLoading = false;
         
-        let errorMsg = 'Failed to update profile. Please try again.';
+        let errorMsg = getHttpErrorMessage(error, 'Failed to update profile. Please try again.');
         if (error?.status === 401 || error?.status === 403) {
           errorMsg = 'Authorization failed. Please login again.';
-        } else if (error?.error?.message) {
-          errorMsg = error.error.message;
-        } else if (error?.statusText) {
-          errorMsg = error.statusText;
         }
         
         this.errorMessage = errorMsg;

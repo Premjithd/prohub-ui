@@ -8,6 +8,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { JobService } from '../../services/job.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { AddressService, AddressPrediction } from '../../core/services/address.service';
+import { getHttpErrorMessage } from '../../core/utils/http-error';
 import { Subject, of } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
@@ -353,7 +354,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
             this.errorMessage = msg || 'Invalid job data. Please check your inputs.';
           }
         } else {
-          this.errorMessage = error?.error?.message || 'Error posting job. Please try again.';
+          this.errorMessage = getHttpErrorMessage(error, 'Error posting job. Please try again.');
         }
         this.submitted = false;
         this.cdr.markForCheck();

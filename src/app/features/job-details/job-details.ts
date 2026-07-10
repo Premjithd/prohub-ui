@@ -12,6 +12,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { JobService, Job } from '../../services/job.service';
 import { PaymentService } from '../../services/payment.service';
 import { Auth } from '../../core/services/auth';
+import { getHttpErrorMessage } from '../../core/utils/http-error';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BidSubmissionDialogComponent } from './bid-submission-dialog.component';
@@ -355,10 +356,8 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
               verticalPosition: 'bottom',
               horizontalPosition: 'center'
             });
-          } else if (error.error && typeof error.error === 'object') {
-            this.errorMessage = error.error.message || error.error.error || 'Failed to submit your bid. Please try again.';
           } else {
-            this.errorMessage = error.message || 'Failed to submit your bid. Please try again.';
+            this.errorMessage = getHttpErrorMessage(error, 'Failed to submit your bid. Please try again.');
           }
 
           this.cdr.markForCheck();
