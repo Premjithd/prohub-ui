@@ -71,7 +71,7 @@ export class FindAProComponent implements OnInit, OnDestroy {
   selectedCategoryId: number | null = null;
   categories: ServiceCategory[] = [];
   highlightedProId: number | null = null;
-  showMap = true;
+  showMap = false; // default to list view; the map initializes lazily via toggleMap()
   isAuthenticated = false;
 
   // Location filters

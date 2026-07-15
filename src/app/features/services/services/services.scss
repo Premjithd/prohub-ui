@@ -105,6 +105,13 @@ $bg-light: #f9fafb;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    // background-clip: text only paints inside the element's box; with the
+    // h1's tight line-height the italic "y" descender falls outside it and
+    // turns invisible. Extend the box over the descender (and the italic
+    // overhang on the right) without shifting the layout.
+    display: inline-block;
+    padding: 0 0.12em 0.3em 0;
+    margin-bottom: -0.3em;
   }
 }
 
