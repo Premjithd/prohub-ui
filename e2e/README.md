@@ -50,6 +50,15 @@ npx playwright test -g "add a UPI method"
 3. Saves browser storage to `.auth/user.json` / `.auth/pro.json` /
    `.auth/admin.json`.
 
+The app keeps auth state in **sessionStorage** (closing the browser window
+signs the user out), which Playwright's `storageState` can't capture. The
+bridge lives in `fixtures/session.ts`: the setup mirrors sessionStorage into
+localStorage before saving, and the `test` exported from that fixture seeds it
+back into sessionStorage on page load. **Import `test`/`expect` from
+`fixtures/session`, not `@playwright/test`**, and call
+`seedSessionFromLocalStorage(context)` on any context created manually with
+`browser.newContext()`.
+
 Every test then starts pre-authenticated by declaring which state it wants:
 
 ```ts
@@ -69,6 +78,8 @@ e2e/
   playwright.config.ts   — config, webServer, projects
   fixtures/
     test-users.ts        — e2e account credentials + test address
+    session.ts           — extended `test` that bridges sessionStorage auth
+                           into Playwright's localStorage-based storageState
     api.ts               — backend API helpers (accounts, login, jobs, bids, phases)
     db.ts                — LocalDB staging via sqlcmd (email-verify accounts,
                            force job statuses that normally require payment)

@@ -8,12 +8,20 @@ export class StorageService {
   private readonly platformId = inject(PLATFORM_ID);
   private memoryStorage = new Map<string, string>();
 
+  // sessionStorage on the web so closing the window/tab ends the session.
+  // The native Capacitor apps keep localStorage — sessionStorage is wiped
+  // when the app process exits, which would force a login on every launch.
+  private get store(): Storage {
+    const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+    return cap?.isNativePlatform?.() ? localStorage : sessionStorage;
+  }
+
   getItem(key: string): string | null {
     if (isPlatformBrowser(this.platformId)) {
       try {
-        return localStorage.getItem(key);
+        return this.store.getItem(key);
       } catch (e) {
-        console.error(`StorageService.getItem failed from localStorage for key=${key}`, e);
+        console.error(`StorageService.getItem failed for key=${key}`, e);
         return this.memoryStorage.get(key) || null;
       }
     }
@@ -23,7 +31,7 @@ export class StorageService {
   setItem(key: string, value: string): void {
     if (isPlatformBrowser(this.platformId)) {
       try {
-        localStorage.setItem(key, value);
+        this.store.setItem(key, value);
       } catch (e) {
         console.error(`StorageService.setItem failed for key=${key}`, e);
         this.memoryStorage.set(key, value);
@@ -36,7 +44,7 @@ export class StorageService {
   removeItem(key: string): void {
     if (isPlatformBrowser(this.platformId)) {
       try {
-        localStorage.removeItem(key);
+        this.store.removeItem(key);
       } catch {
         this.memoryStorage.delete(key);
       }
@@ -48,7 +56,7 @@ export class StorageService {
   clear(): void {
     if (isPlatformBrowser(this.platformId)) {
       try {
-        localStorage.clear();
+        this.store.clear();
       } catch {
         this.memoryStorage.clear();
       }

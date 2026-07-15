@@ -26,7 +26,28 @@ export class Auth {
   constructor(
     private api: ApiService,
     private storage: StorageService
-  ) {}
+  ) {
+    this.purgeLegacyLocalStorageTokens();
+  }
+
+  // Auth state used to live in localStorage; remove anything left behind by
+  // sessions from before the switch to sessionStorage so old tokens can't
+  // linger. Native Capacitor apps still use localStorage as their real store,
+  // so skip the purge there.
+  private purgeLegacyLocalStorageTokens(): void {
+    try {
+      const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+      if (cap?.isNativePlatform?.()) return;
+      [
+        this.AUTH_TOKEN_KEY, this.REFRESH_TOKEN_KEY, this.USER_TYPE_KEY,
+        this.USER_NAME_KEY, this.USER_ID_KEY, this.IS_PROFILE_COMPLETE_KEY,
+        this.ADMIN_TOKEN_KEY, this.ADMIN_REFRESH_KEY, this.ADMIN_TYPE_KEY,
+        this.ADMIN_NAME_KEY, this.ADMIN_ID_KEY,
+      ].forEach(k => localStorage.removeItem(k));
+    } catch {
+      // SSR or storage unavailable — nothing to purge
+    }
+  }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.api.loginUser('auth/user/login', credentials).pipe(

@@ -20,7 +20,8 @@ const msalConfig: Configuration = {
     postLogoutRedirectUri: `${window.location.origin}/`,
   },
   cache: {
-    cacheLocation: BrowserCacheLocation.LocalStorage,
+    // Session-scoped so closing the window signs the user out (matches StorageService)
+    cacheLocation: BrowserCacheLocation.SessionStorage,
   }
 };
 

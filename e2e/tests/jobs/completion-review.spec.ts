@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../fixtures/session';
 import { PendingJobDetailsPage } from '../../pages/pending-job-details.page';
 import {
   API_URL,

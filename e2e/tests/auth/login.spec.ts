@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../fixtures/session';
 import { LoginPage } from '../../pages/login.page';
 import { E2E_PRO, E2E_USER } from '../../fixtures/test-users';
 
@@ -12,9 +12,9 @@ test.describe('Login', () => {
     await login.loginAndWait('user', E2E_USER.email, E2E_USER.password);
 
     await expect(page).toHaveURL('/');
-    // Token must be in localStorage for the API interceptor
+    // Token must be in sessionStorage for the API interceptor
     const hasToken = await page.evaluate(() =>
-      Object.keys(localStorage).some((k) => /token/i.test(k) && !!localStorage.getItem(k))
+      Object.keys(sessionStorage).some((k) => /token/i.test(k) && !!sessionStorage.getItem(k))
     );
     expect(hasToken).toBe(true);
   });

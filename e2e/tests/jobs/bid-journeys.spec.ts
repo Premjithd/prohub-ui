@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, seedSessionFromLocalStorage } from '../../fixtures/session';
 import { JobDetailsPage } from '../../pages/job-details.page';
 import { PendingJobDetailsPage } from '../../pages/pending-job-details.page';
 import { apiCreateJob, apiCreatePaymentRequest, apiLogin } from '../../fixtures/api';
@@ -27,6 +27,7 @@ test.describe('Bid journeys — pro and user through the UI', () => {
       baseURL,
       ignoreHTTPSErrors: true,
     });
+    await seedSessionFromLocalStorage(context);
     return { context, page: await context.newPage() };
   }
 

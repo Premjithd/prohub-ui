@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../fixtures/session';
 import { PostJobPage } from '../../pages/post-job.page';
 import { USER_STORAGE_STATE } from '../../fixtures/test-users';
 

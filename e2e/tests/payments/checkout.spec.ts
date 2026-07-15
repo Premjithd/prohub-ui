@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect } from '../../fixtures/session';
 import { PendingJobDetailsPage } from '../../pages/pending-job-details.page';
 import { CheckoutDialog } from '../../pages/checkout-dialog.page';
 import { PayAmountDialog } from '../../pages/pay-amount-dialog.page';

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, seedSessionFromLocalStorage } from '../../fixtures/session';
 import { MessagesPage } from '../../pages/messages.page';
 import { apiLoginWithId, apiSendMessage } from '../../fixtures/api';
 import { E2E_PRO, E2E_USER, PRO_STORAGE_STATE, USER_STORAGE_STATE } from '../../fixtures/test-users';
@@ -39,6 +39,7 @@ test.describe('Messaging — user and pro', () => {
       baseURL,
       ignoreHTTPSErrors: true,
     });
+    await seedSessionFromLocalStorage(proContext);
     try {
       const proMessages = new MessagesPage(await proContext.newPage());
       await proMessages.goto();
