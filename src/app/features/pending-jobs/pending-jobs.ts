@@ -307,6 +307,7 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
 
     const payDialog = this.dialog.open(PayAmountDialogComponent, {
       width: '440px',
+      maxWidth: '95vw',
       data: {
         jobTitle: job.title,
         bidAmount: summary.bidAmount,

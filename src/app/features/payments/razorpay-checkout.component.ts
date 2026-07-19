@@ -1,13 +1,12 @@
 import { Component, Inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { PaymentService } from '../../services/payment.service';
-import { PaymentMethodService, PaymentMethod, CheckoutContext } from '../../core/services/payment-method.service';
+import { PaymentMethodService, CheckoutContext } from '../../core/services/payment-method.service';
 import { CreatePaymentRequest } from '../../models/payment.model';
 import { getHttpErrorMessage } from '../../core/utils/http-error';
 import { Subject } from 'rxjs';
@@ -63,66 +62,6 @@ export interface RazorpayCheckoutData {
 
       <ng-container *ngIf="rateSplit || errorMessage">
         <div class="rzp-body">
-
-          <!-- ── Payment Method Picker ──────────────────────────────── -->
-          <div class="rzp-section">
-            <div class="rzp-section-header">
-              <mat-icon>account_balance_wallet</mat-icon>
-              <span>Payment Method</span>
-            </div>
-
-            <div class="rzp-context-loading" *ngIf="loadingContext">
-              <mat-spinner diameter="16"></mat-spinner>
-              <span>Loading saved methods...</span>
-            </div>
-
-            <ng-container *ngIf="!loadingContext">
-              <!-- Saved methods + an always-available "enter a new method" option -->
-              <div class="rzp-method-list">
-                <div
-                  class="rzp-method-row"
-                  *ngFor="let m of checkoutMethods"
-                  [class.active]="selectedMethodId === m.id"
-                  (click)="selectedMethodId = m.id">
-                  <mat-icon class="rzp-radio">{{ selectedMethodId === m.id ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
-                  <div class="rzp-method-badge" [class.upi]="m.type === 'UPI'" [class.bank]="m.type === 'Bank'">
-                    <mat-icon>{{ m.type === 'UPI' ? 'qr_code_2' : 'account_balance' }}</mat-icon>
-                  </div>
-                  <div class="rzp-method-text">
-                    <div class="rzp-method-name">
-                      {{ m.label || (m.type === 'UPI' ? 'UPI' : 'Bank Account') }}
-                      <span *ngIf="m.isDefault" class="rzp-def-pill">Default</span>
-                    </div>
-                    <div class="rzp-method-detail">
-                      {{ m.type === 'UPI' ? m.upiVpa : ((m.bankAccountHolderName ? m.bankAccountHolderName + ' · ' : '') + m.bankAccountNumber) }}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- "Other method" option -->
-                <div
-                  class="rzp-method-row"
-                  [class.active]="selectedMethodId === null"
-                  (click)="selectedMethodId = null">
-                  <mat-icon class="rzp-radio">{{ selectedMethodId === null ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
-                  <div class="rzp-method-badge other">
-                    <mat-icon>add_card</mat-icon>
-                  </div>
-                  <div class="rzp-method-text">
-                    <div class="rzp-method-name">{{ checkoutMethods.length > 0 ? 'Other method' : 'Enter payment details' }}</div>
-                    <div class="rzp-method-detail">Card, UPI, net banking, wallet &amp; more</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Hint when nothing is saved — paying still works via the option above -->
-              <div class="rzp-no-methods" *ngIf="checkoutMethods.length === 0">
-                <mat-icon>info_outline</mat-icon>
-                <span>No saved methods — continue to enter your card / UPI details on the next step.</span>
-                <a class="rzp-add-link" (click)="goToSettings()">Save a method</a>
-              </div>
-            </ng-container>
-          </div>
 
           <!-- ── Order Summary ──────────────────────────────────────── -->
           <div class="rzp-section" *ngIf="rateSplit">
@@ -263,113 +202,6 @@ export interface RazorpayCheckoutData {
       mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; color: #667eea; }
     }
 
-    .rzp-context-loading {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #aaa;
-      font-size: 0.84rem;
-    }
-
-    .rzp-method-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-    }
-
-    .rzp-method-row {
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      padding: 0.65rem 0.75rem;
-      border: 1.5px solid #e8eaf5;
-      border-radius: 10px;
-      cursor: pointer;
-      background: white;
-      transition: border-color 0.15s, background 0.15s;
-
-      &.active {
-        border-color: #667eea;
-        background: #f5f3ff;
-      }
-
-      &:hover:not(.active) {
-        border-color: #c5cbf5;
-      }
-    }
-
-    .rzp-radio {
-      font-size: 1.1rem;
-      width: 1.1rem;
-      height: 1.1rem;
-      color: #ccc;
-      flex-shrink: 0;
-    }
-
-    .rzp-method-row.active .rzp-radio { color: #667eea; }
-
-    .rzp-method-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
-
-      &.upi  { background: #e3f2fd; mat-icon { color: #1565c0; } }
-      &.bank { background: #e8f5e9; mat-icon { color: #2e7d32; } }
-      &.other { background: #f3f0ff; mat-icon { color: #7c3aed; } }
-    }
-
-    .rzp-method-text { flex: 1; min-width: 0; }
-
-    .rzp-method-name {
-      font-size: 0.87rem;
-      font-weight: 600;
-      color: #222;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .rzp-def-pill {
-      font-size: 0.68rem;
-      font-weight: 700;
-      background: #fff8e1;
-      color: #f57f17;
-      border-radius: 20px;
-      padding: 0.05rem 0.45rem;
-    }
-
-    .rzp-method-detail {
-      font-size: 0.79rem;
-      color: #999;
-      margin-top: 0.1rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .rzp-no-methods {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #aaa;
-      font-size: 0.84rem;
-      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; color: #ccc; }
-    }
-
-    .rzp-add-link {
-      margin-left: auto;
-      font-size: 0.82rem;
-      color: #667eea;
-      font-weight: 600;
-      text-decoration: none;
-      &:hover { text-decoration: underline; }
-    }
-
     .rzp-breakdown { display: flex; flex-direction: column; }
 
     .rzp-bd-row {
@@ -452,16 +284,11 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
   private orderData: any = null;
   private destroy$ = new Subject<void>();
 
-  // Payment method picker
-  checkoutMethods: PaymentMethod[] = [];
-  selectedMethodId: number | null = null;
   billingAddress: CheckoutContext['billingAddress'] | null = null;
-  loadingContext = false;
 
   constructor(
     private paymentService: PaymentService,
     private pmService: PaymentMethodService,
-    private router: Router,
     public dialogRef: MatDialogRef<RazorpayCheckoutComponent>,
     @Inject(MAT_DIALOG_DATA) public data: RazorpayCheckoutData,
     private snackBar: MatSnackBar,
@@ -478,12 +305,6 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  get selectedVpa(): string | undefined {
-    if (this.selectedMethodId === null) return this.data.prefillVpa;
-    const method = this.checkoutMethods.find(m => m.id === this.selectedMethodId);
-    return method?.type === 'UPI' ? (method.upiVpa ?? undefined) : undefined;
   }
 
   get totalAmount(): number {
@@ -537,25 +358,15 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
   }
 
   private loadCheckoutContext(): void {
-    this.loadingContext = true;
     this.pmService.getCheckoutContext()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (ctx) => {
-          this.checkoutMethods = ctx.paymentMethods;
           this.billingAddress = ctx.billingAddress;
-          // Auto-select: prefer default, then first UPI, then first method
-          const def = ctx.paymentMethods.find(m => m.isDefault);
-          const firstUpi = ctx.paymentMethods.find(m => m.type === 'UPI');
-          const autoSelect = def ?? firstUpi ?? ctx.paymentMethods[0];
-          this.selectedMethodId = autoSelect?.id ?? null;
-          this.loadingContext = false;
           this.cdr.markForCheck();
         },
         error: () => {
-          // Pro role or API error — no saved methods
-          this.loadingContext = false;
-          this.cdr.markForCheck();
+          // Pro role or API error — no billing address to show
         }
       });
   }
@@ -591,7 +402,7 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     try {
-      const vpa = this.selectedVpa;
+      const vpa = this.data.prefillVpa;
       const options = {
         key: this.orderData.key,
         amount: this.orderData.totalAmount * 100,
@@ -650,11 +461,6 @@ export class RazorpayCheckoutComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
-  }
-
-  goToSettings(): void {
-    this.dialogRef.close();
-    this.router.navigate(['/settings']);
   }
 
   formatAddress(addr: CheckoutContext['billingAddress']): string {

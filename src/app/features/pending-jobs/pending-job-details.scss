@@ -34,7 +34,7 @@
         flex: 1;
 
         h1 {
-          font-size: 2rem;
+          font-size: var(--text-h1);
           font-weight: 700;
           margin: 0 0 0.5rem 0;
           color: white;
@@ -42,7 +42,7 @@
 
         .subtitle {
           color: rgba(255, 255, 255, 0.9);
-          font-size: 1rem;
+          font-size: var(--text-body);
           margin: 0;
         }
       }
@@ -304,7 +304,7 @@
         .bids-section {
           margin-top: 2rem;
           padding-top: 2rem;
-          border-top: 2px solid #ca1d1d;
+          border-top: 2px solid var(--color-border);
 
           h3 {
             display: flex;
@@ -358,7 +358,7 @@
           }
 
           .bid-item {
-            border: 1px solid #8d0a0a;
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             padding: 1.5rem;
             transition: all 0.3s ease;
@@ -521,45 +521,46 @@
       /* Phases Progress Section */
       .phases-progress-section {
         margin-top: 24px;
-        padding: 20px;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 1.25rem;
+        background: #fafbff;
+        border: 1px solid #eaecf5;
         border-radius: 12px;
-        border-left: 4px solid #667eea;
 
         h3 {
           display: flex;
           align-items: center;
           gap: 8px;
-          font-size: 1.1rem;
+          font-size: 1.05rem;
           font-weight: 600;
-          color: #333;
-          margin: 0 0 16px 0;
+          color: var(--color-text);
+          margin: 0;
 
           mat-icon {
-            color: #667eea;
+            color: var(--color-primary);
           }
         }
 
         .phase-progress-info {
-          margin-bottom: 24px;
+          margin-bottom: 1rem;
+        }
 
-          .progress-bar-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .progress-bar-container {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 1.25rem;
 
-            mat-progress-bar {
-              flex: 1;
-              height: 8px;
-              border-radius: 4px;
-            }
+          mat-progress-bar {
+            flex: 1;
+            border-radius: 6px;
+          }
 
-            .progress-percentage {
-              font-weight: 600;
-              color: #667eea;
-              min-width: 50px;
-              text-align: right;
-            }
+          .progress-percentage {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            min-width: 36px;
+            text-align: right;
           }
         }
 
@@ -743,6 +744,17 @@
       display: flex;
       gap: 0.75rem;
     }
+  }
+
+  // Brand CTA — matches the gradient pay buttons in the payment dialogs
+  .payment-btn {
+    --mdc-protected-button-container-color: transparent;
+    --mdc-protected-button-label-text-color: #fff;
+    background: var(--color-primary-gradient);
+    color: #fff;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 0 1.5rem;
   }
 
   .refund-processed-notice {
@@ -1108,6 +1120,29 @@
           margin: 0.5rem 0 0 0;
           font-weight: 500;
         }
+      }
+    }
+  }
+
+  @media (max-width: 600px) {
+    .page-header {
+      padding: 1.25rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .alert {
+      margin: 0 1rem 1rem;
+    }
+
+    .job-details-card {
+      padding: 0 1rem 1.5rem;
+
+      mat-card mat-card-header.job-card-header {
+        padding: 1.25rem;
+      }
+
+      mat-card .job-header-content {
+        gap: 1.25rem;
       }
     }
   }
