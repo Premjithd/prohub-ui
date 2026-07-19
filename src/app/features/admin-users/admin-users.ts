@@ -10,7 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription, distinctUntilChanged, map } from 'rxjs';
 import { AdminUsersService, Job, CommissionConfig, RegistrationMetrics, CategoryJobCount } from '../../core/services/admin-users.service';
 import { User } from '../../core/models/user.model';
 import { Pro } from '../../core/models/pro.model';
@@ -52,6 +52,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   // ── Navigation ────────────────────────────────────────────────────────────
   activeView: AdminView = 'dashboard';
   showToolsMenu = false;
+  private viewSub?: Subscription;
 
   readonly navItems: { id: AdminView; label: string; icon: string }[] = [
     { id: 'dashboard',     label: 'Dashboard',         icon: 'dashboard'    },
@@ -65,13 +66,22 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   ];
 
   setView(view: AdminView): void {
-    this.activeView = view;
     this.showToolsMenu = false;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { view },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  private applyView(view: AdminView): void {
+    this.activeView = view;
     if (view === 'dashboard') this.loadDashboard();
     if (view === 'disputes') this.loadDisputes();
     if (view === 'settings') { this.loadSettings(); this.loadCommissionConfig(); this.loadTeamSettings(); }
     if (view === 'categories') this.loadAdminCategories();
     if (view === 'geocode') this.loadPendingGeocodes();
+    this.cdr.markForCheck();
   }
 
   getActiveViewLabel(): string {
@@ -759,14 +769,15 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       this.router.navigate(['/']);
       return;
     }
-    const view = this.route.snapshot.queryParamMap.get('view') as AdminView | null;
-    if (view && this.navItems.some(n => n.id === view)) {
-      this.activeView = view;
-    }
     this.loadInvitations();
-    this.loadDisputes();
     this.loadServiceAreas();
-    this.loadDashboard();
+    this.viewSub = this.route.queryParamMap.pipe(
+      map(params => {
+        const view = params.get('view') as AdminView | null;
+        return view && this.navItems.some(n => n.id === view) ? view : 'dashboard' as AdminView;
+      }),
+      distinctUntilChanged()
+    ).subscribe(view => this.applyView(view));
   }
 
   // ── Disputes ──────────────────────────────────────────────────────────────
@@ -1334,6 +1345,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.viewSub?.unsubscribe();
     if (this.leafletMap) { this.leafletMap.remove(); this.leafletMap = null; }
   }
 

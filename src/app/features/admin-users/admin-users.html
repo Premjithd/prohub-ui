@@ -1370,44 +1370,42 @@
 
     <!-- ── SETTINGS ──────────────────────────────────────────────────────── -->
     <ng-container *ngSwitchCase="'settings'">
-      <div class="geocode-panel">
-        <div class="geocode-header">
+      <div class="panel-card">
+        <div class="panel-card-header">
           <mat-icon>tune</mat-icon>
-          <div>
-            <h2>Platform Settings</h2>
-            <p>Control site-wide display options.</p>
-          </div>
+          <h2>Platform Settings</h2>
         </div>
+        <p class="panel-description">Control site-wide display options.</p>
 
-        <div *ngIf="settingsLoading" class="geocode-loading">
+        <div *ngIf="settingsLoading" class="geocode-loading-row">
           <mat-spinner diameter="28"></mat-spinner>
           <span>Loading settings…</span>
         </div>
 
-        <div class="geocode-grid" *ngIf="!settingsLoading">
-          <div class="geocode-item">
-            <div class="geocode-item-header">
-              <mat-icon>groups</mat-icon>
+        <div class="commission-section" *ngIf="!settingsLoading">
+          <div class="commission-section-header">
+            <mat-icon>groups</mat-icon>
+            <div>
               <h3>Show Pro Count on Categories</h3>
+              <p>Display the number of registered professionals under each service category on the Services page.</p>
             </div>
-            <p>Display the number of registered professionals under each service category on the Services page.</p>
-            <div class="setting-toggle-row">
-              <span class="setting-status" [class.enabled]="showProCountOnCategories">
-                {{ showProCountOnCategories ? 'Enabled' : 'Disabled' }}
-              </span>
-              <button
-                class="geocode-run-btn"
-                [disabled]="settingsSaving"
-                (click)="toggleShowProCount(!showProCountOnCategories)">
-                {{ settingsSaving ? 'Saving…' : (showProCountOnCategories ? 'Turn Off' : 'Turn On') }}
-              </button>
-            </div>
+          </div>
+          <div class="setting-toggle-row">
+            <span class="setting-status" [class.enabled]="showProCountOnCategories">
+              {{ showProCountOnCategories ? 'Enabled' : 'Disabled' }}
+            </span>
+            <button
+              class="geocode-run-btn"
+              [disabled]="settingsSaving"
+              (click)="toggleShowProCount(!showProCountOnCategories)">
+              {{ settingsSaving ? 'Saving…' : (showProCountOnCategories ? 'Turn Off' : 'Turn On') }}
+            </button>
           </div>
         </div>
 
         <!-- Our Team Section -->
-        <div class="commission-section settings-tile">
-          <div class="geocode-item-header commission-section-header">
+        <div class="commission-section">
+          <div class="commission-section-header">
             <mat-icon>groups</mat-icon>
             <div>
               <h3>Our Team Section</h3>
@@ -1424,7 +1422,7 @@
             </button>
           </div>
 
-          <div *ngIf="teamLoading" class="geocode-loading">
+          <div *ngIf="teamLoading" class="geocode-loading-row">
             <mat-spinner diameter="24"></mat-spinner><span>Loading team…</span>
           </div>
 
@@ -1473,7 +1471,7 @@
 
         <!-- Commission Config -->
         <div class="commission-section">
-          <div class="geocode-item-header commission-section-header">
+          <div class="commission-section-header">
             <mat-icon>payments</mat-icon>
             <div>
               <h3>Platform Commission</h3>
@@ -1481,7 +1479,7 @@
             </div>
           </div>
 
-          <div *ngIf="commissionLoading" class="geocode-loading">
+          <div *ngIf="commissionLoading" class="geocode-loading-row">
             <mat-spinner diameter="28"></mat-spinner>
             <span>Loading commission settings…</span>
           </div>
