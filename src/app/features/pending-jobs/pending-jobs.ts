@@ -287,6 +287,8 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
 
   /** "Pay Now" shows only when the Pro has an active, non-None request and a balance remains. */
   canPayJob(jobId: number): boolean {
+    const job = this.pendingJobs.find(j => j.id === jobId);
+    if (job?.status === 'Cancelled') return false;
     const s = this.paymentSummaryMap.get(jobId);
     const req = s?.activeRequest;
     return !!s && !!req && req.status === 'Pending' && req.requestType !== 'None' && s.remaining > 0;

@@ -19,6 +19,7 @@ import { PaymentService } from '../../services/payment.service';
 import { PaymentSummary } from '../../models/payment.model';
 import { RazorpayCheckoutComponent } from '../payments/razorpay-checkout.component';
 import { PayAmountDialogComponent } from '../payments/pay-amount-dialog.component';
+import { CancelJobDialogComponent } from './cancel-job-dialog.component';
 import { Auth } from '../../core/services/auth';
 import { ReviewService } from '../../services/review.service';
 import { Review } from '../../models/review.model';
@@ -174,28 +175,38 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
 
   cancelJob(): void {
     if (!this.job) return;
+    // A job can no longer be cancelled once the pro has submitted completion.
+    if (this.job.status === 'Completion Submitted') return;
 
-    if (!confirm(`Cancel "${this.job.title}"? All pending bids will be automatically withdrawn. This cannot be undone.`)) return;
+    const dialogRef = this.dialog.open(CancelJobDialogComponent, {
+      width: '440px',
+      maxWidth: '95vw',
+      data: { jobTitle: this.job.title }
+    });
 
-    this.cancellingJob = true;
-    this.errorMessage = '';
+    dialogRef.afterClosed().subscribe((confirmed: boolean | undefined) => {
+      if (!confirmed || !this.job) return;
 
-    this.jobService.cancelJob(this.job.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.job!.status = 'Cancelled';
-          this.jobBids = this.jobBids.map(b => b.status === 'Pending' ? { ...b, status: 'Withdrawn' } : b);
-          this.successMessage = 'Job cancelled successfully.';
-          this.cancellingJob = false;
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.errorMessage = err?.error?.message || 'Failed to cancel job.';
-          this.cancellingJob = false;
-          this.cdr.markForCheck();
-        }
-      });
+      this.cancellingJob = true;
+      this.errorMessage = '';
+
+      this.jobService.cancelJob(this.job.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.job!.status = 'Cancelled';
+            this.jobBids = this.jobBids.map(b => b.status === 'Pending' ? { ...b, status: 'Withdrawn' } : b);
+            this.successMessage = 'Job cancelled successfully.';
+            this.cancellingJob = false;
+            this.cdr.markForCheck();
+          },
+          error: (err) => {
+            this.errorMessage = err?.error?.message || 'Failed to cancel job.';
+            this.cancellingJob = false;
+            this.cdr.markForCheck();
+          }
+        });
+    });
   }
 
   getStatusColor(status: string): string {
@@ -297,6 +308,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
 
   /** Consumer can pay when there's a pending, non-None request and a remaining balance. */
   get canPayNow(): boolean {
+    if (this.job?.status === 'Cancelled') return false;
     const s = this.paymentSummary;
     const req = s?.activeRequest;
     return !!s && !!req && req.status === 'Pending' && req.requestType !== 'None' && s.remaining > 0;
