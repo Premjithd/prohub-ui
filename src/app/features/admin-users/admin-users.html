@@ -1403,6 +1403,41 @@
           </div>
         </div>
 
+        <!-- Home Page Announcement Banner -->
+        <div class="commission-section">
+          <div class="commission-section-header">
+            <mat-icon>campaign</mat-icon>
+            <div>
+              <h3>Home Page Banner</h3>
+              <p>Show a scrolling announcement banner at the top of the home page.</p>
+            </div>
+          </div>
+
+          <div class="setting-toggle-row">
+            <span class="setting-status" [class.enabled]="bannerEnabled">
+              {{ bannerEnabled ? 'Enabled' : 'Disabled' }}
+            </span>
+            <button class="geocode-run-btn" [disabled]="bannerSaving" (click)="bannerEnabled = !bannerEnabled">
+              {{ bannerEnabled ? 'Turn Off' : 'Turn On' }}
+            </button>
+          </div>
+
+          <mat-form-field appearance="outline" class="banner-message-field">
+            <mat-label>Banner message</mat-label>
+            <textarea
+              matInput
+              rows="2"
+              [(ngModel)]="bannerMessage"
+              placeholder="Welcome to yProHub — find trusted professionals for any job."></textarea>
+          </mat-form-field>
+
+          <div class="setting-toggle-row">
+            <button class="geocode-run-btn" [disabled]="bannerSaving" (click)="saveBanner()">
+              {{ bannerSaving ? 'Saving…' : 'Save banner' }}
+            </button>
+          </div>
+        </div>
+
         <!-- Our Team Section -->
         <div class="commission-section">
           <div class="commission-section-header">

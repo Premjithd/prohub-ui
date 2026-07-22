@@ -552,6 +552,49 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       this.settingsLoading = false;
       this.cdr.detectChanges();
     });
+    this.loadBannerSettings();
+  }
+
+  // ── Home page announcement banner ────────────────────────────────────────────
+  bannerEnabled = false;
+  bannerMessage = '';
+  bannerSaving = false;
+
+  loadBannerSettings(): void {
+    this.settingsService.getSetting('banner_enabled').subscribe(value => {
+      this.bannerEnabled = value === 'true';
+      this.cdr.detectChanges();
+    });
+    this.settingsService.getSetting('banner_message').subscribe(value => {
+      this.bannerMessage = value ?? '';
+      this.cdr.detectChanges();
+    });
+  }
+
+  saveBanner(): void {
+    this.bannerSaving = true;
+    // Persist both the toggle and the message text.
+    this.settingsService.updateSetting('banner_enabled', String(this.bannerEnabled)).subscribe({
+      next: () => {
+        this.settingsService.updateSetting('banner_message', this.bannerMessage).subscribe({
+          next: () => {
+            this.bannerSaving = false;
+            this.cdr.detectChanges();
+            this.snack.open('Banner updated', 'OK', { duration: 2500, panelClass: 'snack-success' });
+          },
+          error: () => {
+            this.bannerSaving = false;
+            this.cdr.detectChanges();
+            this.snack.open('Failed to save banner message', 'OK', { duration: 3000, panelClass: 'snack-error' });
+          }
+        });
+      },
+      error: () => {
+        this.bannerSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open('Failed to save banner', 'OK', { duration: 3000, panelClass: 'snack-error' });
+      }
+    });
   }
 
   toggleShowProCount(enabled: boolean): void {
