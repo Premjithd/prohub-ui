@@ -337,10 +337,13 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
       if (result) {
         this.jobService.markJobCompleted(jobId).pipe(takeUntil(this.destroy$)).subscribe({
           next: () => {
-            this.successMessage = 'Job marked as completed!';
+            this.successMessage = 'Completion submitted — awaiting customer confirmation.';
             if (this.job) {
-              this.job.status = 'Completed';
+              // The backend sets "Completion Submitted"; the job only becomes
+              // "Completed" once the customer verifies the work.
+              this.job.status = 'Completion Submitted';
             }
+            this.loadCompletionStatus(jobId);
             this.cdr.markForCheck();
             setTimeout(() => {
               this.successMessage = '';

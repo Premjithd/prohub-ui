@@ -157,10 +157,12 @@ export class MyJobsProComponent implements OnInit, OnDestroy {
     if (confirm('Mark this job as completed?')) {
       this.jobService.markJobCompleted(jobId).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
-          this.successMessage = 'Job marked as completed!';
+          this.successMessage = 'Completion submitted — awaiting customer confirmation.';
           const job = this.assignedJobs.find(j => j.id === jobId);
           if (job) {
-            job.status = 'Completed';
+            // The backend sets "Completion Submitted"; the job only becomes
+            // "Completed" once the customer verifies the work.
+            job.status = 'Completion Submitted';
             
             // Mark all phases as completed (sets progress to 100%)
             const phases = this.getJobPhases(job);
