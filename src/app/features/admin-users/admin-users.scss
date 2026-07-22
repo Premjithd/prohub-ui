@@ -1598,6 +1598,38 @@
   margin-top: 0.75rem;
 }
 
+.banner-message-view {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.banner-message-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #444;
+  font-style: italic;
+}
+
+.banner-edit-link {
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.banner-message-edit {
+  margin-top: 0.85rem;
+}
+
+.geocode-run-btn.secondary {
+  background: #f0f0f0;
+  color: #555;
+}
+
 .setting-status {
   font-size: 0.85rem;
   font-weight: 600;

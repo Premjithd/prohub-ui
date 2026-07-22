@@ -1417,24 +1417,34 @@
             <span class="setting-status" [class.enabled]="bannerEnabled">
               {{ bannerEnabled ? 'Enabled' : 'Disabled' }}
             </span>
-            <button class="geocode-run-btn" [disabled]="bannerSaving" (click)="bannerEnabled = !bannerEnabled">
-              {{ bannerEnabled ? 'Turn Off' : 'Turn On' }}
+            <button class="geocode-run-btn" [disabled]="bannerSaving" (click)="toggleBanner(!bannerEnabled)">
+              {{ bannerSaving ? 'Saving…' : (bannerEnabled ? 'Turn Off' : 'Turn On') }}
             </button>
           </div>
 
-          <mat-form-field appearance="outline" class="banner-message-field">
-            <mat-label>Banner message</mat-label>
-            <textarea
-              matInput
-              rows="2"
-              [(ngModel)]="bannerMessage"
-              placeholder="Welcome to yProHub — find trusted professionals for any job."></textarea>
-          </mat-form-field>
+          <!-- Message: read-only with an Edit link; reveals the editor when clicked -->
+          <div class="banner-message-view" *ngIf="!bannerMessageEditing">
+            <span class="banner-message-text">{{ bannerMessage || 'No message set' }}</span>
+            <a class="banner-edit-link" (click)="startEditBannerMessage()">Edit</a>
+          </div>
 
-          <div class="setting-toggle-row">
-            <button class="geocode-run-btn" [disabled]="bannerSaving" (click)="saveBanner()">
-              {{ bannerSaving ? 'Saving…' : 'Save banner' }}
-            </button>
+          <div class="banner-message-edit" *ngIf="bannerMessageEditing">
+            <mat-form-field appearance="outline" class="banner-message-field">
+              <mat-label>Banner message</mat-label>
+              <textarea
+                matInput
+                rows="2"
+                [(ngModel)]="bannerMessageDraft"
+                placeholder="Welcome to yProHub — find trusted professionals for any job."></textarea>
+            </mat-form-field>
+            <div class="setting-toggle-row">
+              <button class="geocode-run-btn" [disabled]="bannerMessageSaving" (click)="saveBannerMessage()">
+                {{ bannerMessageSaving ? 'Saving…' : 'Save message' }}
+              </button>
+              <button class="geocode-run-btn secondary" [disabled]="bannerMessageSaving" (click)="cancelEditBannerMessage()">
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1478,7 +1488,14 @@
                 <input [(ngModel)]="editTeamMember.role" placeholder="Role" class="ta-input" />
                 <input [(ngModel)]="editTeamMember.initials" placeholder="JS" class="ta-input ta-input-sm" maxlength="4" />
                 <input type="number" [(ngModel)]="editTeamMember.displayOrder" placeholder="#" class="ta-input ta-input-sm" />
-                <label class="ta-check"><input type="checkbox" [(ngModel)]="editTeamMember.isActive" /> Active</label>
+                <textarea [(ngModel)]="editTeamMember.bio" placeholder="Short bio" class="ta-input ta-textarea"></textarea>
+                <label class="ta-check">
+                  <!-- Zoneless CD races the native toggle against the [checked] binding, so
+                       we suppress the native toggle and drive state from the model instead. -->
+                  <input type="checkbox" [checked]="editTeamMember.isActive"
+                         (click)="$event.preventDefault(); editTeamMember.isActive = !editTeamMember.isActive" />
+                  Active
+                </label>
                 <button class="ta-btn" (click)="saveTeamMember(m)" [disabled]="savingTeamMemberId === m.id"><mat-icon>check</mat-icon></button>
                 <button class="ta-btn" (click)="cancelEditTeamMember()"><mat-icon>close</mat-icon></button>
               </ng-container>

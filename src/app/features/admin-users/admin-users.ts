@@ -22,6 +22,7 @@ import { ServiceAreaService, ServiceArea } from '../../core/services/service-are
 import { PayoutService } from '../../services/payout.service';
 import { Payout } from '../../models/payout.model';
 import { SettingsService } from '../../core/services/settings.service';
+import { BannerService } from '../../core/services/banner.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { ServiceCategory } from '../../core/models/service-category.model';
 import { TeamService, TeamMember } from '../../core/services/team.service';
@@ -558,41 +559,66 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   // ── Home page announcement banner ────────────────────────────────────────────
   bannerEnabled = false;
   bannerMessage = '';
-  bannerSaving = false;
+  bannerSaving = false;          // enable/disable toggle save in flight
+  bannerMessageEditing = false;
+  bannerMessageDraft = '';
+  bannerMessageSaving = false;
 
   loadBannerSettings(): void {
-    this.settingsService.getSetting('banner_enabled').subscribe(value => {
-      this.bannerEnabled = value === 'true';
-      this.cdr.detectChanges();
-    });
-    this.settingsService.getSetting('banner_message').subscribe(value => {
-      this.bannerMessage = value ?? '';
+    // Load the *effective* banner state (same source the public home page uses),
+    // so the admin toggle reflects reality even before any override is saved —
+    // otherwise a missing setting shows "off" here while the config fallback
+    // keeps the banner visible.
+    this.bannerService.getBanner().subscribe(b => {
+      this.bannerEnabled = b.enabled;
+      this.bannerMessage = b.message;
       this.cdr.detectChanges();
     });
   }
 
-  saveBanner(): void {
+  // The on/off toggle persists immediately, like the other platform settings.
+  toggleBanner(enabled: boolean): void {
     this.bannerSaving = true;
-    // Persist both the toggle and the message text.
-    this.settingsService.updateSetting('banner_enabled', String(this.bannerEnabled)).subscribe({
+    this.settingsService.updateSetting('banner_enabled', String(enabled)).subscribe({
       next: () => {
-        this.settingsService.updateSetting('banner_message', this.bannerMessage).subscribe({
-          next: () => {
-            this.bannerSaving = false;
-            this.cdr.detectChanges();
-            this.snack.open('Banner updated', 'OK', { duration: 2500, panelClass: 'snack-success' });
-          },
-          error: () => {
-            this.bannerSaving = false;
-            this.cdr.detectChanges();
-            this.snack.open('Failed to save banner message', 'OK', { duration: 3000, panelClass: 'snack-error' });
-          }
-        });
+        this.bannerEnabled = enabled;
+        this.bannerSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open(`Home banner ${enabled ? 'enabled' : 'disabled'}`, 'OK', { duration: 2500, panelClass: 'snack-success' });
       },
       error: () => {
         this.bannerSaving = false;
         this.cdr.detectChanges();
-        this.snack.open('Failed to save banner', 'OK', { duration: 3000, panelClass: 'snack-error' });
+        this.snack.open('Failed to update banner', 'OK', { duration: 3000, panelClass: 'snack-error' });
+      }
+    });
+  }
+
+  startEditBannerMessage(): void {
+    this.bannerMessageDraft = this.bannerMessage;
+    this.bannerMessageEditing = true;
+    this.cdr.detectChanges();
+  }
+
+  cancelEditBannerMessage(): void {
+    this.bannerMessageEditing = false;
+    this.cdr.detectChanges();
+  }
+
+  saveBannerMessage(): void {
+    this.bannerMessageSaving = true;
+    this.settingsService.updateSetting('banner_message', this.bannerMessageDraft).subscribe({
+      next: () => {
+        this.bannerMessage = this.bannerMessageDraft;
+        this.bannerMessageEditing = false;
+        this.bannerMessageSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open('Banner message updated', 'OK', { duration: 2500, panelClass: 'snack-success' });
+      },
+      error: () => {
+        this.bannerMessageSaving = false;
+        this.cdr.detectChanges();
+        this.snack.open('Failed to save banner message', 'OK', { duration: 3000, panelClass: 'snack-error' });
       }
     });
   }
@@ -803,6 +829,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private payoutService: PayoutService,
     private settingsService: SettingsService,
+    private bannerService: BannerService,
     private serviceCategoryService: ServiceCategoryService,
     private teamService: TeamService
   ) {}
