@@ -66,7 +66,7 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
 
   // Filter
   statusFilters = ['All', 'Open', 'In Progress', 'Completion Submitted', 'Completed', 'Cancelled'];
-  selectedStatusFilter = 'All';
+  selectedStatusFilter = 'In Progress';
 
   private destroy$ = new Subject<void>();
 
@@ -205,6 +205,11 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
       default:
         return '';
     }
+  }
+
+  /** Semantic CSS slug for a job status, used to colour the status pill. */
+  statusClass(status: string): string {
+    return (status || '').toLowerCase().replace(/\s+/g, '-');
   }
 
   loadBidsForJob(jobId: number): void {
@@ -528,6 +533,24 @@ export class PendingJobsComponent implements OnInit, OnDestroy {
     if (phases.length === 0) return 0;
     const completed = phases.filter(p => p.isCompleted).length;
     return Math.round((completed / phases.length) * 100);
+  }
+
+  /**
+   * Progress shown in the list. Once a job reaches completion it is 100% regardless
+   * of phase data (many finished jobs carry no phases). Active jobs use phase
+   * progress; pre-work statuses have no meaningful progress (returns null → "—").
+   */
+  getJobDisplayProgress(job: Job): number | null {
+    switch (job.status) {
+      case 'Completed':
+      case 'Completion Submitted':
+        return 100;
+      case 'Pro Confirmed':
+      case 'In Progress':
+        return this.getJobPhaseProgress(job);
+      default:
+        return null;
+    }
   }
 
   onFilterChange(status: string): void {
