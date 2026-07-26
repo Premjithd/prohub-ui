@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 import { Auth } from '../../../core/services/auth';
 import { AnnouncementBannerComponent } from '../announcement-banner.component';
@@ -8,7 +9,7 @@ import { AnnouncementBannerComponent } from '../announcement-banner.component';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TranslateModule, AnnouncementBannerComponent],
+  imports: [CommonModule, RouterModule, MatIconModule, TranslateModule, AnnouncementBannerComponent],
   templateUrl: './home.html',
   styleUrl: './home.scss'
 })

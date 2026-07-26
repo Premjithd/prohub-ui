@@ -49,16 +49,18 @@ mat-sidenav-container {
   flex: 1;
 }
 
+// Full-bleed shell: routed pages span the full width of the screen (like the
+// home page). Each page manages its own max-width / padding, so there is no
+// outer container or page padding here.
 .main-content {
-  padding: 2rem 0;
+  padding: 0;
   min-height: calc(100vh - var(--nav-height) - 64px);
 }
 
 @media (max-width: 768px) {
   .main-content {
-    padding: 1rem 0;
-    // Extra bottom padding so content is not hidden behind the bottom nav
-    padding-bottom: calc(var(--bottom-nav-height) + 1rem);
+    // Clearance so content is not hidden behind the fixed bottom nav.
+    padding-bottom: var(--bottom-nav-height);
     min-height: calc(100vh - var(--nav-height) - var(--bottom-nav-height));
   }
 }

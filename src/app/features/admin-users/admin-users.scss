@@ -1768,11 +1768,10 @@
 // ── Mobile ────────────────────────────────────────────────────────────────────
 
 @media (max-width: 768px) {
-  // Escape the layout container so the header banner reaches the screen edges
-  // and the top flush against the navbar instead of floating in a padded box.
+  // Full-bleed shell already reaches the screen edges; just sit flush.
   .admin-users-container {
-    margin: -1rem -1rem 0;
-    width: calc(100% + 2rem);
+    margin: 0;
+    width: 100%;
     min-height: unset;
   }
 

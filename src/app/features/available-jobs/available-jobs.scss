@@ -1,9 +1,9 @@
 .available-jobs-wrapper {
   padding: 0;
   max-width: none;
-  // Escape .container's horizontal padding (1rem) and .main-content's top padding (2rem)
-  // so the split layout can use the full viewport height with no hardcoded offsets
-  margin: -2rem -1rem 0;
+  // The shell is full-bleed, so the split layout can use the full viewport
+  // height directly with no container-escape offsets.
+  margin: 0;
   display: flex;
   flex-direction: column;
   height: calc(100vh - var(--nav-height, 64px));

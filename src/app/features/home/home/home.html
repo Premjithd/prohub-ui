@@ -1,24 +1,72 @@
-<div class="home-wrapper">
+<div class="home">
 
-  <!-- Configurable running announcement banner (appsettings Banner:*) -->
+  <!-- ROLLING ANNOUNCEMENT BANNER (admin-controlled) -->
   <app-announcement-banner></app-announcement-banner>
 
-  <!-- ══ AUTHENTICATED DASHBOARD ══════════════════════════════════════════════ -->
-  <ng-container *ngIf="auth.isAuthenticated()">
+  <!-- ══ HERO SEARCH — logged-out visitors AND signed-in regular users ═════════ -->
+  <section class="hero" *ngIf="!isProUser() && !isAdmin()">
+    <img class="hero-photo" src="assets/images/hero-bg.png" alt="" aria-hidden="true" />
+    <div class="hero-wash"></div>
 
-    <!-- ── Dashboard header ──────────────────────────────── -->
-    <section class="dash-header">
+    <div class="hero-inner">
+      <span class="hero-badge">
+        <mat-icon>place</mat-icon>
+        {{ 'HOME.HERO_BADGE' | translate }}
+      </span>
+
+      <h1 class="hero-title">{{ 'HOME.HERO_TITLE' | translate }}</h1>
+      <p class="hero-sub">{{ 'HOME.HERO_SUB' | translate }}</p>
+
+      <div class="hero-search">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input
+          class="search-input"
+          type="text"
+          [attr.aria-label]="'HOME.HERO_TITLE' | translate"
+          [placeholder]="'HOME.SEARCH_PLACEHOLDER' | translate" />
+        <span class="search-divider"></span>
+        <span class="search-place">
+          <mat-icon>place</mat-icon>
+          {{ 'HOME.SEARCH_PLACE' | translate }}
+        </span>
+        <a class="search-btn" routerLink="/post-job">{{ 'HOME.GET_QUOTES' | translate }}</a>
+      </div>
+
+      <div class="hero-chips">
+        <a class="hero-chip" routerLink="/services" [queryParams]="{ category: 'plumbing' }">
+          <mat-icon>build</mat-icon> {{ 'HOME.CAT_PLUMBING' | translate }}
+        </a>
+        <a class="hero-chip" routerLink="/services" [queryParams]="{ category: 'electrical' }">
+          <mat-icon>bolt</mat-icon> {{ 'HOME.CAT_ELECTRICAL' | translate }}
+        </a>
+        <a class="hero-chip" routerLink="/services" [queryParams]="{ category: 'carpentry' }">
+          <mat-icon>engineering</mat-icon> {{ 'HOME.CAT_CARPENTRY' | translate }}
+        </a>
+        <a class="hero-chip" routerLink="/services" [queryParams]="{ category: 'painting' }">
+          <mat-icon>home_repair_service</mat-icon> {{ 'HOME.CAT_PAINTING' | translate }}
+        </a>
+        <a class="hero-chip" routerLink="/services" [queryParams]="{ category: 'cleaning' }">
+          <mat-icon>cleaning_services</mat-icon> {{ 'HOME.CAT_CLEANING' | translate }}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ AUTHENTICATED ROLE DASHBOARD ══════════════════════════════════════════ -->
+  <div class="home-dash" *ngIf="auth.isAuthenticated()">
+
+    <!-- Dashboard header (pros & admins; regular users get the hero search above) -->
+    <section class="dash-header" *ngIf="isProUser() || isAdmin()">
       <div class="dash-header-inner">
         <div class="dash-greeting">
           <h1>{{ 'HOME.WELCOME_BACK' | translate: { name: auth.getName() } }}</h1>
           <p *ngIf="isAdmin()">{{ 'HOME.ADMIN_SUBTITLE' | translate }}</p>
           <p *ngIf="isProUser()">{{ 'HOME.PRO_SUBTITLE' | translate }}</p>
-          <p *ngIf="!isProUser() && !isAdmin()">{{ 'HOME.USER_SUBTITLE' | translate }}</p>
         </div>
       </div>
     </section>
 
-    <!-- ── Quick actions — regular user ──────────────────── -->
+    <!-- Quick actions — regular user -->
     <ng-container *ngIf="!isProUser() && !isAdmin()">
       <section class="quick-actions">
         <div class="section-container">
@@ -64,7 +112,7 @@
       </section>
     </ng-container>
 
-    <!-- ── Quick actions — pro user ──────────────────────── -->
+    <!-- Quick actions — pro user -->
     <ng-container *ngIf="isProUser()">
       <section class="quick-actions">
         <div class="section-container">
@@ -110,62 +158,30 @@
       </section>
     </ng-container>
 
-    <!-- ── How it works (non-admin only) ────────────────────── -->
+    <!-- How it works (non-admin) -->
     <ng-container *ngIf="!isAdmin()">
       <section class="how-works">
         <div class="section-container">
           <h2>{{ 'HOME.HOW_WORKS' | translate }}</h2>
           <div class="steps">
             <ng-container *ngIf="isProUser()">
-              <div class="step">
-                <div class="step-num">1</div>
-                <h3>{{ 'HOME.PRO_STEP1_TITLE' | translate }}</h3>
-                <p>{{ 'HOME.PRO_STEP1_DESC' | translate }}</p>
-              </div>
-              <div class="step">
-                <div class="step-num">2</div>
-                <h3>{{ 'HOME.PRO_STEP2_TITLE' | translate }}</h3>
-                <p>{{ 'HOME.PRO_STEP2_DESC' | translate }}</p>
-              </div>
-              <div class="step">
-                <div class="step-num">3</div>
-                <h3>{{ 'HOME.PRO_STEP3_TITLE' | translate }}</h3>
-                <p>{{ 'HOME.PRO_STEP3_DESC' | translate }}</p>
-              </div>
-              <div class="step">
-                <div class="step-num">4</div>
-                <h3>{{ 'HOME.PRO_STEP4_TITLE' | translate }}</h3>
-                <p>{{ 'HOME.PRO_STEP4_DESC' | translate }}</p>
-              </div>
+              <div class="step"><div class="step-num">1</div><h3>{{ 'HOME.PRO_STEP1_TITLE' | translate }}</h3><p>{{ 'HOME.PRO_STEP1_DESC' | translate }}</p></div>
+              <div class="step"><div class="step-num">2</div><h3>{{ 'HOME.PRO_STEP2_TITLE' | translate }}</h3><p>{{ 'HOME.PRO_STEP2_DESC' | translate }}</p></div>
+              <div class="step"><div class="step-num">3</div><h3>{{ 'HOME.PRO_STEP3_TITLE' | translate }}</h3><p>{{ 'HOME.PRO_STEP3_DESC' | translate }}</p></div>
+              <div class="step"><div class="step-num">4</div><h3>{{ 'HOME.PRO_STEP4_TITLE' | translate }}</h3><p>{{ 'HOME.PRO_STEP4_DESC' | translate }}</p></div>
             </ng-container>
             <ng-container *ngIf="!isProUser()">
-              <div class="step">
-                <div class="step-num">1</div>
-                <h3>{{ 'HOME.USER_STEP1_TITLE' | translate }}</h3>
-                <p>{{ 'HOME.USER_STEP1_DESC' | translate }}</p>
-              </div>
-              <div class="step">
-                <div class="step-num">2</div>
-                <h3>{{ 'HOME.USER_STEP2_TITLE' | translate }}</h3>
-                <p>{{ 'HOME.USER_STEP2_DESC' | translate }}</p>
-              </div>
-              <div class="step">
-                <div class="step-num">3</div>
-                <h3>{{ 'HOME.USER_STEP3_TITLE' | translate }}</h3>
-                <p>{{ 'HOME.USER_STEP3_DESC' | translate }}</p>
-              </div>
-              <div class="step">
-                <div class="step-num">4</div>
-                <h3>{{ 'HOME.USER_STEP4_TITLE' | translate }}</h3>
-                <p>{{ 'HOME.USER_STEP4_DESC' | translate }}</p>
-              </div>
+              <div class="step"><div class="step-num">1</div><h3>{{ 'HOME.USER_STEP1_TITLE' | translate }}</h3><p>{{ 'HOME.USER_STEP1_DESC' | translate }}</p></div>
+              <div class="step"><div class="step-num">2</div><h3>{{ 'HOME.USER_STEP2_TITLE' | translate }}</h3><p>{{ 'HOME.USER_STEP2_DESC' | translate }}</p></div>
+              <div class="step"><div class="step-num">3</div><h3>{{ 'HOME.USER_STEP3_TITLE' | translate }}</h3><p>{{ 'HOME.USER_STEP3_DESC' | translate }}</p></div>
+              <div class="step"><div class="step-num">4</div><h3>{{ 'HOME.USER_STEP4_TITLE' | translate }}</h3><p>{{ 'HOME.USER_STEP4_DESC' | translate }}</p></div>
             </ng-container>
           </div>
         </div>
       </section>
     </ng-container>
 
-    <!-- ── Admin quick actions ────────────────────────────── -->
+    <!-- Admin quick actions -->
     <ng-container *ngIf="isAdmin()">
       <section class="quick-actions">
         <div class="section-container">
@@ -238,102 +254,54 @@
       </section>
     </ng-container>
 
-  </ng-container>
+  </div>
 
-  <!-- ══ MARKETING LANDING (unauthenticated) ══════════════════════════════════ -->
+  <!-- ══ MARKETING LANDING (logged-out visitors) ══════════════════════════════ -->
   <ng-container *ngIf="!auth.isAuthenticated()">
 
-    <!-- Hero -->
-    <section class="hero">
-      <div class="hero-container">
-        <div class="hero-left">
-          <h1>{{ 'HOME.HERO_TITLE' | translate }}</h1>
-          <p>{{ 'HOME.HERO_SUB' | translate }}</p>
-          <div class="hero-cta">
-            <button class="cta-btn primary" (click)="navigateTo('/auth/register')">{{ 'HOME.JOIN_AS_USER' | translate }}</button>
-            <button class="cta-btn secondary" (click)="navigateTo('/auth/register/pro')">{{ 'HOME.BECOME_PRO' | translate }}</button>
-          </div>
-        </div>
-        <div class="hero-right">
-          <img src="images/Image_yprohub_home.png" alt="yProHub platform" />
-        </div>
-      </div>
-    </section>
-
-    <!-- Benefits -->
-    <section class="benefits">
-      <div class="section-container">
+  <!-- WHY -->
+  <section class="section section--white">
+    <div class="container">
+      <header class="section-head">
         <h2>{{ 'HOME.WHY_TITLE' | translate }}</h2>
-        <div class="benefits-grid">
-          <div class="benefit-item">
-            <span class="benefit-badge">
-              <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
-            </span>
-            <h3>{{ 'HOME.BENEFIT1_TITLE' | translate }}</h3>
-            <p>{{ 'HOME.BENEFIT1_DESC' | translate }}</p>
-          </div>
-          <div class="benefit-item">
-            <span class="benefit-badge">
-              <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
-            </span>
-            <h3>{{ 'HOME.BENEFIT2_TITLE' | translate }}</h3>
-            <p>{{ 'HOME.BENEFIT2_DESC' | translate }}</p>
-          </div>
-          <div class="benefit-item">
-            <span class="benefit-badge">
-              <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-            </span>
-            <h3>{{ 'HOME.BENEFIT3_TITLE' | translate }}</h3>
-            <p>{{ 'HOME.BENEFIT3_DESC' | translate }}</p>
-          </div>
-          <div class="benefit-item">
-            <span class="benefit-badge">
-              <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
-            </span>
-            <h3>{{ 'HOME.BENEFIT4_TITLE' | translate }}</h3>
-            <p>{{ 'HOME.BENEFIT4_DESC' | translate }}</p>
-          </div>
-        </div>
-      </div>
-    </section>
+        <p>{{ 'HOME.WHY_SUB' | translate }}</p>
+      </header>
 
-    <!-- How It Works -->
-    <section class="how-works">
-      <div class="section-container">
-        <h2>{{ 'HOME.HOW_WORKS' | translate }}</h2>
-        <div class="steps">
-          <div class="step">
-            <div class="step-num">1</div>
-            <h3>{{ 'HOME.USER_STEP1_TITLE' | translate }}</h3>
-            <p>{{ 'HOME.USER_STEP1_DESC' | translate }}</p>
-          </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <h3>{{ 'HOME.USER_STEP2_TITLE' | translate }}</h3>
-            <p>{{ 'HOME.USER_STEP2_DESC' | translate }}</p>
-          </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <h3>{{ 'HOME.USER_STEP3_TITLE' | translate }}</h3>
-            <p>{{ 'HOME.USER_STEP3_DESC' | translate }}</p>
-          </div>
-          <div class="step">
-            <div class="step-num">4</div>
-            <h3>{{ 'HOME.USER_STEP4_TITLE' | translate }}</h3>
-            <p>{{ 'HOME.USER_STEP4_DESC' | translate }}</p>
-          </div>
-        </div>
+      <div class="benefit-grid">
+        <article class="benefit-card">
+          <mat-icon class="benefit-icon">task_alt</mat-icon>
+          <h3>{{ 'HOME.BENEFIT1_TITLE' | translate }}</h3>
+          <p>{{ 'HOME.BENEFIT1_DESC' | translate }}</p>
+        </article>
+        <article class="benefit-card">
+          <mat-icon class="benefit-icon">bolt</mat-icon>
+          <h3>{{ 'HOME.BENEFIT2_TITLE' | translate }}</h3>
+          <p>{{ 'HOME.BENEFIT2_DESC' | translate }}</p>
+        </article>
+        <article class="benefit-card">
+          <mat-icon class="benefit-icon">lock</mat-icon>
+          <h3>{{ 'HOME.BENEFIT3_TITLE' | translate }}</h3>
+          <p>{{ 'HOME.BENEFIT3_DESC' | translate }}</p>
+        </article>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Final CTA -->
-    <section class="cta-banner">
-      <div class="cta-content">
+  <!-- CLOSING CTA -->
+  <section class="cta">
+    <div class="container cta-inner">
+      <div>
         <h2>{{ 'HOME.CTA_TITLE' | translate }}</h2>
         <p>{{ 'HOME.CTA_SUB' | translate }}</p>
-        <button class="cta-btn large" (click)="navigateTo('/auth/register')">{{ 'HOME.CTA_BTN' | translate }}</button>
       </div>
-    </section>
+      <div class="cta-actions">
+        <a class="cta-btn cta-btn--primary" routerLink="/register">{{ 'HOME.CTA_BTN' | translate }}</a>
+        <a class="cta-btn cta-btn--ghost" routerLink="/register" [queryParams]="{ role: 'pro' }">
+          {{ 'HOME.BECOME_PRO' | translate }}
+        </a>
+      </div>
+    </div>
+  </section>
 
   </ng-container>
 
