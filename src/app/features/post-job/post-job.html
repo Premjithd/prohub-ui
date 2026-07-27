@@ -79,7 +79,7 @@
               </p>
               <div *ngIf="!categoriesLoading && !categoriesError && serviceCategories.length > 0" class="category-grid">
                 <button
-                  *ngFor="let category of serviceCategories"
+                  *ngFor="let category of filteredCategories"
                   type="button"
                   class="category-btn"
                   [class.selected]="f['category'].value === category.id"
@@ -110,16 +110,6 @@
                 <span *ngIf="f['description'].errors['minlength']">{{ 'POST_JOB.DESCRIPTION_MIN' | translate }}</span>
               </small>
             </div>
-
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" disabled>{{ 'POST_JOB.BACK' | translate }}</button>
-              <button type="button" class="btn btn-primary" (click)="nextStep()">{{ 'POST_JOB.NEXT' | translate }}</button>
-            </div>
-          </div>
-
-          <!-- Step 2: Budget & Timeline -->
-          <div *ngIf="currentStep === 2" class="form-step">
-            <h2>Budget and timeline</h2>
 
             <!-- Service Location (address autofill) -->
             <div class="form-group">
@@ -165,6 +155,16 @@
                 </div>
               </ng-container>
             </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" disabled>{{ 'POST_JOB.BACK' | translate }}</button>
+              <button type="button" class="btn btn-primary" (click)="nextStep()">{{ 'POST_JOB.NEXT' | translate }}</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Budget & Timeline -->
+          <div *ngIf="currentStep === 2" class="form-step">
+            <h2>Budget and timeline</h2>
 
             <!-- Budget -->
             <div class="form-group">

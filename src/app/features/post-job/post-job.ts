@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
@@ -27,8 +27,11 @@ interface ServiceCategory {
   templateUrl: './post-job.html',
   styleUrls: ['./post-job.scss']
 })
-export class PostJobComponent implements OnInit, OnDestroy {
+export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('addressSearchInput') addressSearchInput?: ElementRef;
+
+  /** PIN passed from the home hero (?pin=…) to seed the Service Location search box. */
+  private pinPrefill = '';
 
   jobForm!: FormGroup;
   submitted = false;
@@ -39,8 +42,44 @@ export class PostJobComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   serviceCategories: ServiceCategory[] = [];
+  filteredCategories: ServiceCategory[] = [];
   categoriesLoading = true;
   categoriesError = false;
+
+  /** Synonym keywords per category name (lowercase) to match a free-text job title. */
+  private readonly categoryKeywords: Record<string, string[]> = {
+    'plumbing': ['tap', 'faucet', 'leak', 'pipe', 'drain', 'water', 'sink', 'toilet', 'bathroom', 'flush', 'geyser', 'sewage', 'basin'],
+    'electrical': ['wiring', 'socket', 'switch', 'light', 'fan', 'power', 'short circuit', 'mcb', 'inverter', 'electric', 'plug', 'bulb', 'wire'],
+    'painting': ['paint', 'wall', 'primer', 'whitewash', 'distemper', 'texture', 'putty'],
+    'cleaning': ['clean', 'sweep', 'mop', 'dust', 'sanitize', 'housekeeping', 'wash'],
+    'ac & appliance repair': ['ac', 'air condition', 'fridge', 'refrigerator', 'washing machine', 'microwave', 'appliance', 'cooler', 'geyser'],
+    'pest control': ['pest', 'cockroach', 'termite', 'ant', 'rodent', 'mosquito', 'bug', 'rat'],
+    'gardening & landscaping': ['garden', 'lawn', 'plant', 'landscap', 'tree', 'grass', 'hedge'],
+    'landscaping': ['garden', 'lawn', 'plant', 'landscap', 'tree', 'grass'],
+    'masonry & tiling': ['tile', 'brick', 'cement', 'concrete', 'masonry', 'plaster', 'floor', 'grout'],
+    'waterproofing': ['waterproof', 'seepage', 'damp', 'leak', 'terrace'],
+    'bathroom renovation': ['bathroom', 'renovat', 'remodel', 'fixture', 'washroom'],
+    'movers & packers': ['move', 'moving', 'shift', 'relocat', 'pack', 'transport', 'luggage'],
+    'security & cctv': ['cctv', 'camera', 'security', 'alarm', 'surveillance'],
+    'locksmith': ['lock', 'key', 'unlock', 'door lock'],
+    'hair & beauty': ['hair', 'salon', 'beauty', 'makeup', 'facial', 'grooming', 'mehndi'],
+    'massage & spa': ['massage', 'spa', 'therapy', 'relax'],
+    'catering & cooking': ['cook', 'chef', 'catering', 'food', 'meal', 'kitchen'],
+    'cooking': ['cook', 'chef', 'catering', 'food', 'meal'],
+    'tutoring': ['tutor', 'teach', 'coaching', 'lesson', 'study', 'exam', 'homework'],
+    'it support & repair': ['computer', 'laptop', 'pc', 'software', 'virus', 'network', 'wifi', 'router', 'internet'],
+    'phone & laptop repair': ['phone', 'mobile', 'laptop', 'screen', 'battery', 'charging', 'display'],
+    'photography & videography': ['photo', 'video', 'camera', 'shoot', 'wedding', 'event'],
+    'vehicle repair & service': ['car', 'bike', 'vehicle', 'engine', 'service', 'motor', 'tyre', 'scooter'],
+    'real estate & vastu': ['vastu', 'property', 'real estate', 'rent', 'flat', 'house'],
+    'pet care': ['pet', 'dog', 'cat', 'grooming', 'walk', 'puppy'],
+    'babysitting & childcare': ['baby', 'child', 'nanny', 'kids', 'toddler'],
+    'yoga & fitness': ['yoga', 'fitness', 'gym', 'workout', 'trainer', 'exercise'],
+    'music lessons': ['music', 'guitar', 'piano', 'singing', 'instrument', 'keyboard', 'violin'],
+    'interior design': ['interior', 'design', 'decor', 'furnish'],
+    'handyman': ['handyman', 'repair', 'fix', 'install', 'mount', 'assemble', 'hang'],
+    'carpentry': ['carpenter', 'wood', 'furniture', 'door', 'cabinet', 'shelf', 'table', 'chair'],
+  };
 
   // Address autofill state
   addressPredictions: AddressPrediction[] = [];
@@ -87,8 +126,15 @@ export class PostJobComponent implements OnInit, OnDestroy {
     const title = qp.get('title');
     if (title) this.jobForm.patchValue({ title });
     const pin = qp.get('pin');
-    if (pin) this.jobForm.patchValue({ serviceAddressPIN: pin });
+    if (pin) {
+      this.jobForm.patchValue({ serviceAddressPIN: pin });
+      this.pinPrefill = pin;
+    }
     this.loadCategories();
+    // Narrow the category grid to titles the user types.
+    this.jobForm.get('title')!.valueChanges
+      .pipe(debounceTime(250), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => this.applyCategoryFilter());
     this.addressSearch$.pipe(
       debounceTime(450),
       distinctUntilChanged(),
@@ -112,6 +158,15 @@ export class PostJobComponent implements OnInit, OnDestroy {
       this.addressLoading = false;
       this.cdr.markForCheck();
     });
+  }
+
+  ngAfterViewInit(): void {
+    // Arriving from the home hero with a PIN: seed the Service Location search box
+    // with it and surface matching address suggestions to pick from.
+    if (this.pinPrefill && this.addressSearchInput && !this.f['serviceAddressCity'].value) {
+      this.addressSearchInput.nativeElement.value = this.pinPrefill;
+      this.addressSearch$.next(this.pinPrefill);
+    }
   }
 
   ngOnDestroy(): void {
@@ -144,6 +199,48 @@ export class PostJobComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Show only categories relevant to the typed title (matched by name or synonym
+   *  keywords). Empty title shows all; no matches falls back to all; the currently
+   *  selected category is always kept visible. */
+  applyCategoryFilter(): void {
+    const title = (this.jobForm?.get('title')?.value || '').toLowerCase().trim();
+    if (!title) {
+      this.filteredCategories = this.serviceCategories;
+      this.cdr.detectChanges();
+      return;
+    }
+    let matches = this.serviceCategories.filter(c => this.categoryMatchesTitle(c, title));
+    if (matches.length === 0) {
+      matches = this.serviceCategories;
+    } else {
+      const selectedId = this.jobForm?.get('category')?.value;
+      if (selectedId && !matches.some(c => c.id === selectedId)) {
+        const sel = this.serviceCategories.find(c => c.id === selectedId);
+        if (sel) matches = [sel, ...matches];
+      }
+    }
+    this.filteredCategories = matches;
+    this.cdr.detectChanges();
+  }
+
+  private categoryMatchesTitle(cat: ServiceCategory, title: string): boolean {
+    const name = (cat.name || '').toLowerCase();
+    const titleTokens = title.split(/[^a-z0-9]+/).filter(Boolean);
+    // Direct: a significant category-name word shares a stem with a title word
+    // (startsWith, min 3 chars — avoids "room" matching "bathroom", "a" matching anything).
+    const nameTokens = name.split(/[^a-z0-9]+/).filter(t => t.length > 2 && t !== 'and');
+    const longTitleTokens = titleTokens.filter(t => t.length > 2);
+    if (nameTokens.some(nt => longTitleTokens.some(tt => tt === nt || tt.startsWith(nt) || nt.startsWith(tt)))) {
+      return true;
+    }
+    // Synonym keywords — word-aware to avoid short-substring false positives ("ac" in "replace").
+    return (this.categoryKeywords[name] || []).some(k =>
+      k.includes(' ')
+        ? title.includes(k)                                   // multi-word phrase
+        : titleTokens.some(tt => tt === k || tt.startsWith(k) || (k.length > 3 && tt.includes(k)))
+    );
+  }
+
   loadCategories(): void {
     this.categoriesLoading = true;
     this.categoriesError = false;
@@ -163,6 +260,7 @@ export class PostJobComponent implements OnInit, OnDestroy {
             const match = this.serviceCategories.find(c => c.id === this.preFillCategoryId);
             if (match) this.jobForm.patchValue({ category: match.id });
           }
+          this.applyCategoryFilter();
           this.cdr.detectChanges();
         },
         error: () => {
@@ -234,9 +332,9 @@ export class PostJobComponent implements OnInit, OnDestroy {
 
   isStepValid(step: number): boolean {
     if (step === 1) {
-      return this.f['title'].valid && this.f['category'].valid && this.f['description'].valid;
+      return this.f['title'].valid && this.f['category'].valid && this.f['description'].valid && this.f['serviceAddressCity'].valid;
     } else if (step === 2) {
-      return this.f['serviceAddressCity'].valid && this.f['budget'].valid && this.f['timeline'].valid;
+      return this.f['budget'].valid && this.f['timeline'].valid;
     } else if (step === 3) {
       return this.f['agreeToTerms'].valid;
     }
@@ -259,8 +357,8 @@ export class PostJobComponent implements OnInit, OnDestroy {
       this.f['title'].markAsTouched();
       this.f['category'].markAsTouched();
       this.f['description'].markAsTouched();
-    } else if (step === 2) {
       this.f['serviceAddressCity'].markAsTouched();
+    } else if (step === 2) {
       this.f['budget'].markAsTouched();
       this.f['timeline'].markAsTouched();
     } else if (step === 3) {
