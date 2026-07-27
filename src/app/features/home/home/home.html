@@ -22,14 +22,25 @@
         <input
           class="search-input"
           type="text"
+          [(ngModel)]="searchText"
+          (keyup.enter)="startJob()"
           [attr.aria-label]="'HOME.HERO_TITLE' | translate"
           [placeholder]="'HOME.SEARCH_PLACEHOLDER' | translate" />
         <span class="search-divider"></span>
         <span class="search-place">
           <mat-icon>place</mat-icon>
-          {{ 'HOME.SEARCH_PLACE' | translate }}
+          <input
+            class="search-pin"
+            type="text"
+            [(ngModel)]="searchPin"
+            (keyup.enter)="startJob()"
+            maxlength="6"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            [attr.aria-label]="'HOME.SEARCH_PLACE' | translate"
+            [placeholder]="'HOME.SEARCH_PLACE' | translate" />
         </span>
-        <a class="search-btn" routerLink="/post-job">{{ 'HOME.GET_QUOTES' | translate }}</a>
+        <button type="button" class="search-btn" (click)="startJob()">{{ 'HOME.GET_QUOTES' | translate }}</button>
       </div>
 
       <div class="hero-chips">

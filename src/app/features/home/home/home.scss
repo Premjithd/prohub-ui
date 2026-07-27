@@ -157,10 +157,24 @@ $gradient: linear-gradient(135deg, #{$primary} 0%, #{$gradient-end} 100%);
   }
 }
 
+.search-pin {
+  width: 88px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  color: $text;
+
+  &::placeholder { color: rgba(31, 41, 55, 0.45); }
+}
+
 .search-btn {
   display: inline-flex;
   align-items: center;
   padding: 14px 26px;
+  border: none;
+  cursor: pointer;
   border-radius: 8px;
   background: $primary;
   color: #fff;

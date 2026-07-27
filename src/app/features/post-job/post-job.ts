@@ -86,6 +86,8 @@ export class PostJobComponent implements OnInit, OnDestroy {
     if (catId) this.preFillCategoryId = parseInt(catId, 10);
     const title = qp.get('title');
     if (title) this.jobForm.patchValue({ title });
+    const pin = qp.get('pin');
+    if (pin) this.jobForm.patchValue({ serviceAddressPIN: pin });
     this.loadCategories();
     this.addressSearch$.pipe(
       debounceTime(450),
