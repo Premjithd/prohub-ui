@@ -20,6 +20,7 @@ import { Auth } from '../../core/services/auth';
 import { ReviewService } from '../../services/review.service';
 import { UserReview } from '../../models/review.model';
 import { PaymentService } from '../../services/payment.service';
+import { FileUploadService } from '../../services/file-upload.service';
 import { PaymentSummary } from '../../models/payment.model';
 import { PaymentRequestDialogComponent } from '../payments/payment-request-dialog.component';
 import { Subject, interval } from 'rxjs';
@@ -335,7 +336,8 @@ export class MyJobProDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.jobService.markJobCompleted(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+        const photoIds: string[] = result?.completionPhotoIds ?? [];
+        this.jobService.markJobCompleted(jobId, undefined, photoIds).pipe(takeUntil(this.destroy$)).subscribe({
           next: () => {
             this.successMessage = 'Completion submitted — awaiting customer confirmation.';
             if (this.job) {
@@ -656,24 +658,45 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 @Component({
   selector: 'app-confirm-completion-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatDialogModule, MatProgressSpinnerModule],
   template: `
     <div class="confirmation-dialog">
       <div class="dialog-header">
         <mat-icon class="dialog-icon">check_circle_outline</mat-icon>
         <h2>Mark Job as Completed?</h2>
       </div>
-      
+
       <div class="dialog-content">
         <p>Are you sure you want to mark <strong>{{ data.jobTitle }}</strong> as completed?</p>
         <p class="dialog-note">This action cannot be undone.</p>
+
+        <div class="photo-section">
+          <label class="photo-label">Completion photos <span>(optional)</span></label>
+          <div class="photo-thumbs">
+            <div class="photo-thumb" *ngFor="let p of photos; let i = index">
+              <img [src]="p.url" alt="Completion photo" />
+              <button type="button" class="remove-thumb" (click)="removePhoto(i)" [disabled]="uploading">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <label class="photo-add" [class.disabled]="uploading">
+              <mat-spinner *ngIf="uploading" diameter="20"></mat-spinner>
+              <ng-container *ngIf="!uploading">
+                <mat-icon>add_a_photo</mat-icon>
+                <span>Add</span>
+              </ng-container>
+              <input type="file" accept="image/*" multiple (change)="onFilesSelected($event)" hidden [disabled]="uploading" />
+            </label>
+          </div>
+          <p class="photo-error" *ngIf="uploadError">{{ uploadError }}</p>
+        </div>
       </div>
-      
+
       <div class="dialog-actions">
-        <button mat-button (click)="onCancel()">
+        <button mat-button (click)="onCancel()" [disabled]="uploading">
           Cancel
         </button>
-        <button mat-raised-button color="accent" (click)="onConfirm()">
+        <button mat-raised-button color="accent" (click)="onConfirm()" [disabled]="uploading">
           <mat-icon>check</mat-icon>
           Mark as Completed
         </button>
@@ -729,20 +752,139 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
     button {
       min-width: 120px;
     }
+
+    .photo-section {
+      margin-top: 16px;
+    }
+
+    .photo-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .photo-label span {
+      font-weight: 400;
+      color: #888;
+    }
+
+    .photo-thumbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .photo-thumb {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e0e0e0;
+    }
+
+    .photo-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .remove-thumb {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .remove-thumb mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+
+    .photo-add {
+      width: 72px;
+      height: 72px;
+      border: 1px dashed #bdbdbd;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      color: #666;
+      font-size: 11px;
+    }
+
+    .photo-add.disabled {
+      cursor: default;
+      opacity: 0.6;
+    }
+
+    .photo-error {
+      color: #d32f2f;
+      font-size: 12px;
+      margin: 8px 0 0;
+    }
   `]
 })
 export class ConfirmCompletionDialogComponent {
+  photos: { fileId: string; url: string }[] = [];
+  uploading = false;
+  uploadError = '';
+
   constructor(
     public dialogRef: MatDialogRef<ConfirmCompletionDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { jobTitle: string }
+    @Inject(MAT_DIALOG_DATA) public data: { jobTitle: string },
+    private fileUpload: FileUploadService
   ) {}
+
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files ? Array.from(input.files) : [];
+    input.value = ''; // allow re-selecting the same file
+    if (files.length === 0) return;
+
+    this.uploadError = '';
+    this.uploading = true;
+    let remaining = files.length;
+
+    files.forEach(file => {
+      this.fileUpload.upload(file).subscribe({
+        next: (res) => {
+          this.photos.push({ fileId: res.fileId, url: res.url });
+          if (--remaining === 0) this.uploading = false;
+        },
+        error: (err) => {
+          this.uploadError = err?.error?.message || 'One or more photos could not be uploaded.';
+          if (--remaining === 0) this.uploading = false;
+        }
+      });
+    });
+  }
+
+  removePhoto(index: number): void {
+    this.photos.splice(index, 1);
+  }
 
   onCancel(): void {
     this.dialogRef.close(false);
   }
 
   onConfirm(): void {
-    this.dialogRef.close(true);
+    this.dialogRef.close({ completionPhotoIds: this.photos.map(p => p.fileId) });
   }
 }
 // Phase Selection Dialog Component

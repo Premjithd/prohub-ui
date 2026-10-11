@@ -24,6 +24,29 @@ test.describe('Post a job — wizard', () => {
   });
 
   test('valid step 1 advances to step 2 and Back returns', async ({ page }) => {
+    // Mock the Nominatim-backed address search so the location autocomplete is
+    // deterministic (step 1 now requires a selected Service Location).
+    await page.route('**/address/search**', (route) =>
+      route.fulfill({
+        json: [
+          {
+            place_id: 123456,
+            display_name: 'MG Road, Thiruvananthapuram, Kerala, 695001, India',
+            lat: '8.4875',
+            lon: '76.9525',
+            address: {
+              road: 'MG Road',
+              city: 'Thiruvananthapuram',
+              state_district: 'Thiruvananthapuram',
+              state: 'Kerala',
+              postcode: '695001',
+              country: 'India',
+              country_code: 'in',
+            },
+          },
+        ],
+      }));
+
     const postJob = new PostJobPage(page);
     await postJob.goto();
 

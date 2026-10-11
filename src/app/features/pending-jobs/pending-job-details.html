@@ -282,6 +282,56 @@
           Refund processed — the payment has been returned to your account.
         </div>
 
+        <!-- Completion photos submitted by the professional -->
+        <div *ngIf="completionPhotoUrls.length > 0" class="completion-photos-section">
+          <h3><mat-icon>photo_library</mat-icon> Completion Photos</h3>
+          <div class="completion-photos-grid">
+            <a *ngFor="let url of completionPhotoUrls" [href]="url" target="_blank" rel="noopener" class="completion-photo">
+              <img [src]="url" alt="Completion photo" />
+            </a>
+          </div>
+        </div>
+
+        <!-- Job protection / insurance (owner only) -->
+        <div *ngIf="job.userId === +(auth.getUserId() || 0)" class="insurance-section">
+          <h3><mat-icon>verified_user</mat-icon> Job Protection</h3>
+
+          <!-- Active policy -->
+          <div *ngIf="insurance && insurance.status === 'Active'" class="insurance-active">
+            <mat-icon class="insurance-active-icon">check_circle</mat-icon>
+            <div>
+              <p class="insurance-active-title">{{ insurance.coverageType | titlecase }} cover active</p>
+              <p class="insurance-active-meta">
+                Policy {{ insurance.policyNumber }} · covers up to ₹{{ insurance.amount | number:'1.0-0' }}
+                <span *ngIf="insurance.expiresAt"> · valid until {{ insurance.expiresAt | date:'mediumDate' }}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Offer coverage when none is active -->
+          <ng-container *ngIf="!insurance || insurance.status !== 'Active'">
+            <p class="insurance-intro">Protect this job against workmanship defects and damage.</p>
+            <div *ngIf="loadingInsurance" class="insurance-loading">
+              <mat-spinner diameter="24"></mat-spinner>
+            </div>
+            <div class="insurance-options" *ngIf="!loadingInsurance">
+              <div class="insurance-card" *ngFor="let opt of insuranceOptions">
+                <div class="insurance-card-head">
+                  <span class="insurance-tier">{{ opt.coverageType | titlecase }}</span>
+                  <span class="insurance-premium">₹{{ opt.premiumAmount | number:'1.0-0' }}</span>
+                </div>
+                <p class="insurance-desc">{{ opt.description }}</p>
+                <p class="insurance-cover">Covers up to ₹{{ opt.coverageAmount | number:'1.0-0' }}</p>
+                <button mat-raised-button color="primary"
+                        (click)="purchaseInsurance(opt.coverageType)"
+                        [disabled]="purchasingCoverage !== null">
+                  {{ purchasingCoverage === opt.coverageType ? 'Activating…' : 'Add protection' }}
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
         <!-- Project Phases Progress (for active and completed jobs) -->
         <div *ngIf="job.status === 'Pro Confirmed' || job.status === 'In Progress' || job.status === 'Completion Submitted' || job.status === 'Completed'" >
 

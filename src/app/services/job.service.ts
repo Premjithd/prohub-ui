@@ -300,8 +300,11 @@ export class JobService {
   }
 
   // Mark a job as completed (Pro submits — awaits consumer verification)
-  markJobCompleted(jobId: number, notes?: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${jobId}/complete`, { completionNotes: notes ?? null });
+  markJobCompleted(jobId: number, notes?: string, completionPhotoIds?: string[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${jobId}/complete`, {
+      completionNotes: notes ?? null,
+      completionPhotoIds: completionPhotoIds ?? null
+    });
   }
 
   // Get the completion record for a job
@@ -310,8 +313,11 @@ export class JobService {
   }
 
   // Pro resubmits completion after a dispute
-  resubmitCompletion(jobId: number, notes?: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${jobId}/complete`, { completionNotes: notes ?? null });
+  resubmitCompletion(jobId: number, notes?: string, completionPhotoIds?: string[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${jobId}/complete`, {
+      completionNotes: notes ?? null,
+      completionPhotoIds: completionPhotoIds ?? null
+    });
   }
 
   // Consumer verifies the pro's completion

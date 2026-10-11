@@ -1,13 +1,17 @@
 import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 
-import { User } from './user';
+import { UserService } from './user';
 
-describe('User', () => {
-  let service: User;
+describe('UserService', () => {
+  let service: UserService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(User);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+    });
+    service = TestBed.inject(UserService);
   });
 
   it('should be created', () => {

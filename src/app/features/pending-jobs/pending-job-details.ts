@@ -23,6 +23,8 @@ import { CancelJobDialogComponent } from './cancel-job-dialog.component';
 import { Auth } from '../../core/services/auth';
 import { ReviewService } from '../../services/review.service';
 import { Review } from '../../models/review.model';
+import { FileUploadService } from '../../services/file-upload.service';
+import { InsuranceService, InsuranceOption, JobInsurance } from '../../services/insurance.service';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, interval } from 'rxjs';
 import { takeUntil, switchMap, filter } from 'rxjs/operators';
@@ -77,8 +79,15 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
   cancellingJob = false;
   completionStatus: string | null = null;
   disputeReason: string | null = null;
+  completionPhotoUrls: string[] = [];
   paymentId: number | null = null;
   requestingRefund = false;
+
+  // Insurance (consumer-facing)
+  insurance: JobInsurance | null = null;
+  insuranceOptions: InsuranceOption[] = [];
+  loadingInsurance = false;
+  purchasingCoverage: string | null = null;
 
   constructor(
     private jobService: JobService,
@@ -88,7 +97,9 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
     public auth: Auth,
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    private fileUpload: FileUploadService,
+    private insuranceService: InsuranceService
   ) {}
 
   ngOnInit(): void {
@@ -124,6 +135,7 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
         this.loadPaymentStatus(jobId);
         this.loadPaymentSummary(jobId);
         this.loadCompletionStatus(jobId);
+        this.loadInsurance(jobId);
         // Load review status if job is completed
         if (job.status === 'Completed') {
           this.loadReview(jobId);
@@ -352,11 +364,65 @@ export class PendingJobDetailsComponent implements OnInit, OnDestroy {
       next: (completion) => {
         this.completionStatus = completion?.status ?? null;
         this.disputeReason = completion?.disputeReason ?? null;
+        this.completionPhotoUrls = this.parsePhotoIds(completion?.completionPhotoIds);
         this.cdr.markForCheck();
       },
       error: () => {
         this.completionStatus = null;
         this.disputeReason = null;
+        this.completionPhotoUrls = [];
+      }
+    });
+  }
+
+  // Completion photos are stored as a JSON array of file ids; map them to public URLs.
+  private parsePhotoIds(raw: string | null | undefined): string[] {
+    if (!raw) return [];
+    try {
+      const ids = JSON.parse(raw);
+      return Array.isArray(ids) ? ids.map((id: string) => this.fileUpload.fileUrl(id)) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  loadInsurance(jobId: number): void {
+    this.insuranceService.getInsurance(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (ins) => {
+        this.insurance = ins;
+        if (!ins || ins.status !== 'Active') this.loadInsuranceOptions(jobId);
+        this.cdr.markForCheck();
+      },
+      error: () => { this.insurance = null; this.loadInsuranceOptions(jobId); }
+    });
+  }
+
+  private loadInsuranceOptions(jobId: number): void {
+    this.loadingInsurance = true;
+    this.insuranceService.getOptions(jobId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        this.insuranceOptions = res.options ?? [];
+        this.loadingInsurance = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.insuranceOptions = []; this.loadingInsurance = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  purchaseInsurance(coverageType: string): void {
+    if (!this.job || this.purchasingCoverage) return;
+    this.purchasingCoverage = coverageType;
+    this.insuranceService.purchase(this.job.id, coverageType).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        this.insurance = res.insurance;
+        this.purchasingCoverage = null;
+        this.successMessage = res.message || 'Insurance activated.';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.purchasingCoverage = null;
+        this.errorMessage = err?.error?.message || 'Could not activate insurance. Please try again.';
+        this.cdr.markForCheck();
       }
     });
   }

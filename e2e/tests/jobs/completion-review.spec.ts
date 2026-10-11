@@ -50,7 +50,7 @@ test.describe('Job completion — pro', () => {
     await dialog.getByRole('button', { name: /mark as completed/i }).click();
     await expect(dialog).toBeHidden({ timeout: 10_000 });
 
-    await expect(page.getByText(/marked as completed/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/awaiting customer confirmation/i)).toBeVisible({ timeout: 15_000 });
   });
 
   test('completion cannot be submitted twice', async ({ request }) => {
