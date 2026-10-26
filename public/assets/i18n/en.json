@@ -169,8 +169,8 @@
     "REGISTER_PRO": {
       "TITLE": "Sign Up as Professional",
       "SUBTITLE": "Create your pro account to manage services, clients and bookings.",
-      "STEP1_LABEL": "Business Setup",
-      "STEP2_LABEL": "Your Login",
+      "STEP1_LABEL": "Account",
+      "STEP2_LABEL": "Location & Business",
       "STEP3_LABEL": "Business",
       "BUSINESS_NAME": "Business Name",
       "BUSINESS_NAME_PLACEHOLDER": "e.g. Alice & Co",
@@ -222,16 +222,15 @@
       "CREATING": "Creating Account...",
       "BACK": "← Back",
       "BIZ_PHONE": "Business Phone",
-      "STEP1_INTRO_TITLE": "Set Up Your Business (Optional)",
-      "STEP1_INTRO_DESC": "A Business account lets you operate under a registered name and build a team. You can skip this and set one up later from Settings.",
-      "SKIP_SOLO": "Skip - Solo Pro",
-      "SAVE_CONTINUE": "Save & Continue",
-      "BIZ_SAVED_BANNER": "Business saved! Now create your login credentials.",
-      "SOLO_BANNER": "Solo professional - your location will be your service address.",
+      "SAVE_CONTINUE": "Continue",
+      "ADD_BUSINESS_TITLE": "Add a business (optional)",
+      "ADD_BUSINESS_HINT": "Operate under a registered business name and build a team. You can also add one later from Settings.",
+      "BIZ_ADDRESS_REUSED": "Your business will use the service location above as its address.",
+      "LOG_IN_INSTEAD": "Log in instead",
       "YOUR_LOCATION": "Your Service Location",
       "YOUR_LOCATION_HINT": "Tell us where you're based so customers in your area can find you.",
       "ZIP_FILLING": "Filling address...",
-      "CREATE_LOGIN": "Create Login"
+      "CREATE_LOGIN": "Create Account"
     },
     "FORGOT": {
       "TITLE": "Forgot Password",
@@ -809,7 +808,16 @@
     "BIZ_INFO_TITLE": "Business Info",
     "DESCRIPTION": "Description",
     "MEMBER_SINGULAR": "member",
-    "MEMBER_PLURAL": "members"
+    "MEMBER_PLURAL": "members",
+    "EDIT": "Edit",
+    "SERVICES_TITLE": "Service Offerings",
+    "ADD_SERVICE": "Add a Service",
+    "SERVICE_NAME": "Service Name",
+    "SERVICE_DESC": "Description",
+    "SERVICE_PRICE": "Price (₹)",
+    "SERVICE_CATEGORY": "Category",
+    "SERVICE_IMAGE": "Image URL",
+    "NO_SERVICES": "No service offerings yet."
   },
   "SETTINGS": {
     "TITLE": "Settings",

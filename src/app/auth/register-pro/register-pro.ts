@@ -18,7 +18,6 @@ import { BusinessService } from '../../core/services/business.service';
   styleUrls: ['./register-pro.scss']
 })
 export class RegisterProComponent implements OnInit, OnDestroy {
-  @ViewChild('bizAddressInput') bizAddressInput: ElementRef | undefined;
   @ViewChild('proAddressInput') proAddressInput: ElementRef | undefined;
 
   readonly countryCodes = [
@@ -39,39 +38,18 @@ export class RegisterProComponent implements OnInit, OnDestroy {
     { code: '+55',  label: 'BR (+55)'     }, { code: '+52',  label: 'MX (+52)'     },
   ];
 
-  // ── Step 1: Business Setup (optional) ─────────────────────────────────
-  bizName = '';
-  bizPhoneDialCode = '+91';
-  bizPhoneNumber = '';
-  bizHouseNameNumber = '';
-  bizStreet1 = '';
-  bizStreet2 = '';
-  bizCity = '';
-  bizDistrict = '';
-  bizState = '';
-  bizCountry = '';
-  bizZipPostalCode = '';
-  bizLatitude: number | null = null;
-  bizLongitude: number | null = null;
-  bizPhoneInvalid = false;
-  step1Loading = false;
-  step1Error = '';
-
-  // Address autocomplete (Step 1 — business address)
-  bizAddressPredictions: AddressPrediction[] = [];
-  showBizAddressList = false;
-  bizAddressLoading = false;
-  bizZipLookupLoading = false;
-
-  // ── Step 2: Create Login ──────────────────────────────────────────────
+  // ── Step 1: Create Login (account) ────────────────────────────────────
   proName = '';
   email = '';
   proPhoneDialCode = '+91';
   proPhoneNumber = '';
   password = '';
   proPhoneInvalid = false;
+  step1Loading = false;
+  step1Error = '';
+  step1ShowLoginLink = false;
 
-  // Solo Pro location (shown when Step 1 was skipped)
+  // ── Step 2: Service location (required) ───────────────────────────────
   proHouseNameNumber = '';
   proStreet1 = '';
   proStreet2 = '';
@@ -84,10 +62,18 @@ export class RegisterProComponent implements OnInit, OnDestroy {
   proLongitude: number | null = null;
   proZipLookupLoading = false;
 
-  // Address autocomplete (Step 2 — solo Pro location)
+  // Address autocomplete (service location)
   proAddressPredictions: AddressPrediction[] = [];
   showProAddressList = false;
   proAddressLoading = false;
+
+  // ── Step 2: Business (optional) ───────────────────────────────────────
+  addBusiness = false;
+  bizName = '';
+  bizPhoneDialCode = '+91';
+  bizPhoneNumber = '';
+  bizPhoneInvalid = false;
+  savedBusinessId: number | null = null;
 
   step2Loading = false;
   step2Error = '';
@@ -96,9 +82,7 @@ export class RegisterProComponent implements OnInit, OnDestroy {
   // ── Shared state ──────────────────────────────────────────────────────
   currentStep: 1 | 2 = 1;
   draftProId: number | null = null;
-  savedBusinessId: number | null = null;
 
-  private bizAddressSearch$ = new Subject<string>();
   private proAddressSearch$ = new Subject<string>();
   private destroy$ = new Subject<void>();
 
@@ -111,6 +95,7 @@ export class RegisterProComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Resume incomplete registration: account created but no location yet.
     if (this.auth.isAuthenticated()
         && this.auth.getUserType() === 'Pro'
         && !this.auth.isProfileComplete()) {
@@ -120,22 +105,6 @@ export class RegisterProComponent implements OnInit, OnDestroy {
         this.currentStep = 2;
       }
     }
-
-    this.bizAddressSearch$.pipe(
-      switchMap(input => {
-        this.bizAddressLoading = true;
-        this.cdr.detectChanges();
-        return this.addressService.getAddressPredictions(input).pipe(
-          catchError(() => of([] as AddressPrediction[]))
-        );
-      }),
-      takeUntil(this.destroy$)
-    ).subscribe(predictions => {
-      this.bizAddressPredictions = predictions;
-      this.showBizAddressList = predictions.length > 0;
-      this.bizAddressLoading = false;
-      this.cdr.detectChanges();
-    });
 
     this.proAddressSearch$.pipe(
       switchMap(input => {
@@ -159,51 +128,69 @@ export class RegisterProComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  get isSoloPro(): boolean {
-    return this.savedBusinessId === null && this.currentStep === 2;
+  // ── Step 1: account ───────────────────────────────────────────────────
+
+  onEmailChange(): void {
+    if (this.step1Error || this.step1ShowLoginLink) {
+      this.step1Error = '';
+      this.step1ShowLoginLink = false;
+    }
   }
 
-  // ── Step 1 ────────────────────────────────────────────────────────────
-
-  skipBusiness(): void {
-    this.savedBusinessId = null;
-    this.currentStep = 2;
+  onProPhoneBlur(): void {
+    if (!this.proPhoneNumber) { this.proPhoneInvalid = false; return; }
+    this.proPhoneInvalid = !isValidPhoneNumber(this.proPhoneDialCode + this.proPhoneNumber);
+    this.cdr.detectChanges();
   }
+  onProPhoneChange(): void { this.proPhoneInvalid = false; }
+  onProDialCodeChange(): void { if (this.proPhoneNumber) this.onProPhoneBlur(); }
 
-  onStep1Save(form: any): void {
+  onStep1Next(form: any): void {
     if (!form.valid) return;
-    if (!isValidPhoneNumber(this.bizPhoneDialCode + this.bizPhoneNumber)) {
-      this.bizPhoneInvalid = true;
+    this.proPhoneInvalid = !isValidPhoneNumber(this.proPhoneDialCode + this.proPhoneNumber);
+    if (this.proPhoneInvalid) return;
+
+    // Already have a draft (resumed or came back) — just advance.
+    if (this.draftProId !== null) {
+      this.currentStep = 2;
       return;
     }
+
     this.step1Loading = true;
     this.step1Error = '';
-    this.bizService.preRegisterBusiness({
-      businessName: this.bizName,
-      phone: this.bizPhoneDialCode + this.bizPhoneNumber,
-      houseNameNumber: this.bizHouseNameNumber,
-      street1: this.bizStreet1,
-      street2: this.bizStreet2,
-      city: this.bizCity,
-      district: this.bizDistrict,
-      state: this.bizState,
-      country: this.bizCountry,
-      zipPostalCode: this.bizZipPostalCode,
-      latitude: this.bizLatitude,
-      longitude: this.bizLongitude,
+    this.step1ShowLoginLink = false;
+    this.auth.registerProStep1({
+      Name: this.proName,
+      Email: this.email,
+      Password: this.password,
+      PhoneNumber: this.proPhoneDialCode + this.proPhoneNumber,
+      BusinessName: this.proName,
     }).subscribe({
       next: res => {
-        this.savedBusinessId = res.businessId;
-        this.step1Loading = false;
+        this.draftProId = res.proId;
         this.currentStep = 2;
+        this.step1Loading = false;
         this.cdr.detectChanges();
       },
       error: err => {
-        this.step1Error = err.error?.message || 'Could not save business. Please try again.';
+        this.step1Error = err.error?.message || 'Could not create account. Please try again.';
+        this.step1ShowLoginLink = err.status === 400;
         this.step1Loading = false;
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // ── Step 2: location + optional business ──────────────────────────────
+
+  goBack(): void { this.currentStep = 1; }
+
+  // Native checkbox toggles don't fire reliably under zoneless change
+  // detection, so drive the toggle explicitly from (click).
+  toggleBusiness(): void {
+    this.addBusiness = !this.addBusiness;
+    if (!this.addBusiness) this.bizPhoneInvalid = false;
+    this.cdr.detectChanges();
   }
 
   onBizPhoneBlur(): void {
@@ -213,66 +200,6 @@ export class RegisterProComponent implements OnInit, OnDestroy {
   }
   onBizPhoneChange(): void { this.bizPhoneInvalid = false; }
   onBizDialCodeChange(): void { if (this.bizPhoneNumber) this.onBizPhoneBlur(); }
-
-  onBizAddressInput(event: any): void {
-    const v = event.target.value;
-    if (v?.length >= 3) this.bizAddressSearch$.next(v);
-    else { this.showBizAddressList = false; this.bizAddressPredictions = []; this.cdr.detectChanges(); }
-  }
-
-  onBizAddressSelected(p: AddressPrediction): void {
-    this.showBizAddressList = false;
-    const d = p.details;
-    if (!d) return;
-    this.bizHouseNameNumber = d.houseNameNumber;
-    this.bizStreet1        = d.street1;
-    this.bizStreet2        = d.street2;
-    this.bizCity           = d.city;
-    this.bizState          = d.state;
-    this.bizCountry        = d.country;
-    this.bizZipPostalCode  = d.zipPostalCode;
-    this.bizLatitude       = d.latitude ?? null;
-    this.bizLongitude      = d.longitude ?? null;
-    this.bizDistrict       = d.district || '';
-    if (this.bizAddressInput) this.bizAddressInput.nativeElement.value = p.description;
-    this.cdr.detectChanges();
-  }
-
-  hideBizAddressList(): void { setTimeout(() => { this.showBizAddressList = false; }, 200); }
-
-  onBizZipBlur(): void {
-    const code = this.bizZipPostalCode?.trim();
-    if (!code || code.length < 3) return;
-    this.bizZipLookupLoading = true;
-    this.cdr.detectChanges();
-    this.addressService.lookupByPostcode(code).subscribe({
-      next: d => {
-        if (d) {
-          if (d.city)      this.bizCity      = d.city;
-          if (d.state)     this.bizState     = d.state;
-          if (d.country)   this.bizCountry   = d.country;
-          if (d.district)  this.bizDistrict  = d.district;
-          if (d.latitude)  this.bizLatitude  = d.latitude ?? null;
-          if (d.longitude) this.bizLongitude = d.longitude ?? null;
-        }
-        this.bizZipLookupLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => { this.bizZipLookupLoading = false; this.cdr.detectChanges(); }
-    });
-  }
-
-  // ── Step 2 ────────────────────────────────────────────────────────────
-
-  goBack(): void { this.currentStep = 1; }
-
-  onProPhoneBlur(): void {
-    if (!this.proPhoneNumber) { this.proPhoneInvalid = false; return; }
-    this.proPhoneInvalid = !isValidPhoneNumber(this.proPhoneDialCode + this.proPhoneNumber);
-    this.cdr.detectChanges();
-  }
-  onProPhoneChange(): void { this.proPhoneInvalid = false; }
-  onProDialCodeChange(): void { if (this.proPhoneNumber) this.onProPhoneBlur(); }
 
   onProAddressInput(event: any): void {
     const v = event.target.value;
@@ -323,54 +250,62 @@ export class RegisterProComponent implements OnInit, OnDestroy {
   }
 
   onStep2Submit(form: any): void {
-    if (!form.valid) return;
-    this.proPhoneInvalid = !isValidPhoneNumber(this.proPhoneDialCode + this.proPhoneNumber);
-    if (this.proPhoneInvalid) return;
+    if (!form.valid || this.draftProId === null) return;
+
+    if (this.addBusiness) {
+      this.bizPhoneInvalid = !isValidPhoneNumber(this.bizPhoneDialCode + this.bizPhoneNumber);
+      if (this.bizPhoneInvalid) return;
+    }
 
     this.step2Loading = true;
     this.step2Error = '';
-    this.step2ShowLoginLink = false;
 
-    if (this.draftProId !== null) {
-      this.completeStep2();
+    if (!this.addBusiness) {
+      this.completeStep2(null);
       return;
     }
 
-    this.auth.registerProStep1({
-      Name: this.proName,
-      Email: this.email,
-      Password: this.password,
-      PhoneNumber: this.proPhoneDialCode + this.proPhoneNumber,
-      BusinessName: this.bizName || this.proName,
+    // Optional business uses the service-location address as its address.
+    this.bizService.preRegisterBusiness({
+      businessId: this.savedBusinessId,
+      businessName: this.bizName,
+      phone: this.bizPhoneDialCode + this.bizPhoneNumber,
+      houseNameNumber: this.proHouseNameNumber,
+      street1: this.proStreet1,
+      street2: this.proStreet2,
+      city: this.proCity,
+      district: this.proDistrict,
+      state: this.proState,
+      country: this.proCountry,
+      zipPostalCode: this.proZipPostalCode,
+      latitude: this.proLatitude,
+      longitude: this.proLongitude,
     }).subscribe({
       next: res => {
-        this.draftProId = res.proId;
-        this.completeStep2();
+        this.savedBusinessId = res.businessId;
+        this.completeStep2(res.businessId);
       },
       error: err => {
-        this.step2Error = err.error?.message || 'Could not create account. Please try again.';
-        this.step2ShowLoginLink = err.status === 400;
+        this.step2Error = err.error?.message || 'Could not save business. Please try again.';
         this.step2Loading = false;
         this.cdr.detectChanges();
       }
     });
   }
 
-  private completeStep2(): void {
-    // Use business address if it exists; otherwise use pro location fields
-    const usesBizAddress = this.savedBusinessId !== null;
+  private completeStep2(businessId: number | null): void {
     this.auth.registerProStep2(this.draftProId!, {
-      HouseNameNumber: usesBizAddress ? this.bizHouseNameNumber : this.proHouseNameNumber,
-      Street1:        usesBizAddress ? this.bizStreet1         : this.proStreet1,
-      Street2:        usesBizAddress ? this.bizStreet2         : this.proStreet2,
-      City:           usesBizAddress ? this.bizCity            : this.proCity,
-      District:       usesBizAddress ? this.bizDistrict        : this.proDistrict,
-      State:          usesBizAddress ? this.bizState           : this.proState,
-      Country:        usesBizAddress ? this.bizCountry         : this.proCountry,
-      ZipPostalCode:  usesBizAddress ? this.bizZipPostalCode   : this.proZipPostalCode,
-      Latitude:       usesBizAddress ? this.bizLatitude        : this.proLatitude,
-      Longitude:      usesBizAddress ? this.bizLongitude       : this.proLongitude,
-      BusinessId:     this.savedBusinessId,
+      HouseNameNumber: this.proHouseNameNumber,
+      Street1:        this.proStreet1,
+      Street2:        this.proStreet2,
+      City:           this.proCity,
+      District:       this.proDistrict,
+      State:          this.proState,
+      Country:        this.proCountry,
+      ZipPostalCode:  this.proZipPostalCode,
+      Latitude:       this.proLatitude,
+      Longitude:      this.proLongitude,
+      BusinessId:     businessId,
     }).subscribe({
       next: () => {
         this.step2Loading = false;

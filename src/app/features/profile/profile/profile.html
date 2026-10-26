@@ -78,20 +78,6 @@
                 <mat-icon>{{ user.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
                 {{ user.isEmailVerified ? ('PROFILE.VERIFIED' | translate) : ('PROFILE.UNVERIFIED' | translate) }}
               </span>
-              <button *ngIf="!user.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">{{ 'PROFILE.VERIFY_NOW' | translate }}</button>
-              <span *ngIf="emailVerifStep === 'sending'" class="muted-text">{{ 'PROFILE.SENDING' | translate }}</span>
-            </div>
-            <div class="verif-panel" *ngIf="!user.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
-              <p>{{ 'PROFILE.EMAIL_CODE_PROMPT' | translate }} <strong>{{ user.email }}</strong></p>
-              <div class="verif-row">
-                <input class="code-input" type="text" maxlength="6" placeholder="000000" [(ngModel)]="emailVerifCode" name="ecUser" />
-                <button class="btn btn-success btn-sm" (click)="confirmEmailCode()" [disabled]="emailVerifStep === 'verifying'">
-                  {{ emailVerifStep === 'verifying' ? ('PROFILE.VERIFYING' | translate) : ('PROFILE.CONFIRM' | translate) }}
-                </button>
-                <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">{{ 'PROFILE.CANCEL' | translate }}</button>
-              </div>
-              <span class="error-text" *ngIf="emailVerifError">{{ emailVerifError }}</span>
-              <button class="btn-link small" (click)="sendEmailVerification()">{{ 'PROFILE.RESEND_CODE' | translate }}</button>
             </div>
           </div>
           <div class="field">
@@ -335,20 +321,6 @@
                 <mat-icon>{{ pro.isEmailVerified ? 'check_circle' : 'cancel' }}</mat-icon>
                 {{ pro.isEmailVerified ? ('PROFILE.VERIFIED' | translate) : ('PROFILE.UNVERIFIED' | translate) }}
               </span>
-              <button *ngIf="!pro.isEmailVerified && emailVerifStep === 'idle'" class="btn-link" (click)="sendEmailVerification()">{{ 'PROFILE.VERIFY_NOW' | translate }}</button>
-              <span *ngIf="emailVerifStep === 'sending'" class="muted-text">{{ 'PROFILE.SENDING' | translate }}</span>
-            </div>
-            <div class="verif-panel" *ngIf="!pro.isEmailVerified && (emailVerifStep === 'code-sent' || emailVerifStep === 'verifying')">
-              <p>{{ 'PROFILE.EMAIL_CODE_PROMPT' | translate }} <strong>{{ pro.email }}</strong></p>
-              <div class="verif-row">
-                <input class="code-input" type="text" maxlength="6" placeholder="000000" [(ngModel)]="emailVerifCode" name="ecPro" />
-                <button class="btn btn-success btn-sm" (click)="confirmEmailCode()" [disabled]="emailVerifStep === 'verifying'">
-                  {{ emailVerifStep === 'verifying' ? ('PROFILE.VERIFYING' | translate) : ('PROFILE.CONFIRM' | translate) }}
-                </button>
-                <button class="btn btn-cancel btn-sm" (click)="cancelEmailVerification()">{{ 'PROFILE.CANCEL' | translate }}</button>
-              </div>
-              <span class="error-text" *ngIf="emailVerifError">{{ emailVerifError }}</span>
-              <button class="btn-link small" (click)="sendEmailVerification()">{{ 'PROFILE.RESEND_CODE' | translate }}</button>
             </div>
           </div>
           <div class="field">

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface PreRegisterBusinessRequest {
+  businessId?: number | null;
   businessName: string;
   phone?: string;
   houseNameNumber?: string;
@@ -62,6 +63,27 @@ export interface BusinessMember {
   joinedAt: string;
 }
 
+export interface BusinessServiceDto {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl?: string | null;
+  serviceCategoryId?: number | null;
+  categoryName?: string | null;
+  categoryIcon?: string | null;
+  proId: number;
+  proName?: string | null;
+}
+
+export interface BusinessServiceRequest {
+  name: string;
+  description: string;
+  price: number;
+  imageUrl?: string | null;
+  serviceCategoryId?: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class BusinessService {
   private base = `${environment.apiUrl}/businesses`;
@@ -102,5 +124,23 @@ export class BusinessService {
 
   migrateServices(id: number): Observable<{ migrated: number }> {
     return this.http.post<{ migrated: number }>(`${this.base}/${id}/migrate-services`, {});
+  }
+
+  // ── Business service offerings ──────────────────────────────────────────
+
+  getBusinessServices(id: number): Observable<BusinessServiceDto[]> {
+    return this.http.get<BusinessServiceDto[]>(`${this.base}/${id}/services`);
+  }
+
+  createBusinessService(id: number, req: BusinessServiceRequest): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(`${this.base}/${id}/services`, req);
+  }
+
+  updateBusinessService(id: number, serviceId: number, req: BusinessServiceRequest): Observable<void> {
+    return this.http.put<void>(`${this.base}/${id}/services/${serviceId}`, req);
+  }
+
+  deleteBusinessService(id: number, serviceId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}/services/${serviceId}`);
   }
 }

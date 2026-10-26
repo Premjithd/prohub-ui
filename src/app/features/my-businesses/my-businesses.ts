@@ -6,8 +6,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { BusinessService, BusinessSummary, BusinessMember, CreateBusinessRequest } from '../../core/services/business.service';
+import { BusinessService, BusinessSummary, BusinessMember, CreateBusinessRequest, BusinessServiceDto } from '../../core/services/business.service';
 import { AddressService, AddressPrediction } from '../../core/services/address.service';
+import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { Subject, of } from 'rxjs';
 import { switchMap, catchError, takeUntil } from 'rxjs/operators';
 
@@ -54,6 +55,21 @@ export class MyBusinessesComponent implements OnInit, OnDestroy {
   addMemberLoading = false;
   addMemberError = '';
 
+  // Service offerings (business detail)
+  services: BusinessServiceDto[] = [];
+  servicesLoading = false;
+  categories: any[] = [];
+  showServicePanel = false;
+  editingServiceId: number | null = null;
+  svcName = '';
+  svcDescription = '';
+  svcPrice: number | null = null;
+  svcImageUrl = '';
+  svcCategoryId: number | null = null;
+  serviceSaving = false;
+  serviceError = '';
+  serviceDeleteId: number | null = null;
+
   // Address autocomplete
   addressPredictions: AddressPrediction[] = [];
   showAddressList = false;
@@ -64,6 +80,7 @@ export class MyBusinessesComponent implements OnInit, OnDestroy {
   constructor(
     private bizService: BusinessService,
     private addressService: AddressService,
+    private categoryService: ServiceCategoryService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
     private location: Location,
@@ -75,6 +92,10 @@ export class MyBusinessesComponent implements OnInit, OnDestroy {
       this.showCreatePanel = true;
     }
     this.loadBusinesses();
+    this.categoryService.getCategories().subscribe({
+      next: (cats: any[]) => { this.categories = cats ?? []; this.cdr.markForCheck(); },
+      error: () => {}
+    });
 
     this.addressSearch$.pipe(
       switchMap(input => {
@@ -108,6 +129,7 @@ export class MyBusinessesComponent implements OnInit, OnDestroy {
   selectBusiness(biz: BusinessSummary): void {
     this.selectedBiz = biz;
     this.showAddMemberPanel = false;
+    this.cancelServiceForm();
     this.membersLoading = true;
     this.bizDetailLoading = true;
     this.bizDetail = null;
@@ -118,6 +140,109 @@ export class MyBusinessesComponent implements OnInit, OnDestroy {
     this.bizService.getBusiness(biz.id).subscribe({
       next: detail => { this.bizDetail = detail; this.bizDetailLoading = false; this.cdr.markForCheck(); },
       error: () => { this.bizDetailLoading = false; this.cdr.markForCheck(); }
+    });
+    this.loadBusinessServices(biz.id);
+  }
+
+  // ── Service offerings ───────────────────────────────────────────────────
+
+  loadBusinessServices(id: number): void {
+    this.servicesLoading = true;
+    this.bizService.getBusinessServices(id).subscribe({
+      next: list => {
+        this.services = list ?? [];
+        if (this.bizDetail) this.bizDetail.serviceCount = this.services.length;
+        this.servicesLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.services = []; this.servicesLoading = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  openAddService(): void {
+    this.editingServiceId = null;
+    this.svcName = '';
+    this.svcDescription = '';
+    this.svcPrice = null;
+    this.svcImageUrl = '';
+    this.svcCategoryId = null;
+    this.serviceError = '';
+    this.showServicePanel = true;
+  }
+
+  openEditService(svc: BusinessServiceDto): void {
+    this.editingServiceId = svc.id;
+    this.svcName = svc.name;
+    this.svcDescription = svc.description;
+    this.svcPrice = svc.price;
+    this.svcImageUrl = svc.imageUrl ?? '';
+    this.svcCategoryId = svc.serviceCategoryId ?? null;
+    this.serviceError = '';
+    this.showServicePanel = true;
+  }
+
+  cancelServiceForm(): void {
+    this.showServicePanel = false;
+    this.editingServiceId = null;
+    this.serviceError = '';
+  }
+
+  saveService(form: any): void {
+    if (!form.valid || !this.selectedBiz) return;
+    const req = {
+      name: this.svcName.trim(),
+      description: this.svcDescription.trim(),
+      price: Number(this.svcPrice),
+      imageUrl: this.svcImageUrl?.trim() || null,
+      serviceCategoryId: this.svcCategoryId ? Number(this.svcCategoryId) : null,
+    };
+    this.serviceSaving = true;
+    this.serviceError = '';
+    const bizId = this.selectedBiz.id;
+    const done = (msg: string) => {
+      this.serviceSaving = false;
+      this.cancelServiceForm();
+      this.loadBusinessServices(bizId); // reloads list + syncs serviceCount
+      this.cdr.markForCheck();
+      this.snackBar.open(msg, 'OK', { duration: 3000, panelClass: 'snack-success' });
+    };
+    const onError = (err: any) => {
+      this.serviceError = err.error?.message || 'Could not save service.';
+      this.serviceSaving = false;
+      this.cdr.markForCheck();
+    };
+
+    if (this.editingServiceId) {
+      this.bizService.updateBusinessService(bizId, this.editingServiceId, req).subscribe({
+        next: () => done('Service updated.'), error: onError
+      });
+    } else {
+      this.bizService.createBusinessService(bizId, req).subscribe({
+        next: () => done('Service added.'), error: onError
+      });
+    }
+  }
+
+  deleteService(svc: BusinessServiceDto): void {
+    if (!this.selectedBiz) return;
+    if (!confirm(`Delete "${svc.name}"? This cannot be undone.`)) return;
+    const bizId = this.selectedBiz.id;
+    this.serviceDeleteId = svc.id;
+    this.bizService.deleteBusinessService(bizId, svc.id).subscribe({
+      next: () => {
+        this.services = this.services.filter(s => s.id !== svc.id);
+        this.serviceDeleteId = null;
+        if (this.bizDetail && typeof this.bizDetail.serviceCount === 'number') {
+          this.bizDetail.serviceCount = Math.max(0, this.bizDetail.serviceCount - 1);
+        }
+        this.cdr.markForCheck();
+        this.snackBar.open('Service deleted.', 'OK', { duration: 2500, panelClass: 'snack-info' });
+      },
+      error: err => {
+        this.serviceDeleteId = null;
+        this.cdr.markForCheck();
+        this.snackBar.open(err.error?.message || 'Could not delete service.', 'OK', { duration: 3000, panelClass: 'snack-error' });
+      }
     });
   }
 
