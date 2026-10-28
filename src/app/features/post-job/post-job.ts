@@ -199,25 +199,32 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  /** Show only categories relevant to the typed title (matched by name or synonym
-   *  keywords). Empty title shows all; no matches falls back to all; the currently
-   *  selected category is always kept visible. */
+  /** Decide which categories the picker offers. The full catalogue is never shown:
+   *  - arrived via ?categoryId= → only that one category (just the selected icon);
+   *  - otherwise → categories relevant to the typed title (name / synonym keywords),
+   *    with an empty title showing nothing (a hint prompts the user to type). */
   applyCategoryFilter(): void {
+    // Deep-link with a chosen category: lock the picker to that one category.
+    if (this.preFillCategoryId) {
+      const sel = this.serviceCategories.find(c => c.id === this.preFillCategoryId);
+      this.filteredCategories = sel ? [sel] : [];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // No filter: derive options from the job title. Empty title shows nothing.
     const title = (this.jobForm?.get('title')?.value || '').toLowerCase().trim();
     if (!title) {
-      this.filteredCategories = this.serviceCategories;
+      this.filteredCategories = [];
       this.cdr.detectChanges();
       return;
     }
     let matches = this.serviceCategories.filter(c => this.categoryMatchesTitle(c, title));
-    if (matches.length === 0) {
-      matches = this.serviceCategories;
-    } else {
-      const selectedId = this.jobForm?.get('category')?.value;
-      if (selectedId && !matches.some(c => c.id === selectedId)) {
-        const sel = this.serviceCategories.find(c => c.id === selectedId);
-        if (sel) matches = [sel, ...matches];
-      }
+    // Keep the currently selected category visible even if the title stops matching it.
+    const selectedId = this.jobForm?.get('category')?.value;
+    if (selectedId && !matches.some(c => c.id === selectedId)) {
+      const sel = this.serviceCategories.find(c => c.id === selectedId);
+      if (sel) matches = [sel, ...matches];
     }
     this.filteredCategories = matches;
     this.cdr.detectChanges();

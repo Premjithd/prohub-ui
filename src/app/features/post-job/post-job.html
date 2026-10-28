@@ -77,7 +77,8 @@
               <p *ngIf="!categoriesLoading && !categoriesError && serviceCategories.length === 0" class="cat-empty">
                 {{ 'POST_JOB.CAT_EMPTY' | translate }}
               </p>
-              <div *ngIf="!categoriesLoading && !categoriesError && serviceCategories.length > 0" class="category-grid">
+              <!-- No full catalogue: show the deep-linked category, or categories matched from the title. -->
+              <div *ngIf="!categoriesLoading && !categoriesError && filteredCategories.length > 0" class="category-grid">
                 <button
                   *ngFor="let category of filteredCategories"
                   type="button"
@@ -89,6 +90,9 @@
                   <span class="category-name">{{ category.name }}</span>
                 </button>
               </div>
+              <p *ngIf="!categoriesLoading && !categoriesError && serviceCategories.length > 0 && filteredCategories.length === 0" class="cat-hint">
+                {{ (f['title'].value ? 'POST_JOB.CAT_NO_MATCH' : 'POST_JOB.CAT_TYPE_TITLE') | translate }}
+              </p>
               <small *ngIf="(submitted || f['category'].touched) && f['category'].errors" class="error-text">
                 {{ 'POST_JOB.CATEGORY_REQUIRED' | translate }}
               </small>

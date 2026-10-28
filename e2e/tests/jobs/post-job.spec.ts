@@ -5,12 +5,17 @@ import { USER_STORAGE_STATE } from '../../fixtures/test-users';
 test.describe('Post a job — wizard', () => {
   test.use({ storageState: USER_STORAGE_STATE });
 
-  test('renders step 1 with categories loaded from the API', async ({ page }) => {
+  test('step 1 suggests categories from the job title (no full catalogue up-front)', async ({ page }) => {
     const postJob = new PostJobPage(page);
     await postJob.goto();
 
     await postJob.expectStep(1);
     await expect(postJob.titleInput).toBeVisible();
+    // The full category list is no longer shown on load — it is derived from the title.
+    await expect(postJob.categoryButtons).toHaveCount(0);
+
+    await postJob.titleInput.fill('Fix a leaking kitchen sink tap');
+    // Categories load from the API and are filtered to the typed title.
     await expect(postJob.categoryButtons.first()).toBeVisible({ timeout: 15_000 });
   });
 

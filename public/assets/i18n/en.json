@@ -352,6 +352,8 @@
     "CATEGORY_REQUIRED": "Please select a service category",
     "CAT_LOAD_ERROR": "Couldn't load categories.",
     "CAT_EMPTY": "No categories available yet.",
+    "CAT_TYPE_TITLE": "Start typing your job title above and we'll suggest matching categories.",
+    "CAT_NO_MATCH": "No matching categories — try describing your job differently.",
     "DESCRIPTION_LABEL": "Job Description",
     "DESCRIPTION_PLACEHOLDER": "Describe your job in detail. What needs to be done? Any specific requirements?",
     "DESCRIPTION_REQUIRED": "Description is required",
