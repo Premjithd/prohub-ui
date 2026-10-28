@@ -33,6 +33,7 @@ export interface ServiceBrowseParams {
   categoryId?: number | null;
   search?: string;
   city?: string;
+  pin?: string;
   sortBy?: 'name' | 'price-low' | 'price-high';
 }
 
@@ -53,6 +54,7 @@ export class BrowseServicesService {
     if (params.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
     if (params.search)     httpParams = httpParams.set('search', params.search);
     if (params.city)       httpParams = httpParams.set('city', params.city);
+    if (params.pin)        httpParams = httpParams.set('pin', params.pin);
     if (params.sortBy)     httpParams = httpParams.set('sortBy', params.sortBy);
 
     return this.http.get<any>(this.apiUrl, { params: httpParams }).pipe(

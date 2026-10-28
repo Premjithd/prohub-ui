@@ -18,6 +18,19 @@
             (keyup.enter)="onSearch()"
             [placeholder]="'SERVICES.SEARCH_PLACEHOLDER' | translate"
             aria-label="Search services" />
+          <span class="search-divider"></span>
+          <span class="search-place">
+            <span class="material-icons">place</span>
+            <input
+              class="search-pin"
+              [(ngModel)]="searchPin"
+              (keyup.enter)="onSearch()"
+              maxlength="6"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              [attr.aria-label]="'SERVICES.SEARCH_PIN' | translate"
+              [placeholder]="'SERVICES.SEARCH_PIN' | translate" />
+          </span>
           <button (click)="onSearch()">{{ 'SERVICES.SEARCH_BTN' | translate }}</button>
         </div>
 
@@ -55,7 +68,7 @@
   </section>
 
   <!-- Category Filter -->
-  <section class="categories-section">
+  <section class="categories-section" *ngIf="showCategoryFilter">
     <div class="section-inner">
       <div class="section-header">
         <h2>{{ 'SERVICES.WHAT_DO_YOU_NEED' | translate }}</h2>

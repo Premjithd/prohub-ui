@@ -4,7 +4,7 @@
     <span>{{ 'NAV.HOME' | translate }}</span>
   </a>
 
-  <a mat-list-item routerLink="/services" routerLinkActive="active" (click)="onMenuItemClick()">
+  <a *ngIf="!isProUser()" mat-list-item routerLink="/services" routerLinkActive="active" (click)="onMenuItemClick()">
     <mat-icon>work</mat-icon>
     <span>{{ 'NAV.SERVICES' | translate }}</span>
   </a>

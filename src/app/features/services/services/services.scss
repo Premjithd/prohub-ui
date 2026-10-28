@@ -152,6 +152,31 @@ $bg-light: #f9fafb;
     &::placeholder { color: #9ca3af; }
   }
 
+  .search-divider {
+    width: 1px;
+    align-self: stretch;
+    margin: 10px 0;
+    background: #e5e7eb;
+    flex-shrink: 0;
+  }
+
+  .search-place {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    .material-icons {
+      padding: 0 4px 0 12px;
+      font-size: 20px;
+    }
+
+    .search-pin {
+      flex: none;
+      width: 96px;
+      padding-left: 4px;
+    }
+  }
+
   button {
     background: linear-gradient(135deg, $primary, $primary-dark);
     color: #fff;

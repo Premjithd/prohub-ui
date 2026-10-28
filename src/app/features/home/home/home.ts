@@ -22,12 +22,15 @@ export class HomeComponent {
 
   /** Take the hero search text + PIN to the Post a Job page to pre-fill it. */
   startJob(): void {
-    const queryParams: Record<string, string> = {};
     const text = this.searchText.trim();
     const pin = this.searchPin.trim();
-    if (text) queryParams['title'] = text;
+
+    // "Get Quotes" always lands on the services browse page with the search applied,
+    // for both logged-in and logged-out users.
+    const queryParams: Record<string, string> = {};
+    if (text) queryParams['search'] = text;
     if (pin) queryParams['pin'] = pin;
-    this.router.navigate(['/post-job'], { queryParams });
+    this.router.navigate(['/services'], { queryParams });
   }
 
   isProUser(): boolean {

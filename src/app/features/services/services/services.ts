@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
@@ -25,6 +25,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
   filteredServices: ServiceBrowseDto[] = [];
   servicesLoading = false;
   searchQuery = '';
+  searchPin = '';
   selectedCategory: string | null = null;
   selectedCategoryId: number | null = null;
   sortOrder: SortOrder = 'popular';
@@ -36,12 +37,19 @@ export class ServicesComponent implements OnInit, OnDestroy {
   categoriesError = false;
   servicesError = false;
   showProCount = false;
+  // Hide the "What do you need help with?" category-filter UI (search covers discovery).
+  // Categories still load so deep-links (?category=...) and in-code filtering keep working.
+  showCategoryFilter = false;
 
   private destroy$ = new Subject<void>();
   private search$ = new Subject<string>();
+  // Category requested via the URL (e.g. home category chips → /services?category=plumbing)
+  private pendingCategory: string | null = null;
+  private pendingCategoryId: number | null = null;
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private auth: Auth,
     private serviceCategoryService: ServiceCategoryService,
     private browseServicesService: BrowseServicesService,
@@ -50,6 +58,11 @@ export class ServicesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // A category may be requested via the URL (home category chips link here).
+    this.pendingCategory = this.route.snapshot.queryParamMap.get('category');
+    const cid = Number(this.route.snapshot.queryParamMap.get('categoryId'));
+    this.pendingCategoryId = cid > 0 ? cid : null;
+
     this.loadCategories();
     this.settingsService.getSetting('show_pro_count_on_categories')
       .pipe(takeUntil(this.destroy$))
@@ -60,12 +73,14 @@ export class ServicesComponent implements OnInit, OnDestroy {
 
     this.search$.pipe(
       debounceTime(450),
+      // Key includes the PIN so changing only the area still triggers a fresh search.
       distinctUntilChanged(),
-      switchMap(query => {
+      switchMap(() => {
         this.servicesLoading = true;
         this.cdr.detectChanges();
         return this.browseServicesService.getServices({
-          search: query || undefined,
+          search: this.searchQuery.trim() || undefined,
+          pin: this.searchPin.trim() || undefined,
           categoryId: this.selectedCategoryId || undefined,
         }).pipe(takeUntil(this.destroy$));
       }),
@@ -83,6 +98,17 @@ export class ServicesComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+
+    // A search term / PIN may be passed from the home "Get Quotes" box (logged-out
+    // visitors land here instead of post-job). Apply it once the search pipe above is
+    // subscribed so results show immediately.
+    const search = this.route.snapshot.queryParamMap.get('search');
+    const pin = this.route.snapshot.queryParamMap.get('pin');
+    if (search) this.searchQuery = search;
+    if (pin) this.searchPin = pin;
+    if (search || pin) {
+      this.onSearch();
+    }
   }
 
   ngOnDestroy(): void {
@@ -99,6 +125,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
         next: categories => {
           this.categories = categories;
           this.categoriesLoading = false;
+          this.applyCategoryFromParams();
           this.cdr.detectChanges();
         },
         error: () => {
@@ -116,6 +143,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
     this.browseServicesService.getServices({
       categoryId: this.selectedCategoryId || undefined,
       search: this.searchQuery.trim() || undefined,
+      pin: this.searchPin.trim() || undefined,
     }).pipe(takeUntil(this.destroy$)).subscribe({
       next: result => {
         this.services = result.items;
@@ -133,11 +161,35 @@ export class ServicesComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Resolve a category passed via the URL (?category=slug or ?categoryId=N) and show its results. */
+  private applyCategoryFromParams(): void {
+    let cat = this.pendingCategoryId
+      ? this.categories.find(c => c.id === this.pendingCategoryId)
+      : this.pendingCategory
+        ? this.categories.find(c => this.normalizeName(c.name) === this.normalizeName(this.pendingCategory!))
+        : undefined;
+
+    // Consume the pending params so they don't re-apply on later interactions.
+    this.pendingCategory = null;
+    this.pendingCategoryId = null;
+    if (!cat) return;
+
+    this.selectedCategory = cat.name;
+    this.selectedCategoryId = cat.id;
+    this.showResults = true;
+    this.loadServices();
+    this.scrollToResults();
+  }
+
+  private normalizeName(s: string): string {
+    return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
   filterByCategory(categoryName: string): void {
     if (this.selectedCategory === categoryName) {
       this.selectedCategory = null;
       this.selectedCategoryId = null;
-      if (!this.searchQuery.trim()) {
+      if (!this.searchQuery.trim() && !this.searchPin.trim()) {
         this.showResults = false;
         this.filteredServices = [];
         return;
@@ -153,13 +205,14 @@ export class ServicesComponent implements OnInit, OnDestroy {
   }
 
   onSearch(): void {
-    if (!this.searchQuery.trim() && !this.selectedCategory) {
+    if (!this.searchQuery.trim() && !this.searchPin.trim() && !this.selectedCategory) {
       this.showResults = false;
       this.filteredServices = [];
       return;
     }
     this.showResults = true;
-    this.search$.next(this.searchQuery);
+    // Emit a composite key so distinctUntilChanged reacts to either text or PIN changing.
+    this.search$.next(`${this.searchQuery.trim()}|${this.searchPin.trim()}`);
     this.scrollToResults();
   }
 
@@ -197,6 +250,11 @@ export class ServicesComponent implements OnInit, OnDestroy {
   }
 
   openService(s: ServiceBrowseDto): void {
+    const target = `/services/${s.id}`;
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: target } });
+      return;
+    }
     this.router.navigate(['/services', s.id]);
   }
 
