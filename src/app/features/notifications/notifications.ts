@@ -203,8 +203,11 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       case 'JobPosted':
       case 'JobUpdated': return 'work';
       case 'BidReceived': return 'gavel';
+      case 'BidAccepted': return 'handshake';
       case 'PaymentConfirmed': return 'payment';
+      case 'PaymentReceived': return 'payments';
       case 'JobCompleted': return 'task_alt';
+      case 'CompletionVerified': return 'verified';
       default: return 'notifications';
     }
   }
@@ -218,7 +221,14 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       });
     }
     if (n.jobId) {
-      this.router.navigate([this.isPro() ? '/available-jobs' : '/pending-jobs']);
+      if (this.isPro()) {
+        // Pros open the specific job via the shared job-details viewer (same
+        // deep-link available-jobs uses), rather than landing on the list.
+        this.router.navigate(['/job-details'], { queryParams: { id: n.jobId } });
+      } else {
+        // Consumers open the exact job's pending-job-details page.
+        this.router.navigate(['/pending-jobs', n.jobId]);
+      }
     }
   }
 
