@@ -741,6 +741,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     gstPercent: 18,
     minPlatformFee: 10,
     maxCommissionPercent: 20,
+    proGstApplies: true,
   };
   commissionLoading = false;
   commissionSaving = false;
@@ -763,8 +764,12 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   get previewProDeduction(): number {
     return Math.round((this.previewBid * this.commissionDraft.proCommissionPercent) / 100 * 100) / 100;
   }
+  get previewProGst(): number {
+    if (!this.commissionDraft.proGstApplies) return 0;
+    return Math.round(this.previewProDeduction * this.commissionDraft.gstPercent) / 100;
+  }
   get previewProPayout(): number {
-    return this.previewBid - this.previewProDeduction;
+    return this.previewBid - this.previewProDeduction - this.previewProGst;
   }
   get previewPlatformEarnings(): number {
     return this.previewUserCommission + this.previewProDeduction;
@@ -790,6 +795,11 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   startEditingCommission(): void {
     if (this.commissionConfig) this.commissionDraft = { ...this.commissionConfig };
     this.commissionEditing = true;
+  }
+
+  toggleProGst(): void {
+    this.commissionDraft.proGstApplies = !this.commissionDraft.proGstApplies;
+    this.cdr.detectChanges();
   }
 
   cancelEditingCommission(): void {

@@ -1556,6 +1556,11 @@
                   <span class="commission-stat-value">{{ commissionConfig.gstPercent }}%</span>
                 </div>
                 <div class="commission-stat">
+                  <span class="commission-stat-label">GST on Pro Commission</span>
+                  <span class="commission-stat-value">{{ commissionConfig.proGstApplies ? (commissionConfig.gstPercent + '%') : 'Off' }}</span>
+                  <span class="commission-stat-sub">deducted from payout</span>
+                </div>
+                <div class="commission-stat">
                   <span class="commission-stat-label">Min Platform Fee</span>
                   <span class="commission-stat-value">₹{{ commissionConfig.minPlatformFee }}</span>
                 </div>
@@ -1629,6 +1634,16 @@
                       <span class="commission-input-unit">%</span>
                     </div>
                   </div>
+                  <div class="commission-field-row">
+                    <label>Charge GST on Pro Commission
+                      <span class="commission-hint">Applies the {{ commissionDraft.gstPercent }}% GST rate to the pro commission — reduces the pro's payout</span>
+                    </label>
+                    <button type="button" class="commission-gst-toggle" (click)="toggleProGst()"
+                      [class.on]="commissionDraft.proGstApplies" [attr.aria-pressed]="commissionDraft.proGstApplies">
+                      <mat-icon>{{ commissionDraft.proGstApplies ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                      <span>{{ commissionDraft.proGstApplies ? 'On' : 'Off' }}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1667,6 +1682,10 @@
                     <div class="preview-row">
                       <span>Platform deduction ({{ commissionDraft.proCommissionPercent }}%)</span>
                       <span>− ₹{{ previewProDeduction | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="preview-row" *ngIf="commissionDraft.proGstApplies">
+                      <span>GST on deduction ({{ commissionDraft.gstPercent }}%)</span>
+                      <span>− ₹{{ previewProGst | number:'1.2-2' }}</span>
                     </div>
                     <div class="preview-row preview-total">
                       <span>Pro payout</span>

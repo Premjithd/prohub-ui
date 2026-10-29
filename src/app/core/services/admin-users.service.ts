@@ -41,6 +41,7 @@ export interface CommissionConfig {
   gstPercent: number;
   minPlatformFee: number;
   maxCommissionPercent: number;
+  proGstApplies: boolean;
 }
 
 export interface RegistrationMetrics {

@@ -2227,6 +2227,30 @@
   margin-top: 0.1rem;
 }
 
+.commission-gst-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  padding: 0.3rem 0.7rem 0.3rem 0.4rem;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+
+  mat-icon { font-size: 1.4rem; width: 1.4rem; height: 1.4rem; }
+
+  &.on {
+    color: #1d4ed8;
+    border-color: #bfd3ff;
+    background: #f0f4ff;
+  }
+}
+
 .commission-input-wrap {
   display: flex;
   align-items: center;
