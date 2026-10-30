@@ -160,7 +160,7 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
       }),
       takeUntil(this.destroy$)
     ).subscribe(predictions => {
-      this.addressPredictions = predictions as AddressPrediction[];
+      this.addressPredictions = this.toCityPinPredictions(predictions as AddressPrediction[]);
       this.showAddressList = this.addressPredictions.length > 0;
       this.addressLoading = false;
       this.cdr.markForCheck();
@@ -293,6 +293,32 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
 
   onAddressInput(event: any): void {
     this.addressSearch$.next(event.target.value ?? '');
+  }
+
+  /**
+   * Collapse Nominatim predictions to unique "City + PIN" entries for the service-location
+   * picker. Users are asked to type only a city or PIN code (full addresses make Nominatim
+   * return poor matches), so we drop the street-level noise, show just the city and PIN, and
+   * de-duplicate repeated city/PIN pairs.
+   */
+  private toCityPinPredictions(predictions: AddressPrediction[]): AddressPrediction[] {
+    const seen = new Set<string>();
+    const result: AddressPrediction[] = [];
+    for (const p of predictions) {
+      const city = p.details?.city?.trim();
+      if (!city) continue;  // need at least a city to be useful
+      const pin = p.details?.zipPostalCode?.trim() ?? '';
+      const key = `${city.toLowerCase()}|${pin}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const state = p.details?.state?.trim() ?? '';
+      result.push({
+        ...p,
+        mainText: city,
+        secondaryText: [state, pin].filter(Boolean).join(' ') || 'PIN not listed',
+      });
+    }
+    return result;
   }
 
   onAddressSelected(prediction: AddressPrediction): void {

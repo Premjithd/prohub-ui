@@ -124,9 +124,9 @@
               </small>
             </div>
 
-            <!-- Service Location (address autofill) -->
+            <!-- Service Location (city / PIN autofill) -->
             <div class="form-group">
-              <label>Service Location *</label>
+              <label>Service Location — City or PIN code *</label>
 
               <!-- Address not yet selected -->
               <ng-container *ngIf="!f['serviceAddressCity'].value">
@@ -136,7 +136,7 @@
                     type="text"
                     class="form-control"
                     [class.is-invalid]="(submitted || f['serviceAddressCity'].touched) && f['serviceAddressCity'].errors"
-                    placeholder="Start typing your address or city..."
+                    placeholder="Enter your city or PIN code"
                     (input)="onAddressInput($event)"
                     (blur)="hideAddressList()"
                     autocomplete="off"
@@ -153,7 +153,7 @@
                     </div>
                   </div>
                 </div>
-                <small class="text-hint">Type at least 3 characters to search — select from the list to pin on the map</small>
+                <small class="text-hint">Type a city name or PIN code, then select from the list</small>
                 <small *ngIf="(submitted || f['serviceAddressCity'].touched) && f['serviceAddressCity'].errors" class="error-text">
                   Please select a location from the suggestions
                 </small>
