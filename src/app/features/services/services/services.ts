@@ -259,11 +259,17 @@ export class ServicesComponent implements OnInit, OnDestroy {
   }
 
   bookService(s: ServiceBrowseDto): void {
+    const qp: Record<string, any> = {};
+    if (s.serviceCategoryId) qp['categoryId'] = s.serviceCategoryId;
+    // Carry the chosen pro so the job is sent directly to them (while still open to all).
+    if (s.proId) qp['proId'] = s.proId;
+    const proLabel = s.businessName || s.proName;
+    if (proLabel) qp['proName'] = proLabel;
+
     if (!this.auth.isAuthenticated()) {
-      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: '/post-job' } });
+      const returnUrl = this.router.createUrlTree(['/post-job'], { queryParams: qp }).toString();
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl } });
     } else {
-      const qp: Record<string, any> = {};
-      if (s.serviceCategoryId) qp['categoryId'] = s.serviceCategoryId;
       this.router.navigate(['/post-job'], { queryParams: qp });
     }
   }

@@ -89,6 +89,7 @@ export interface CreateJobRequest {
   contactPersonPhone?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  requestedProId?: number | null;
 }
 
 export interface JobBid {

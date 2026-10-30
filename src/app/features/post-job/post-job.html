@@ -41,6 +41,15 @@
           </div>
         </div>
 
+        <!-- Direct-request banner: shown when the user arrived from a specific pro's service -->
+        <div *ngIf="requestedProName" class="requested-pro-banner">
+          <span class="rpb-icon">⭐</span>
+          <span class="rpb-text">
+            This request will be sent directly to <strong>{{ requestedProName }}</strong>.
+            They'll be invited to bid first — other professionals can still bid too.
+          </span>
+        </div>
+
         <form [formGroup]="jobForm" (ngSubmit)="onSubmit()">
           <!-- Step 1: Job Details -->
           <div *ngIf="currentStep === 1" class="form-step">
@@ -242,6 +251,10 @@
               <div class="review-item">
                 <h4>Timeline</h4>
                 <p>{{ getTimelineLabel(f['timeline'].value) }}</p>
+              </div>
+              <div class="review-item" *ngIf="requestedProName">
+                <h4>Requested Pro</h4>
+                <p>{{ requestedProName }} <small>(invited directly — other pros can still bid)</small></p>
               </div>
             </div>
 

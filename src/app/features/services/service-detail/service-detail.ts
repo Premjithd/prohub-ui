@@ -53,12 +53,18 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
   }
 
   bookNow(): void {
-    if (!this.auth.isAuthenticated()) {
-      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: '/post-job' } });
-      return;
-    }
     const qp: Record<string, any> = {};
     if (this.service?.serviceCategoryId) qp['categoryId'] = this.service.serviceCategoryId;
+    // Carry the chosen pro so the job is sent directly to them (while still open to all).
+    if (this.service?.proId) qp['proId'] = this.service.proId;
+    const proLabel = this.service?.businessName || this.service?.proName;
+    if (proLabel) qp['proName'] = proLabel;
+
+    if (!this.auth.isAuthenticated()) {
+      const returnUrl = this.router.createUrlTree(['/post-job'], { queryParams: qp }).toString();
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl } });
+      return;
+    }
     this.router.navigate(['/post-job'], { queryParams: qp });
   }
 

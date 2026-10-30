@@ -106,6 +106,10 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private preFillCategoryId: number | null = null;
 
+  /** Pro the consumer picked from the Services page — the job is sent directly to them. */
+  requestedProId: number | null = null;
+  requestedProName: string | null = null;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -123,6 +127,9 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
     const qp = this.route.snapshot.queryParamMap;
     const catId = qp.get('categoryId');
     if (catId) this.preFillCategoryId = parseInt(catId, 10);
+    const proId = qp.get('proId');
+    if (proId) this.requestedProId = parseInt(proId, 10) || null;
+    this.requestedProName = qp.get('proName');
     const title = qp.get('title');
     if (title) this.jobForm.patchValue({ title });
     const pin = qp.get('pin');
@@ -430,7 +437,8 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
       serviceAddressCountry: this.jobForm.value.serviceAddressCountry || null,
       serviceAddressPIN: this.jobForm.value.serviceAddressPIN || null,
       latitude: this.jobLatitude,
-      longitude: this.jobLongitude
+      longitude: this.jobLongitude,
+      requestedProId: this.requestedProId
     };
 
     this.jobService.createJob(jobData).subscribe({
