@@ -5,17 +5,21 @@
   font-size: 14px;
 }
 
-// Full link columns — desktop only
+// Full link columns — desktop only.
+// Constrain to the same 1200px content track pages use (max-width + auto
+// margins) so the columns line up with the page content above, instead of
+// spreading across the full viewport.
 .footer-container {
+  max-width: 1200px;
+  margin: 0 auto 20px;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  gap: 20px;
 }
 
 .footer-column {
   flex: 1 1 180px;
-  margin: 10px;
 
   h4 {
     color: #fff;

@@ -50,13 +50,13 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly categoryKeywords: Record<string, string[]> = {
     'plumbing': ['tap', 'faucet', 'leak', 'pipe', 'drain', 'water', 'sink', 'toilet', 'bathroom', 'flush', 'geyser', 'sewage', 'basin'],
     'electrical': ['wiring', 'socket', 'switch', 'light', 'fan', 'power', 'short circuit', 'mcb', 'inverter', 'electric', 'plug', 'bulb', 'wire'],
-    'painting': ['paint', 'wall', 'primer', 'whitewash', 'distemper', 'texture', 'putty'],
+    'painting': ['paint', 'primer', 'whitewash', 'distemper', 'texture', 'putty'],
     'cleaning': ['clean', 'sweep', 'mop', 'dust', 'sanitize', 'housekeeping', 'wash'],
     'ac & appliance repair': ['ac', 'air condition', 'fridge', 'refrigerator', 'washing machine', 'microwave', 'appliance', 'cooler', 'geyser'],
     'pest control': ['pest', 'cockroach', 'termite', 'ant', 'rodent', 'mosquito', 'bug', 'rat'],
     'gardening & landscaping': ['garden', 'lawn', 'plant', 'landscap', 'tree', 'grass', 'hedge'],
     'landscaping': ['garden', 'lawn', 'plant', 'landscap', 'tree', 'grass'],
-    'masonry & tiling': ['tile', 'brick', 'cement', 'concrete', 'masonry', 'plaster', 'floor', 'grout'],
+    'masonry & tiling': ['tile', 'brick', 'cement', 'concrete', 'masonry', 'plaster', 'floor', 'grout', 'wall', 'construct', 'build'],
     'waterproofing': ['waterproof', 'seepage', 'damp', 'leak', 'terrace'],
     'bathroom renovation': ['bathroom', 'renovat', 'remodel', 'fixture', 'washroom'],
     'movers & packers': ['move', 'moving', 'shift', 'relocat', 'pack', 'transport', 'luggage'],
@@ -90,11 +90,11 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
   private addressSearch$ = new Subject<string>();
 
   budgetRanges = [
-    { value: 'under-100',  label: 'Under ₹5,000',         icon: '💰',          estimatedBudget: 2500  },
-    { value: '100-250',    label: '₹5,000 - ₹12,500',     icon: '💰💰',        estimatedBudget: 8750  },
-    { value: '250-500',    label: '₹12,500 - ₹25,000',    icon: '💰💰💰',      estimatedBudget: 18750 },
-    { value: '500-1000',   label: '₹25,000 - ₹50,000',    icon: '💰💰💰💰',    estimatedBudget: 37500 },
-    { value: 'over-1000',  label: 'Over ₹50,000',         icon: '💰💰💰💰💰',  estimatedBudget: 75000 }
+    { value: 'under-100',  label: 'Under ₹5,000',       icon: '💰',          hint: 'Quick fixes & small tasks',    estimatedBudget: 2500  },
+    { value: '100-250',    label: '₹5,000 – ₹12,500',   icon: '💰💰',        hint: 'Standard repairs & installs',  estimatedBudget: 8750  },
+    { value: '250-500',    label: '₹12,500 – ₹25,000',  icon: '💰💰💰',      hint: 'Half-day to multi-room jobs',  estimatedBudget: 18750 },
+    { value: '500-1000',   label: '₹25,000 – ₹50,000',  icon: '💰💰💰💰',    hint: 'Large projects',               estimatedBudget: 37500 },
+    { value: 'over-1000',  label: 'Over ₹50,000',       icon: '💰💰💰💰💰',  hint: 'Major / full-home work',       estimatedBudget: 75000 }
   ];
 
   timelineOptions = [
@@ -197,12 +197,14 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
       serviceAddressState: [''],
       serviceAddressCountry: [''],
       serviceAddressPIN: [''],
-      budget: ['', Validators.required],
+      budget: [''],
       timeline: ['', Validators.required],
 
       // Step 3
       attachments: [''],
-      agreeToTerms: [false, Validators.required]
+      // requiredTrue (not required): a boolean `false` is treated as valid by
+      // Validators.required, so the checkbox must use requiredTrue to error when unticked.
+      agreeToTerms: [false, Validators.requiredTrue]
     });
   }
 
@@ -413,7 +415,9 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   selectBudget(budgetValue: string): void {
-    this.jobForm.patchValue({ budget: budgetValue });
+    // Budget is optional — tapping the selected tile again clears it.
+    const next = this.f['budget'].value === budgetValue ? '' : budgetValue;
+    this.jobForm.patchValue({ budget: next });
   }
 
   selectTimeline(timelineValue: string): void {
@@ -431,7 +435,8 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
     this.markStepFieldsAsTouched(3);
 
     if (!this.f['agreeToTerms'].value) {
-      this.errorMessage = 'You must agree to the Terms of Service to post a job.';
+      // Warning is shown inline at the bottom (under the action buttons), not
+      // as the top banner — just surface the field error there.
       this.f['agreeToTerms'].markAsTouched();
       this.submitted = false;
       return;
@@ -517,7 +522,7 @@ export class PostJobComponent implements OnInit, OnDestroy, AfterViewInit {
 
   getBudgetLabel(budgetValue: string): string {
     const budget = this.budgetRanges.find(b => b.value === budgetValue);
-    return budget ? budget.label : '';
+    return budget ? budget.label : 'Not specified';
   }
 
   getTimelineLabel(timelineValue: string): string {

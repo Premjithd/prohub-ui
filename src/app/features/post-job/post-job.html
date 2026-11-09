@@ -181,35 +181,45 @@
 
             <!-- Budget -->
             <div class="form-group">
-              <label>Your Budget *</label>
-              <div class="budget-options">
+              <label>What's your budget? <span class="optional-tag">(optional)</span></label>
+              <p class="field-hint">Pick the range that fits best — you can finalise exact pricing with pros later.</p>
+              <div class="option-grid">
                 <button
                   *ngFor="let range of budgetRanges"
                   type="button"
-                  class="budget-btn"
+                  class="option-card option-card--tile"
                   [class.selected]="f['budget'].value === range.value"
+                  [attr.aria-pressed]="f['budget'].value === range.value"
                   (click)="selectBudget(range.value)"
                 >
-                  {{ range.label }}
+                  <span class="option-body">
+                    <span class="option-title">{{ range.label }}</span>
+                    <span class="option-sub">{{ range.hint }}</span>
+                  </span>
+                  <span class="option-check" aria-hidden="true">✓</span>
                 </button>
               </div>
-              <small *ngIf="(submitted || f['budget'].touched) && f['budget'].errors" class="error-text">
-                Please select a budget range
-              </small>
             </div>
 
             <!-- Timeline -->
             <div class="form-group">
-              <label>Timeline *</label>
-              <div class="timeline-options">
+              <label>When do you need it done? *</label>
+              <p class="field-hint">This helps pros who are available in your timeframe reach out first.</p>
+              <div class="option-grid">
                 <button
                   *ngFor="let option of timelineOptions"
                   type="button"
-                  class="timeline-btn"
+                  class="option-card option-card--tile"
                   [class.selected]="f['timeline'].value === option.value"
+                  [attr.aria-pressed]="f['timeline'].value === option.value"
                   (click)="selectTimeline(option.value)"
                 >
-                  {{ option.label }}
+                  <span class="option-icon" aria-hidden="true">{{ option.icon }}</span>
+                  <span class="option-body">
+                    <span class="option-title">{{ option.label }}</span>
+                    <span class="option-sub">{{ option.description }}</span>
+                  </span>
+                  <span class="option-check" aria-hidden="true">✓</span>
                 </button>
               </div>
               <small *ngIf="(submitted || f['timeline'].touched) && f['timeline'].errors" class="error-text">
@@ -267,9 +277,6 @@
                 />
                 <span class="checkbox-text">{{ 'COMMON.AGREE_TERMS' | translate }} <a routerLink="/terms" target="_blank">Terms of Service</a></span>
               </label>
-              <small *ngIf="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors" class="error-text">
-                {{ 'COMMON.TERMS_REQUIRED' | translate }}
-              </small>
             </div>
 
             <div class="form-actions">
@@ -278,6 +285,10 @@
                 {{ submitted ? ('POST_JOB.SUBMITTING' | translate) : ('POST_JOB.SUBMIT' | translate) }}
               </button>
             </div>
+
+            <small *ngIf="(submitted || f['agreeToTerms'].touched) && f['agreeToTerms'].errors" class="error-text terms-error">
+              {{ 'COMMON.TERMS_REQUIRED' | translate }}
+            </small>
           </div>
         </form>
       </div>
