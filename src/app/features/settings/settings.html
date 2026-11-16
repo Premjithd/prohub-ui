@@ -230,7 +230,8 @@
         <div class="pm-add-panel" *ngIf="showAddPm">
           <h3>{{ 'SETTINGS.PM_ADD_HEADER' | translate }}</h3>
 
-          <div class="pm-type-toggle">
+          <!-- Only Pros/Businesses save bank payout methods; customers save a UPI handle only. -->
+          <div class="pm-type-toggle" *ngIf="isPro">
             <button [class.active]="pmType === 'UPI'" (click)="pmType = 'UPI'">
               <mat-icon>qr_code_2</mat-icon>{{ 'SETTINGS.PM_TYPE_UPI' | translate }}
             </button>
