@@ -558,6 +558,12 @@ $bg-light: #f9fafb;
   .material-icons { font-size: 13px; }
 }
 
+.pro-distance {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary, #667eea);
+}
+
 // ── Services skeleton ─────────────────────────────────
 .service-skeleton {
   border: 1px solid $border;

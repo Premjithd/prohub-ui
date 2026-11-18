@@ -9,9 +9,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { HttpClient } from '@angular/common/http';
-import { Subject, firstValueFrom } from 'rxjs';
+import { Observable, Subject, firstValueFrom, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, takeUntil, switchMap, map, catchError } from 'rxjs/operators';
 import { ProBrowseService, BrowsePro } from '../../services/pro-browse.service';
 import { ServiceCategoryService } from '../../core/services/service-category.service';
 import { ServiceCategory } from '../../core/models/service-category.model';
@@ -254,21 +254,47 @@ export class FindAProComponent implements OnInit, OnDestroy {
 
   // ── Core load ────────────────────────────────────────────
 
+  // Geocoded PIN → centroid cache, so repeated loads on the same area don't re-geocode.
+  private originCache = new Map<string, { lat?: number; lng?: number }>();
+
+  /** Resolve the searcher's origin coordinates from the active PIN filter (geocoded via the
+   *  address proxy). Empty object when no PIN / geocoding fails — the backend then falls back
+   *  to its non-proximity behaviour. */
+  private resolveOrigin(pin: string): Observable<{ lat?: number; lng?: number }> {
+    if (!pin) return of({});
+    const cached = this.originCache.get(pin);
+    if (cached) return of(cached);
+    return this.addressService.lookupByPostcode(pin, 'in').pipe(
+      map(d => {
+        const origin = (d?.latitude != null && d?.longitude != null)
+          ? { lat: d.latitude, lng: d.longitude } : {};
+        this.originCache.set(pin, origin);
+        return origin;
+      }),
+      catchError(() => of({}))
+    );
+  }
+
   load(): void {
     this.loading = true;
     this.errorMessage = '';
     this.cdr.markForCheck();
 
-    this.proBrowseService.browse({
-      search:     this.searchText.trim() || undefined,
-      categoryId: this.selectedCategoryId,
-      country:    this.filterCountry  || undefined,
-      state:      this.filterState    || undefined,
-      district:   this.filterDistrict || undefined,
-      pinCode:    this.filterPin      || undefined,
-      page:       this.page,
-      pageSize:   this.pageSize,
-    }).pipe(takeUntil(this.destroy$)).subscribe({
+    this.resolveOrigin(this.filterPin).pipe(
+      switchMap(origin => this.proBrowseService.browse({
+        search:     this.searchText.trim() || undefined,
+        categoryId: this.selectedCategoryId,
+        country:    this.filterCountry  || undefined,
+        state:      this.filterState    || undefined,
+        district:   this.filterDistrict || undefined,
+        pinCode:    this.filterPin      || undefined,
+        lat:        origin.lat,
+        lng:        origin.lng,
+        page:       this.page,
+        pageSize:   this.pageSize,
+      })),
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: result => {
         this.pros = result.items;
         this.totalCount = result.total;

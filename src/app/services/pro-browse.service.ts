@@ -17,6 +17,7 @@ export interface BrowsePro {
   serviceRadiusKm?: number;
   isEmailVerified: boolean;
   services?: Array<{ id: number; name: string; price: number }>;
+  distanceKm?: number | null;
 }
 
 export interface BrowseProResult {
@@ -33,6 +34,9 @@ export interface BrowseProParams {
   state?: string;
   district?: string;
   pinCode?: string;
+  lat?: number;
+  lng?: number;
+  radiusKm?: number;
   page?: number;
   pageSize?: number;
 }
@@ -55,6 +59,9 @@ export class ProBrowseService {
     if (params?.state)       p = p.set('state',      params.state);
     if (params?.district)    p = p.set('district',   params.district);
     if (params?.pinCode)     p = p.set('pinCode',    params.pinCode);
+    if (params?.lat != null) p = p.set('lat',        params.lat.toString());
+    if (params?.lng != null) p = p.set('lng',        params.lng.toString());
+    if (params?.radiusKm != null) p = p.set('radiusKm', params.radiusKm.toString());
     if (params?.page)        p = p.set('page',       params.page.toString());
     if (params?.pageSize)    p = p.set('pageSize',   params.pageSize.toString());
 

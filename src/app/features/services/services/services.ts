@@ -3,13 +3,16 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { Observable, Subject, of } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged, switchMap, map, catchError } from 'rxjs/operators';
 import { Auth } from '../../../core/services/auth';
 import { ServiceCategoryService } from '../../../core/services/service-category.service';
 import { ServiceCategory } from '../../../core/models/service-category.model';
 import { BrowseServicesService, ServiceBrowseDto } from '../../../services/browse-services.service';
 import { SettingsService } from '../../../core/services/settings.service';
+import { AddressService } from '../../../core/services/address.service';
+
+interface SearchOrigin { lat?: number; lng?: number; }
 
 type SortOrder = 'popular' | 'price-low' | 'price-high';
 
@@ -54,8 +57,30 @@ export class ServicesComponent implements OnInit, OnDestroy {
     private serviceCategoryService: ServiceCategoryService,
     private browseServicesService: BrowseServicesService,
     private settingsService: SettingsService,
+    private addressService: AddressService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  // Geocoded PIN → centroid cache, so repeated searches on the same area don't re-geocode.
+  private originCache = new Map<string, SearchOrigin>();
+
+  /** Resolve the searcher's origin coordinates from the entered PIN (geocoded via the
+   *  address proxy). Empty object when no PIN / geocoding fails — the backend then falls
+   *  back to its non-proximity behaviour. */
+  private resolveOrigin(pin: string): Observable<SearchOrigin> {
+    if (!pin) return of({});
+    const cached = this.originCache.get(pin);
+    if (cached) return of(cached);
+    return this.addressService.lookupByPostcode(pin, 'in').pipe(
+      map(d => {
+        const origin: SearchOrigin = (d?.latitude != null && d?.longitude != null)
+          ? { lat: d.latitude, lng: d.longitude } : {};
+        this.originCache.set(pin, origin);
+        return origin;
+      }),
+      catchError(() => of({} as SearchOrigin))
+    );
+  }
 
   ngOnInit(): void {
     // A category may be requested via the URL (home category chips link here).
@@ -78,11 +103,16 @@ export class ServicesComponent implements OnInit, OnDestroy {
       switchMap(() => {
         this.servicesLoading = true;
         this.cdr.detectChanges();
-        return this.browseServicesService.getServices({
-          search: this.searchQuery.trim() || undefined,
-          pin: this.searchPin.trim() || undefined,
-          categoryId: this.selectedCategoryId || undefined,
-        }).pipe(takeUntil(this.destroy$));
+        return this.resolveOrigin(this.searchPin.trim()).pipe(
+          switchMap(origin => this.browseServicesService.getServices({
+            search: this.searchQuery.trim() || undefined,
+            pin: this.searchPin.trim() || undefined,
+            categoryId: this.selectedCategoryId || undefined,
+            lat: origin.lat,
+            lng: origin.lng,
+          })),
+          takeUntil(this.destroy$)
+        );
       }),
       takeUntil(this.destroy$)
     ).subscribe({
@@ -140,11 +170,16 @@ export class ServicesComponent implements OnInit, OnDestroy {
   loadServices(): void {
     this.servicesLoading = true;
     this.servicesError = false;
-    this.browseServicesService.getServices({
-      categoryId: this.selectedCategoryId || undefined,
-      search: this.searchQuery.trim() || undefined,
-      pin: this.searchPin.trim() || undefined,
-    }).pipe(takeUntil(this.destroy$)).subscribe({
+    this.resolveOrigin(this.searchPin.trim()).pipe(
+      switchMap(origin => this.browseServicesService.getServices({
+        categoryId: this.selectedCategoryId || undefined,
+        search: this.searchQuery.trim() || undefined,
+        pin: this.searchPin.trim() || undefined,
+        lat: origin.lat,
+        lng: origin.lng,
+      })),
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: result => {
         this.services = result.items;
         this.applyClientSort();

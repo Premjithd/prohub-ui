@@ -121,6 +121,7 @@
             <div class="pro-location">
               <span class="material-icons loc-icon">place</span>
               {{ getLocation(pro) }}
+              <span *ngIf="pro.distanceKm != null" class="pro-distance">· {{ pro.distanceKm }} km away</span>
             </div>
             <div *ngIf="pro.serviceRadiusKm" class="pro-radius">
               {{ 'FIND_PRO.SERVICE_RADIUS' | translate }} {{ pro.serviceRadiusKm }} km

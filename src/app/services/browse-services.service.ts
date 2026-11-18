@@ -18,6 +18,7 @@ export interface ServiceBrowseDto {
   serviceCategoryId?: number;
   categoryName?: string;
   categoryIcon?: string;
+  distanceKm?: number | null;
 }
 
 export interface ServicePagedResult {
@@ -34,6 +35,9 @@ export interface ServiceBrowseParams {
   search?: string;
   city?: string;
   pin?: string;
+  lat?: number;
+  lng?: number;
+  radiusKm?: number;
   sortBy?: 'name' | 'price-low' | 'price-high';
 }
 
@@ -55,6 +59,9 @@ export class BrowseServicesService {
     if (params.search)     httpParams = httpParams.set('search', params.search);
     if (params.city)       httpParams = httpParams.set('city', params.city);
     if (params.pin)        httpParams = httpParams.set('pin', params.pin);
+    if (params.lat != null) httpParams = httpParams.set('lat', params.lat);
+    if (params.lng != null) httpParams = httpParams.set('lng', params.lng);
+    if (params.radiusKm != null) httpParams = httpParams.set('radiusKm', params.radiusKm);
     if (params.sortBy)     httpParams = httpParams.set('sortBy', params.sortBy);
 
     return this.http.get<any>(this.apiUrl, { params: httpParams }).pipe(

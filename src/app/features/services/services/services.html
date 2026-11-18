@@ -160,6 +160,7 @@
                 <span class="pro-location" *ngIf="s.city">
                   <span class="material-icons">place</span>{{ s.city }}{{ s.state ? ', ' + s.state : '' }}
                 </span>
+                <span class="pro-distance" *ngIf="s.distanceKm != null">{{ s.distanceKm }} km away</span>
               </div>
               <div class="card-footer">
                 <div class="price" *ngIf="s.price">from ₹{{ s.price | number }}</div>
