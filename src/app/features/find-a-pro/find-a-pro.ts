@@ -635,11 +635,24 @@ export class FindAProComponent implements OnInit, OnDestroy {
     const params: Record<string, string> = {};
     if (service.serviceCategoryId) params['categoryId'] = String(service.serviceCategoryId);
     if (service.name) params['title'] = service.name;
+    // Carry the chosen pro so the job is sent directly to them (while still open to all).
+    this.applyRequestedPro(params);
     this.router.navigate(['/post-job'], { queryParams: params });
   }
 
   postJobGeneral(): void {
-    this.router.navigate(['/post-job']);
+    const params: Record<string, string> = {};
+    // Carry the chosen pro so the job is sent directly to them (while still open to all).
+    this.applyRequestedPro(params);
+    this.router.navigate(['/post-job'], { queryParams: params });
+  }
+
+  /** Adds the selected pro's id/name to post-job params so it becomes a RequestedProId direct invite. */
+  private applyRequestedPro(params: Record<string, string>): void {
+    if (!this.selectedPro) return;
+    params['proId'] = String(this.selectedPro.id);
+    const proLabel = this.selectedPro.businessName || this.selectedPro.proName;
+    if (proLabel) params['proName'] = proLabel;
   }
 
   toggleMap(): void {
